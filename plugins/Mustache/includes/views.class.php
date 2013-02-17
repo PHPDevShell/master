@@ -10,7 +10,7 @@ class views extends PHPDS_dependant
      * Default extension of view file.
      * @var string
      */
-    public $extension = '.tpl';
+    public $extension = '.html';
 	/**
 	 * Contains mustache object.
 	 *
