@@ -1,0 +1,30 @@
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 2', 'test2', '63a9f0ea7bb98050796b649e85481845', 'test2@phpdevshell.org', '3', '5', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 3', 'test3', '63a9f0ea7bb98050796b649e85481845', 'test3@phpdevshell.org', '3', '5', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 4', 'test4', '63a9f0ea7bb98050796b649e85481845', 'test4@phpdevshell.org', '3', '5', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 5', 'test5', '63a9f0ea7bb98050796b649e85481845', 'test5@phpdevshell.org', '3', '5', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 6', 'test6', '63a9f0ea7bb98050796b649e85481845', 'test6@phpdevshell.org', '2', '5', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 7', 'test7', '63a9f0ea7bb98050796b649e85481845', 'test7@phpdevshell.org', '2', '2', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 8', 'test8', '63a9f0ea7bb98050796b649e85481845', 'test8@phpdevshell.org', '2', '2', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 9', 'test9', '63a9f0ea7bb98050796b649e85481845', 'test9@phpdevshell.org', '2', '2', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 10', 'test2', '63a9f0ea7bb98050796b649e85481845', 'test10@phpdevshell.org', '5', '9', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 11', 'test2', '63a9f0ea7bb98050796b649e85481845', 'test11@phpdevshell.org', '5', '9', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 12', 'test2', '63a9f0ea7bb98050796b649e85481845', 'test12@phpdevshell.org', '5', '9', '12569537329', 'en', 'UTC', 'US');
+REPLACE INTO `pds_core_users` VALUES (DEFAULT, 'Test User 13', 'test2', '63a9f0ea7bb98050796b649e85481845', 'test13@phpdevshell.org', '5', '9', '12569537329', 'en', 'UTC', 'US');
+
+INSERT INTO `pds_core_user_groups` VALUES (DEFAULT, 'Test Group 1', '');
+INSERT INTO `pds_core_user_groups` VALUES (DEFAULT, 'Test Group 2', '');
+INSERT INTO `pds_core_user_groups` VALUES (DEFAULT, 'Test Group 3', '');
+INSERT INTO `pds_core_user_groups` VALUES (DEFAULT, 'Test Group 4', '');
+INSERT INTO `pds_core_user_groups` VALUES (DEFAULT, 'Test Group 5', '');
+INSERT INTO `pds_core_user_groups` VALUES (DEFAULT, 'Test Group 6', '');
+INSERT INTO `pds_core_user_groups` VALUES (DEFAULT, 'Test Group 7', '');
+INSERT INTO `pds_core_user_groups` VALUES (DEFAULT, 'Test Group 8', '');
+
+INSERT INTO `pds_core_user_roles` VALUES (DEFAULT, 'Test Role 1', '');
+INSERT INTO `pds_core_user_roles` VALUES (DEFAULT, 'Test Role 2', '');
+INSERT INTO `pds_core_user_roles` VALUES (DEFAULT, 'Test Role 3', '');
+INSERT INTO `pds_core_user_roles` VALUES (DEFAULT, 'Test Role 4', '');
+INSERT INTO `pds_core_user_roles` VALUES (DEFAULT, 'Test Role 5', '');
+INSERT INTO `pds_core_user_roles` VALUES (DEFAULT, 'Test Role 6', '');
+INSERT INTO `pds_core_user_roles` VALUES (DEFAULT, 'Test Role 7', '');
+INSERT INTO `pds_core_user_roles` VALUES (DEFAULT, 'Test Role 8', '');
