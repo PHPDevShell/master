@@ -16,19 +16,25 @@ class UserRoleAdminList extends PHPDS_controller
 	{
         $this->template->heading(__('Access Roles'));
 
-		$RESULTS = $this->db->invokeQuery('PHPDS_readRoleQuery');
+		$this->view($this->db->invokeQuery('PHPDS_readRoleQuery'));
 
-        /* @var $view views */
-		$view = $this->factory('views');
-
-		$view->set('self_url', $this->navigation->buildURL());
-		$view->set('pagination', $RESULTS['pagination']);
-		$view->set('searchForm', $RESULTS['searchForm']);
-		$view->set('th', $RESULTS['th']);
-		$view->set('RESULTS', $RESULTS['list']);
-
-		$view->show();
 	}
+
+    public function view($RESULTS)
+    {
+        /* @var $view views */
+        $view = $this->factory('views');
+
+        $view->set('self_url', $this->navigation->buildURL());
+        $view->set('new', $this->navigation->buildURL('role-admin'));
+        $view->set('pagination', $RESULTS['pagination']);
+        $view->set('searchForm', $RESULTS['searchForm']);
+        $view->set('th', $RESULTS['th']);
+        $view->set('show', !empty($RESULTS['list']));
+        $view->set('RESULTS', $RESULTS['list']);
+
+        $view->show();
+    }
 
     public function viaAJAX()
     {
@@ -39,6 +45,7 @@ class UserRoleAdminList extends PHPDS_controller
     public function deleteRole ()
     {
         $iddelete = $this->G('delete-role');
+
         // Delete role.
         $deleted_role = $this->db->deleteQuick('_db_core_user_roles', 'user_role_id',  $iddelete, 'user_role_name');
         $this->db->deleteQuick('_db_core_user_role_permissions', 'user_role_id',  $iddelete);

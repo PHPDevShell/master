@@ -18,17 +18,17 @@ class UserRoleAdmin extends PHPDS_controller
 		$crud = $this->factory('crud');
         $permission = array();
 
-		if ($crud->GET('er') || $crud->POST('save')) {
+		if ($crud->GET('edit-role') || $crud->POST('save')) {
 			$this->template->heading(__('Edit User Role'));
 		} else {
 			$this->template->heading(__('Add User Role'));
 		}
 
-		if ($crud->GET('er') || $crud->POST('save') || $crud->POST('new')) {
+		if ($crud->GET('edit-role') || $crud->POST('save') || $crud->POST('new')) {
 
-			if ($crud->GET('er')) {
-				$crud->importFields($this->db->invokeQuery('PHPDS_readRoleUserQuery', $crud->GET('er')));
-				$permission = $this->db->invokeQuery('PHPDS_readRoleNodeQuery', $crud->GET('er'));
+			if ($crud->GET('edit-role')) {
+				$crud->importFields($this->db->invokeQuery('PHPDS_readRoleUserQuery', $crud->GET('edit-role')));
+				$permission = $this->db->invokeQuery('PHPDS_readRoleNodeQuery', $crud->GET('edit-role'));
 			}
 
 			if ($crud->POST('save') || $crud->POST('new')) {

@@ -38,7 +38,7 @@ class views extends PHPDS_dependant
         if (! is_object($this->template->view)) {
             require BASEPATH . 'plugins/Mustache/resources/src/Mustache/Autoloader.php';
             Mustache_Autoloader::register();
-            $loader         = new Mustache_Loader_FilesystemLoader($view_dir . '/views', array('extension' => $this->extension));
+            $loader         = new Mustache_Loader_FilesystemLoader($view_dir, array('extension' => $this->extension));
             $this->view     = new Mustache_Engine(array(
                 'template_class_prefix' => '__view_',
                 'cache'                 => BASEPATH . $configuration['compile_path'],
@@ -103,7 +103,7 @@ class views extends PHPDS_dependant
         }
 
         $node_link = $this->reverseStrrchr($node_link, "/", 0);
-        $tpl_dir = $plugin_folder . $node_link;
+        $tpl_dir = empty($node_link) ? $plugin_folder . '/views' : $plugin_folder . '/views/' . $node_link;
 
         return $tpl_dir;
     }
