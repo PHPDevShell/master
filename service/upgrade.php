@@ -93,9 +93,9 @@ function checkFields()
 {
 	global $data, $errors;
 
-	checkField('db_name', _('Please supply the Database Name.'), 'phpdevdbname');
-	checkField('db_username', _('Please supply the Database Username.'), 'phpdev');
-	checkField('db_password', _('Please supply the Database Password.'), 'phpdev');
+	checkField('db_name', _('Please supply the Database Name.'), 'phpdev');
+	checkField('db_username', _('Please supply the Database Username.'), 'root');
+	checkField('db_password', _('Please supply the Database Password.'), 'root');
 	checkField('db_server', _('Please supply the Database Server Address.'), 'localhost');
 	checkField('db_prefix', _('Please supply theDatabase Prefix.'), 'pds_');
 	checkField('config_file', _('Please supply the Config File.'), 'single-site.config.php');
@@ -110,7 +110,7 @@ function get_queries()
 	$queries = '';
 	foreach ($db_versions as $fetch_version) {
 		if ($phpds_db_ver < $fetch_version) {
-			$filename = 'PHPDevShell-db' . $fetch_version . '.sql';
+			$filename = 'database/PHPDevShell-db' . $fetch_version . '.sql';
 			notePrint(_('Using SQL file named').' "'.$filename.'"');
 			$fp = fopen($filename, 'r');
 			$queries .= stream_get_contents($fp);

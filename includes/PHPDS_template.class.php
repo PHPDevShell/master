@@ -3,7 +3,6 @@
 interface iPHPDS_activableGUI
 {
     public function construct();
-
     public function activate();
 }
 

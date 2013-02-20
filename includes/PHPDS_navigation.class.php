@@ -177,8 +177,7 @@ class PHPDS_navigation extends PHPDS_dependant
 	}
 
 	/**
-	 * This method compiles the history tree seen, this is the tree that the user sees expand when going deeper into node levels.
-	 * On the default template this is the navigation link string top left above the nodes.
+	 * This method compiles the children of active menu, in some cases a theme modder might want to call this to easy navigation.
 	 *
 	 * @return string
 	 */

@@ -63,7 +63,7 @@ function headHTML()
             <meta name="description" content="install or upgrade phpdevshell framework">
             <link rel="stylesheet" href="<?php echo $aurl ?>themes/default/bootstrap/css/bootstrap.css" type="text/css">
             <link rel="stylesheet" href="<?php echo $aurl ?>themes/default/bootstrap/css/bootstrap-responsive.css" type="text/css">
-            <link rel="stylesheet" href="<?php echo $aurl ?>service/service.css" type="text/css">
+            <link rel="stylesheet" href="<?php echo $aurl ?>service/style/service.css" type="text/css">
             <script type="text/javascript" src="<?php echo $aurl ?>themes/default/jquery/js/jquery-min.js"></script>
             <script type="text/javascript" src="<?php echo $aurl ?>themes/default/js/default.js"></script>
             <script type="text/javascript" src="<?php echo $aurl ?>themes/default/bootstrap/js/bootstrap.js"></script>

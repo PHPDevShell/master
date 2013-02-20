@@ -50,22 +50,26 @@ CREATE TABLE `pds_core_node_items` (
 INSERT INTO `pds_core_node_items` VALUES ('readme', '0', 'Readme', 'readme.php', 'About', '1', null, '0', '1', '0', 'default', 'readme', null, null);
 
 INSERT INTO `pds_core_node_items` VALUES ('admin', '0', 'Admin', 'user/admin.system-admin', 'AdminTools', '2', 'system-settings', '0', '2', '0', 'default', 'admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('system-settings', 'admin', 'Settings', 'system-admin/general-settings.php', 'AdminTools', '1', null, '0', '1', '0', 'default', 'system-settings', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('config-manager', 'admin', 'Config', 'system-admin/config-manager.php', 'AdminTools', '1', null, '0', '2', '0', 'default', 'config-manager', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('system-settings', 'admin', 'System Settings', 'system-admin/general-settings.php', 'AdminTools', '1', null, '0', '1', '0', 'default', 'system-settings', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('config-manager', 'admin', 'Global Config', 'system-admin/config-manager.php', 'AdminTools', '1', null, '0', '2', '0', 'default', 'config-manager', null, null);
 
 INSERT INTO `pds_core_node_items` VALUES ('user-admin-list', 'admin', 'Users', 'user-admin/user-admin-list.php', 'AdminTools', '1', null, '0', '3', '0', 'default', 'user-admin-list', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('user-admin', 'admin', 'User', 'user-admin/user-admin.php', 'AdminTools', '1', null, '0', '4', '3', 'default', 'user-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('group-admin-list', 'admin', 'Groups', 'user-admin/user-group-admin-list.php', 'AdminTools', '1', null, '0', '5', '0', 'default', 'group-admin-list', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('group-admin-list', 'admin', 'Data Groups', 'user-admin/user-group-admin-list.php', 'AdminTools', '1', null, '0', '5', '0', 'default', 'group-admin-list', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('group-admin', 'admin', 'Group', 'user-admin/user-group-admin.php', 'AdminTools', '1', null, '0', '6', '3', 'default', 'group-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('role-admin-list', 'admin', 'Roles', 'user-admin/user-role-admin-list.php', 'AdminTools', '1', null, '0', '7', '0', 'default', 'role-admin-list', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('role-admin-list', 'admin', 'Access Roles', 'user-admin/user-role-admin-list.php', 'AdminTools', '1', null, '0', '7', '0', 'default', 'role-admin-list', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('role-admin', 'admin', 'Role', 'user-admin/user-role-admin.php', 'AdminTools', '1', null, '0', '8', '3', 'default', 'role-admin', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('node-admin-list', 'admin', 'Nodes', 'node-admin/node-item-admin-list.php', 'AdminTools', '1', null, '0', '9', '0', 'default', 'node-admin-list', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('node-admin', 'admin', 'Node', 'node-admin/node-item-admin.php', 'AdminTools', '1', null, '0', '10', '3', 'default', 'node-admin', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('tag-admin', 'admin', 'Tags', 'tagger-admin/tagger-admin.php', 'AdminTools', '1', null, '0', '11', '0', 'default', 'tag-admin', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('theme-admin', 'admin', 'Themes', 'template-admin/template-admin-list.php', 'AdminTools', '1', null, '0', '12', '0', 'default', 'theme-admin', null, null);
 
-INSERT INTO `pds_core_node_items` VALUES ('sys-logs', 'admin', 'Sys Logs', 'logs-admin/system-logs.php', 'AdminTools', '1', null, '0', '13', '0', 'default', 'sys-logs', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('sys-logs', 'admin', 'System Logs', 'logs-admin/system-logs.php', 'AdminTools', '1', null, '0', '13', '0', 'default', 'sys-logs', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('file-logs', 'admin', 'File Logs', 'logs-admin/file-log-viewer.php', 'AdminTools', '1', null, '0', '14', '3', 'default', 'file-logs', null, null);
+-- Test tree data
+INSERT INTO `pds_core_node_items` VALUES ('file-logs-1', 'sys-logs', 'File Logs1', 'logs-admin/file-log-viewer1.link', 'AdminTools', '2', null, '0', '15', '0', 'default', 'file-logs-1', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('file-logs-2', 'sys-logs', 'File Logs2', 'logs-admin/file-log-viewer2.link', 'AdminTools', '2', null, '0', '15', '0', 'default', 'file-logs-2', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('file-logs-3', 'sys-logs', 'File Logs3', 'logs-admin/file-log-viewer3.link', 'AdminTools', '2', null, '0', '15', '0', 'default', 'file-logs-3', null, null);
 
 INSERT INTO `pds_core_node_items` VALUES ('plugin-admin', 'admin', 'Plugins', 'plugin-activation.php', 'PluginManager', '1', null, '0', '15', '0', 'default', 'plugins-admin', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('class-registry', 'admin', 'Registry', 'class-registry.php', 'PluginManager', '1', null, '0', '16', '0', 'default', 'class-registry', null, null);
@@ -99,7 +103,11 @@ INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('tag-ad
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('theme-admin', '0', '4');
 
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('file-logs', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('sys-logs', '0', '4');
+-- Test tree
+INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('sys-logs', '1', '3');
+INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('file-logs-1', '0', '4');
+INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('file-logs-2', '0', '4');
+INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('file-logs-3', '0', '4');
 
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('plugin-admin', '0', '4');
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('class-registry', '0', '4');
@@ -316,6 +324,10 @@ INSERT INTO pds_core_user_role_permissions VALUES ('1', 'tag-admin');
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'theme-admin');
 
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'file-logs');
+-- Test tree
+INSERT INTO pds_core_user_role_permissions VALUES ('1', 'file-logs-1');
+INSERT INTO pds_core_user_role_permissions VALUES ('1', 'file-logs-2');
+INSERT INTO pds_core_user_role_permissions VALUES ('1', 'file-logs-3');
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'sys-logs');
 
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'plugin-admin');

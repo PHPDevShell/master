@@ -108,19 +108,19 @@ function checkFields()
 {
 	global $data, $errors;
 
-	checkField('application_name', _('Please supply the Application Name.'), _('Your Application Name V-1.0.0'));
+    $name  = (gethostname()) ? gethostname() : 'Your Application Name V - 1.0.0';
+    $email = (gethostname()) ? 'admin@' . gethostname() : 'admin@example.com';
+
+	checkField('application_name', _('Please supply the Application Name.'), $name);
 	checkField('admin_username', _('Please supply the Admin Login Username.'), _('root'));
 	checkField('admin_password', _('Please supply the Admin Login Password.'), _('root'));
-	checkField('admin_email', _('Please supply the Admin Email.'), _('root@mydomain.com'));
-	checkField('db_name', _('Please supply the Database Name.'), 'phpdevdbname');
-	checkField('db_username', _('Please supply the Database Username.'), 'phpdev');
-	checkField('db_password', _('Please supply the Database Password.'), 'phpdev');
+	checkField('admin_email', _('Please supply the Admin Email.'), $email);
+	checkField('db_name', _('Please supply the Database Name.'), 'phpdev');
+	checkField('db_username', _('Please supply the Database Username.'), 'root');
+	checkField('db_password', _('Please supply the Database Password.'), 'root');
 	checkField('db_server', _('Please supply the Database Server Address.'), 'localhost');
 	checkField('db_prefix', _('Please supply the Database Prefix.'), 'pds_');
 	checkField('config_file', _('Please supply the Config File.'), 'single-site.config.php');
-
-	if (filter_var($data['admin_email'], FILTER_VALIDATE_EMAIL) == FALSE)
-			addError('admin_email', _('Your email address seems to be invalid. Please make sure you entered your email address correctly.'));
 
 	return (count($errors) == 0);
 }
@@ -129,12 +129,12 @@ function get_queries()
 {
 	global $data, $db_version, $time;
 
-	$fp = fopen('PHPDevShell-db' . $db_version . '-complete.sql', 'r');
+	$fp = fopen('database/PHPDevShell-db' . $db_version . '-complete.sql', 'r');
 	$queries = stream_get_contents($fp);
 	fclose($fp);
 
     if (!empty($_POST['sample-data'])) {
-        $fp = fopen('PHPDevShell-db-sample.sql', 'r');
+        $fp = fopen('database/PHPDevShell-db-sample.sql', 'r');
         $queries .= stream_get_contents($fp);
         fclose($fp);
     }

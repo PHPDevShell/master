@@ -548,8 +548,7 @@ HTML;
 			}
 		}
 		($mr['new_window'] == 1) ? $target = '_blank' : $target = '_self';
-		$extra = ($class == 'nav-grand') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
-
+		$extra = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
 		return <<<HTML
 				<a tabindex="-1" href="{$url}" target="{$target}" {$extra} {$noclick}>{$mr['node_name']}</a>
 HTML;
@@ -596,20 +595,11 @@ HTML;
 		$id = empty($node_data['node_id']) ? '' : ' id="menu_'.PU_safeName($node_data['node_id']).'"';
 
 		return <<<HTML
-
-			<li class="{$class} nav-header" {$id}>{$node_data['node_name']}</li>
-			{$tree}
-
-HTML;
-		// You could also make a tree type node, but remember users with touch screens will find it hard to navigate, they can't hover.
-		/*
-		return <<<HTML
 				<li class="{$class} dropdown-submenu" {$id}>
 					{$link}
 						{$tree}
 				</li>
 HTML;
-		*/
 	}
 
 	public function menuLiChild($link, $class, $node_data = null)
