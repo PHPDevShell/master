@@ -15,12 +15,10 @@ class UserRoleAdminList extends PHPDS_controller
 	public function execute()
 	{
         $this->template->heading(__('Access Roles'));
-
 		$this->view($this->db->invokeQuery('PHPDS_readRoleQuery'));
-
 	}
 
-    public function view($RESULTS)
+    private function view($RESULTS)
     {
         /* @var $view views */
         $view = $this->factory('views');
@@ -36,13 +34,7 @@ class UserRoleAdminList extends PHPDS_controller
         $view->show();
     }
 
-    public function viaAJAX()
-    {
-        if ($this->G('delete-role')) return $this->deleteRole();
-        return 'false';
-    }
-
-    public function deleteRole ()
+    private function deleteRole ()
     {
         $iddelete = $this->G('delete-role');
 
@@ -51,12 +43,17 @@ class UserRoleAdminList extends PHPDS_controller
         $this->db->deleteQuick('_db_core_user_role_permissions', 'user_role_id',  $iddelete);
         $this->db->invokeQuery('PHPDS_updateUserQuery',  $iddelete);
         if ($deleted_role) {
-            $this->template->ok(sprintf(__("Role %s was deleted."), $deleted_role));
+            $this->template->ok(sprintf(__("Role %s deleted."), $deleted_role));
             return 'true';
         } else {
-            $this->template->note(sprintf(__('No role "%s" to delete.'),  $iddelete));
             return 'false';
         }
+    }
+
+    public function viaAJAX()
+    {
+        if ($this->G('delete-role')) return $this->deleteRole();
+        return 'false';
     }
 }
 

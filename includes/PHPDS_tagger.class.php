@@ -150,18 +150,18 @@ class PHPDS_tagger extends PHPDS_dependant
      * @param array $taggervalues Array of values posted by the tagger form.
      * @param array $taggerids Array of updated ids posted by the tagger form.
      * @param array $taggerdeletes Array of deleted tags posted by the tagger form.
-	 * @return string|nothing
+	 * @return string
      *
      * @version 2.0
-     * @author jason
+     * @author jason <titan@phpdevshell.org>
      * @date 20130123 (v2.0) (jason) rewrote its functionality
 	 */
-	public function tagArea($object, $target, $taggernames, $taggervalues, $taggerids, $taggerdeletes)
+	public function tagArea($object, $target, $taggernames, $taggervalues, $taggerids)
 	{
         $mod = $this->template->mod;
 
 		if (!empty($taggernames) && is_array($taggernames)) {
-			$this->db->invokeQuery('PHPDS_updateTagsQuery', $object, $target, $taggernames, $taggervalues, $taggerids, $taggerdeletes);
+			$this->db->invokeQuery('PHPDS_updateTagsQuery', $object, $target, $taggernames, $taggervalues, $taggerids);
 		}
 
 		$taglist = $this->db->invokeQuery('PHPDS_taggerListTargetQuery', $target, $object);
@@ -170,4 +170,19 @@ class PHPDS_tagger extends PHPDS_dependant
 
 		return $tagarea;
 	}
+
+    /**
+     * Quick delete action for a single tag.
+     *
+     * @version 1.0
+     * @date 20130220
+     * @author jason <titan@phpdevshell.org>
+     *
+     * @param $tag_id
+     * @return mixed
+     */
+    public function tagDelete($tag_id)
+    {
+        return $this->db->invokeQuery('PHPDS_deleteTagsByIdQuery', $tag_id);
+    }
 }

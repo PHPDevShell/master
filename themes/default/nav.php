@@ -3,7 +3,7 @@
         <div class="navbar-inner">
             <!-- MENU AREA -->
             <div>
-                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".mainnav-collapse">
+                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
@@ -22,30 +22,11 @@
                     </li>
                     <?php $template->outputAltHome() ?>
                 </ul>
-                <div class="nav-collapse mainnav-collapse">
+                <div class="collapse nav-collapse">
                     <ul id="main-nav" class="nav">
                         <?php $template->outputMenu() ?>
                     </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- SUBNAV MENU AREA -->
-    <div id="subnav" class="navbar navbar-static-top">
-        <div class="navbar-inner">
-            <div>
-                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".subnav-collapse">
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
-                <div class="nav-collapse mainnav-collapse">
-                    <ul class="nav">
-                        <?php $template->outputName() ?>
-                    </ul>
-                </div>
-                <div class="nav-collapse subnav-collapse">
-                    <ul class="nav pull-right">
+                    <ul class="nav pull-right visible-desktop">
                         <?php $template->outputSubnav() ?>
                     </ul>
                 </div>

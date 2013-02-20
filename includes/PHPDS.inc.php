@@ -1095,7 +1095,7 @@ class PHPDS_dependant
 		$success = call_user_func_array(array($this, 'construct'), $args);
 
 		if ($success === false)
-				throw new PHPDS_Exception('Error constructing an object.');
+			throw new PHPDS_Exception('Error constructing an object.');
 	}
 
 	/**
@@ -1335,8 +1335,8 @@ class PHPDS_dependant
 	/**
 	 * Create a new instance of the given class and link it as dependant (variable number of argument)
 	 *
-	 * @param string|array $classname, ... name of the class to instanciate, or factory array parameter (see PHPDS->_factory() )
-	 * @param array $params optionnal class specific parameters
+	 * @param string|array $classname, ... name of the class to instantiate, or factory array parameter (see PHPDS->_factory() )
+	 * @param array $params optional class specific parameters
 	 *
 	 * @date 20111219 (v1.0.2) (greg) rewrote signature description for phpDoc
 	 * @date 20110915 (v1.0.1) (greg) moved class aliasing support to PHPDS skel
@@ -1344,7 +1344,7 @@ class PHPDS_dependant
 	 * @version 1.0.2
 	 * @author greg
 	 *
-	 * @return instance of $classname
+	 * @return object of $classname
 	 */
 	public function factoryWith($classname, array $params)
 	{

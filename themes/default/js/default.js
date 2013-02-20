@@ -49,6 +49,11 @@ function PHPDS_remoteCall(functionName, params, extParams) {
     );
 }
 
+function spinner (size) {
+    size = typeof size !== 'undefined' ? size : 15;
+    return '<img src="themes/default/images/loader.gif" width="' + size + '" height="' + size + '" />';
+}
+
 /**
  * Apply default formatting to the objects inside the given root element (root element is optional, defaults to BODY)
  * @param root DOM object to assign.
@@ -88,7 +93,7 @@ function PHPDS_documentReady (root) {
             var item = this;
             var url = $(item).attr('href');
             $(item).addClass("disabled");
-            $("i", item).removeClass("icon-trash").append('<img src="themes/default/images/loader.gif" width="15" height="15" />');
+            $("i", item).removeClass("icon-trash").append(spinner(15));
             $.get(url, function () {
                 $(item).parents("tr").fadeOut('slow');
             });

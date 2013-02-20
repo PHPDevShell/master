@@ -181,15 +181,24 @@ HTML;
     {
 
         if (! empty($node_data['user-preferences'])) {
-            $p     = $node_data['user-preferences'];
-            $prefs = <<<HTML
-                <a href="{$p['href']}" class="btn btn-primary options">{$p['node_name']}</a>
+            $p = $node_data['user-preferences'];
+
+            if (! empty($p['href'])) {
+                $prefs = <<<HTML
+                    <a href="{$p['href']}" class="btn btn-primary options">{$p['node_name']}</a>
 HTML;
+            }
+        } else {
+            $prefs = '';
         }
 
-            $logout = <<<HTML
-                <a href="{$logouturl}" class="btn btn-danger options">{$logoutname}</a>
+            if (! empty($logouturl)) {
+                $logout = <<<HTML
+                    <a href="{$logouturl}" class="btn btn-danger options">{$logoutname}</a>
 HTML;
+            } else {
+                $logout = '';
+            }
 
         $HTML = <<<HTML
             <div id="logged-in-info" class="form-actions">
@@ -559,16 +568,14 @@ HTML;
 
 	public function menuUlChild($tree)
 	{
-		return $tree;
-
 		// You could also make a tree type menu, but remember users with touch screens will find it hard to navigate, they can't hover.
-		/*
 		return <<<HTML
+
 				<ul class="dropdown-menu">
 					{$tree}
 				</ul>
+
 HTML;
-		*/
 	}
 
 	public function menuLiParent($tree, $link, $class, $node_data = null)
@@ -912,22 +919,23 @@ HTML;
 
     public function taggerArea($taglist, $tagnametext, $tagvaluetext)
     {
-
+        $nav = $this->navigation;
         $existingtags   = (string) '';
+        $delete_url = '';
 
         if (! empty($taglist)) {
             asort($taglist);
             foreach ($taglist as $tag) {
-                $tagname    = trim($tag['tagName']);
-                $tagvalue   = trim($tag['tagValue']);
-                $tagid      = $tag['tagID'];
+                $tagname    = trim($tag['tag_name']);
+                $tagvalue   = trim($tag['tag_value']);
+                $tagid      = $tag['tag_id'];
                 if ((empty($tagname) && empty($tagvalue)) || empty($tagid)) continue;
-
+                $delete_url = $nav->buildURL(null, 'delete-tag=' . $tagid);
                 $existingtags .= <<<HTML
 
                     <div>
                         <p class="delete-tag pull-right">
-                            <button type="button" class="btn btn-warning"><i class="icon-minus icon-white"></i></button>
+                            <button data-tag-delete="{$delete_url}" type="button" class="btn btn-warning"><i class="icon-minus icon-white"></i></button>
                         </p>
                         <p>
                             <input type="hidden" name="tagger_id[{$tagid}_update]" value="{$tagid}">
@@ -945,12 +953,12 @@ HTML;
 
         $HTML = <<<HTML
             <p id="moretags" class="pull-right">
-                <button id="addtag" type="button" class="btn btn-info"><i class="icon-plus icon-white"></i></button>
+                <button id="addtag" type="button" class="btn btn-info"><i class="icon-chevron-down icon-white"></i></button>
             </p>
             <div class="clonetags">
                 <p>
                     <input type="text" name="tagger_name[]" value="" placeholder="{$tagnametext}"><br>
-                    <textarea id="tagger" name="tagger_value[]" value="" placeholder="{$tagvaluetext}"></textarea>
+                    <textarea id="tagger" name="tagger_value[]" placeholder="{$tagvaluetext}"></textarea>
                 </p>
             </div>
 
@@ -963,11 +971,12 @@ HTML;
                     });
 
                     $(".delete-tag button").click(function() {
-                        $(this).parent().parent().fadeTo('slow', '0.5', function() {
-                            $("button", this).addClass("disabled");
-                            $("i", this).removeClass('icon-minus icon-white').addClass('icon-trash');
-                            $("input", this).attr('name', 'tagger_delete[]').attr("readonly", "readonly");
-                            $("textarea", this).attr("readonly", "readonly");
+                        var item = this;
+                        var id = $(item).attr('data-tag-delete');
+                        $(item).addClass("disabled");
+                        $("i", item).removeClass('icon-minus icon-white').append(spinner(15));
+                        $.get("{$delete_url}", function () {
+                            $(item).parent().parent().fadeOut('slow');
                         });
                     });
                 });

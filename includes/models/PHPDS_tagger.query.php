@@ -98,6 +98,17 @@ class PHPDS_deleteStrictTagsQuery extends PHPDS_query
     protected $autoProtect = true;
 }
 
+class PHPDS_deleteTagsByIdQuery extends PHPDS_query
+{
+    protected $sql = "
+		DELETE FROM
+			_db_core_tags
+		WHERE
+			tag_id = %u
+		";
+    protected $autoProtect = true;
+}
+
 class PHPDS_updateTagsQuery extends PHPDS_query
 {
     protected $sql = "
@@ -109,7 +120,7 @@ class PHPDS_updateTagsQuery extends PHPDS_query
 
 	public function invoke($parameters = null)
 	{
-		list($object, $target, $taggernames, $taggervalues, $taggerids, $taggerdeletes) = $parameters;
+		list($object, $target, $taggernames, $taggervalues, $taggerids) = $parameters;
 
 		if (! empty($target) && ! empty($object)) {
             foreach ($taggernames as $key => $name) {
@@ -120,11 +131,6 @@ class PHPDS_updateTagsQuery extends PHPDS_query
                 }
             }
 
-            if (! empty($taggerdeletes)) {
-                foreach ($taggerdeletes as $name_) {
-                    $this->db->invokeQuery('PHPDS_deleteStrictTagsQuery', $object, $target, $name_);
-                }
-            }
             if (! empty($tag)) $datarows = $this->rows($tag);
             if (! empty($datarows)) {
                 return parent::invoke(array($datarows));

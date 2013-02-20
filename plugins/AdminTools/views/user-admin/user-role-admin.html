@@ -1,6 +1,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         $("#user_role_note").textareaAutoExpand();
+        $(".checkall").checkAllCheckbox();
     });
 </script>
 <form action="{{self_url}}" method="post" class="validate click-elegance">
@@ -44,6 +45,7 @@
                     <button type="submit" name="save" value="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> {{#i}}Submit{{/i}}</button>
                     <button type="submit" name="new" value="new" class="btn btn-success"><i class="icon-plus icon-white"></i> {{#i}}Add{{/i}}</button>
                     <button type="reset" name="reset" value="reset" class="btn"><i class="icon-refresh"></i> {{#i}}Reset{{/i}}</button>
+                    <a href="{{{list_url}}}" class="btn btn-inverse pull-right click-elegance"><i class="icon-align-justify icon-white"></i></a>
                 </p>
             </fieldset>
 		</div>
