@@ -81,6 +81,21 @@ function PHPDS_documentReady (root) {
 }
 
 (function ($) {
+    $.fn.confirmDeleteClick = function () {
+        var bg = this;
+        bg.on('click', ".first-click", function () {
+            var first = this;
+            $(first).removeClass("first-click btn-warning").addClass("ok-click btn-danger click-elegance");
+            return false;
+        });
+        bg.on('click', ".ok-click", function () {
+            var item = this;
+            $(item).addClass("disabled");
+        });
+    }
+}(jQuery));
+
+(function ($) {
     $.fn.getAjaxDelete = function () {
         var bg = this;
         bg.on('click', ".first-click", function () {

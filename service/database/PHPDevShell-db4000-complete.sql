@@ -55,14 +55,12 @@ INSERT INTO `pds_core_node_items` VALUES ('config-manager', 'admin', 'Global Con
 
 INSERT INTO `pds_core_node_items` VALUES ('user-admin-list', 'admin', 'Users', 'user-admin/user-admin-list.php', 'AdminTools', '1', null, '0', '3', '0', 'default', 'user-admin-list', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('user-admin', 'admin', 'User', 'user-admin/user-admin.php', 'AdminTools', '1', null, '0', '4', '3', 'default', 'user-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('group-admin-list', 'admin', 'Data Groups', 'user-admin/user-group-admin-list.php', 'AdminTools', '1', null, '0', '5', '0', 'default', 'group-admin-list', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('group-admin', 'admin', 'Group', 'user-admin/user-group-admin.php', 'AdminTools', '1', null, '0', '6', '3', 'default', 'group-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('role-admin-list', 'admin', 'Access Roles', 'user-admin/user-role-admin-list.php', 'AdminTools', '1', null, '0', '7', '0', 'default', 'role-admin-list', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('role-admin-list', 'admin', 'Roles', 'user-admin/user-role-admin-list.php', 'AdminTools', '1', null, '0', '7', '0', 'default', 'role-admin-list', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('role-admin', 'admin', 'Role', 'user-admin/user-role-admin.php', 'AdminTools', '1', null, '0', '8', '3', 'default', 'role-admin', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('node-admin-list', 'admin', 'Nodes', 'node-admin/node-item-admin-list.php', 'AdminTools', '1', null, '0', '9', '0', 'default', 'node-admin-list', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('node-admin', 'admin', 'Node', 'node-admin/node-item-admin.php', 'AdminTools', '1', null, '0', '10', '3', 'default', 'node-admin', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('tag-admin', 'admin', 'Tags', 'tagger-admin/tagger-admin.php', 'AdminTools', '1', null, '0', '11', '0', 'default', 'tag-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('theme-admin', 'admin', 'Themes', 'template-admin/template-admin-list.php', 'AdminTools', '1', null, '0', '12', '0', 'default', 'theme-admin', null, null);
+INSERT INTO `pds_core_node_items` VALUES ('theme-admin', 'admin', 'Themes', 'template-admin/theme-admin-list.php', 'AdminTools', '1', null, '0', '12', '0', 'default', 'theme-admin', null, null);
 
 INSERT INTO `pds_core_node_items` VALUES ('sys-logs', 'admin', 'System Logs', 'logs-admin/system-logs.php', 'AdminTools', '1', null, '0', '13', '0', 'default', 'sys-logs', null, null);
 INSERT INTO `pds_core_node_items` VALUES ('file-logs', 'admin', 'File Logs', 'logs-admin/file-log-viewer.php', 'AdminTools', '1', null, '0', '14', '3', 'default', 'file-logs', null, null);
@@ -93,8 +91,6 @@ INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('config
 
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('user-admin-list', '0', '4');
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('user-admin', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('group-admin-list', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('group-admin', '0', '4');
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('role-admin-list', '0', '4');
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('role-admin', '0', '4');
 INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('node-admin-list', '0', '4');
@@ -123,7 +119,7 @@ CREATE TABLE `pds_core_plugin_activation` (
 
 -- Insert available default plugins.;
 INSERT INTO `pds_core_plugin_activation` VALUES ('Pagination', 'install', '1000', '0');
-INSERT INTO `pds_core_plugin_activation` VALUES ('Smarty', 'install', '1000', '0');
+INSERT INTO `pds_core_plugin_activation` VALUES ('Mustache', 'install', '1000', '0');
 INSERT INTO `pds_core_plugin_activation` VALUES ('UserActions', 'install', '1000', '0');
 INSERT INTO `pds_core_plugin_activation` VALUES ('StandardLogin', 'install', '1000', '0');
 INSERT INTO `pds_core_plugin_activation` VALUES ('CRUD', 'install', '1000', '0');
@@ -192,8 +188,7 @@ INSERT INTO `pds_core_settings` VALUES ('AdminTools_footer_notes', 'PHPDevShell.
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_from_email', 'no-reply@phphdevshell.org', 'From Email address.');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_front_page_id', 'readme', 'The page to show when site is access.');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_guest_group', '3', 'The systems guest group.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_guest_role', '5', 'The systems guest role.');
+INSERT INTO `pds_core_settings` VALUES ('AdminTools_guest_role', '4', 'The systems guest role.');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_language', 'en', 'Default language.');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_languages_available', 'en', 'List of language codes available');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_locale_format', '{lang}_{region}{charset}', 'Complete locale format.');
@@ -206,7 +201,6 @@ INSERT INTO `pds_core_settings` VALUES ('AdminTools_queries_count', '1', 'Should
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_redirect_login', 'readme', 'When a user logs in, where should he be redirected to?');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_region', 'US', 'Region settings.');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_regions_available', 'US', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_root_group', '1', 'Root Group.');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_root_id', '1', 'Root User.');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_root_role', '1', 'Root Role.');
 INSERT INTO `pds_core_settings` VALUES ('AdminTools_save', 'save', '');
@@ -251,7 +245,6 @@ CREATE TABLE `pds_core_users` (
 	`user_name` varchar(255) DEFAULT NULL,
 	`user_password` varchar(100) DEFAULT NULL,
 	`user_email` varchar(100) DEFAULT NULL,
-	`user_group` int(10) DEFAULT NULL,
 	`user_role` int(10) DEFAULT NULL,
 	`date_registered` int(10) DEFAULT NULL,
 	`language` varchar(10) DEFAULT NULL,
@@ -259,23 +252,8 @@ CREATE TABLE `pds_core_users` (
 	`region` varchar(10) DEFAULT NULL,
 	PRIMARY KEY (`user_id`),
 	UNIQUE KEY `index_user` (`user_name`,`user_email`),
-	KEY `index_general` (`user_display_name`,`user_group`,`user_role`)
+	KEY `index_general` (`user_display_name`,`user_role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- Create primary groups table a user can belong to.;
-CREATE TABLE `pds_core_user_groups` (
-	`user_group_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`user_group_name` varchar(255) DEFAULT NULL,
-	`user_group_note` tinytext,
-	PRIMARY KEY (`user_group_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- Insert primary groups table a user can belong to.;
-INSERT INTO `pds_core_user_groups` VALUES ('1', 'Super', null);
-INSERT INTO `pds_core_user_groups` VALUES ('2', 'Registered', null);
-INSERT INTO `pds_core_user_groups` VALUES ('3', 'Guest', null);
-INSERT INTO `pds_core_user_groups` VALUES ('4', 'Limited Admin', null);
-INSERT INTO `pds_core_user_groups` VALUES ('5', 'Demo', null);
 
 -- Create primary roles table a user can belong to.;
 CREATE TABLE `pds_core_user_roles` (
@@ -286,14 +264,13 @@ CREATE TABLE `pds_core_user_roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert primary roles table a user can belong to.;
-INSERT INTO `pds_core_user_roles` VALUES ('1', 'Super', null);
-INSERT INTO `pds_core_user_roles` VALUES ('2', 'Registered', null);
-INSERT INTO `pds_core_user_roles` VALUES ('4', 'Awaiting Confirmation', null);
-INSERT INTO `pds_core_user_roles` VALUES ('5', 'Guest', null);
-INSERT INTO `pds_core_user_roles` VALUES ('6', 'Disabled', null);
-INSERT INTO `pds_core_user_roles` VALUES ('7', 'Limited Admin', null);
-INSERT INTO `pds_core_user_roles` VALUES ('8', 'Branch Admin', null);
-INSERT INTO `pds_core_user_roles` VALUES ('9', 'Demo', null);
+INSERT INTO `pds_core_user_roles` VALUES ('1', 'Super Admin', null);
+INSERT INTO `pds_core_user_roles` VALUES ('2', 'Registered User', null);
+INSERT INTO `pds_core_user_roles` VALUES ('3', 'Awaiting Confirmation', null);
+INSERT INTO `pds_core_user_roles` VALUES ('4', 'Guest User', null);
+INSERT INTO `pds_core_user_roles` VALUES ('5', 'Disabled', null);
+INSERT INTO `pds_core_user_roles` VALUES ('6', 'Limited Admin', null);
+INSERT INTO `pds_core_user_roles` VALUES ('7', 'Branch Admin', null);
 
 -- Create security role permissions table.;
 CREATE TABLE `pds_core_user_role_permissions` (
@@ -305,7 +282,7 @@ CREATE TABLE `pds_core_user_role_permissions` (
 -- Insert default user permissions.;
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'readme');
 INSERT INTO pds_core_user_role_permissions VALUES ('2', 'readme');
-INSERT INTO pds_core_user_role_permissions VALUES ('5', 'readme');
+INSERT INTO pds_core_user_role_permissions VALUES ('4', 'readme');
 
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'admin');
 
@@ -314,8 +291,6 @@ INSERT INTO pds_core_user_role_permissions VALUES ('1', 'config-manager');
 
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'user-admin-list');
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'user-admin');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'group-admin-list');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'group-admin');
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'role-admin-list');
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'role-admin');
 INSERT INTO pds_core_user_role_permissions VALUES ('1', 'node-admin-list');

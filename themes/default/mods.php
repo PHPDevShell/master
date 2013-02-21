@@ -39,14 +39,9 @@ HTML;
 		return "{$title} - {$appname}";
 	}
 
-	public function role($role, $name)
+	public function role($name)
 	{
-		return "{$name}&nbsp;$role";
-	}
-
-	public function group($group, $name)
-	{
-		return "{$name}&nbsp;$group";
+		return "{$name}";
 	}
 
 	public function cssFileToHead($href, $media)
@@ -194,28 +189,23 @@ HTML;
 
             if (! empty($logouturl)) {
                 $logout = <<<HTML
-                    <a href="{$logouturl}" class="btn btn-danger options">{$logoutname}</a>
+                    <a href="{$logouturl}" class="btn btn-inverse options">{$logoutname}</a>
 HTML;
             } else {
                 $logout = '';
             }
 
         $HTML = <<<HTML
-            <div id="logged-in-info" class="form-actions">
-                <form>
-                    <fieldset>
-                        <legend>{$name}</legend>
-                        <p>
-                            {$prefs}
-                            {$logout}
-                        </p>
-                        <div class="divider"></div>
-                        <p>
-                            <span class="label label-success">{$role}</span>
-                            <span class="label label-info">{$group}</span>
-                        </p>
-                    </fieldset>
-                </form>
+
+            <div id="logged-in-info" class="form-actions"xmlns="http://www.w3.org/1999/html">
+                <span style="font-size: 15px; font-weight: bold;">{$name}</span><br>
+                <div class="label label-success">{$role}</div>
+                <div class="divider"></div>
+                <p>
+                    {$prefs}
+                    {$logout}
+                </p>
+                <div class="divider"></div>
             </div>
 HTML;
 
@@ -797,10 +787,13 @@ JS;
 				$forError .= "[name=\'{$field}\'],";
 				$forType = "[name=\'{$field}\']";
 			} else if ($error['type'] == 'errorElse') {
-				if ($field == 'FORM')
+				if ($field == 'FORM') {
 					$forType = "form";
-				else
-					$forType = $field;
+                } else {
+                    $error['type'] = 'error';
+                    $forError .= "[name=\'{$field}\'],";
+                    $forType = "[name=\'{$field}\']";
+                }
 			}
 
 			if ($error['type'] == 'error') {

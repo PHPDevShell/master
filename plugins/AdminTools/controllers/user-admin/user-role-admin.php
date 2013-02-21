@@ -51,6 +51,7 @@ class UserRoleAdmin extends PHPDS_controller
 
         $view->set('self_url', $this->navigation->selfUrl());
         $view->set('list_url', $this->navigation->buildUrl('role-admin-list'));
+        $view->set('delete_url', empty($crud->f->user_role_id) ? '' : $this->navigation->buildUrl('role-admin-list', 'delete-role=' . $crud->f->user_role_id));
         $view->set('user_role_id', $crud->f->user_role_id);
         $view->set('user_role_name', $crud->f->user_role_name);
         $view->set('user_role_note', $crud->f->user_role_note);
@@ -90,7 +91,7 @@ class UserRoleAdmin extends PHPDS_controller
         }
 
         if ($this->db->doesRecordExist('_db_core_user_roles', 'user_role_name', "{$crud->f->user_role_name}", 'user_role_id', "{$crud->f->user_role_id}") == true)
-            $crud->errorElse(sprintf(__('%s exists already.'), $crud->f->user_role_name));
+            $crud->errorElse(sprintf(__('%s exists already.'), $crud->f->user_role_name), 'user_role_name');
 
         if ($crud->ok()) {
             $crud->f->user_role_id = $this->db->invokeQuery('PHPDS_writeRoleQuery', $crud->f->user_role_id, $crud->f->user_role_name, $crud->f->user_role_note);

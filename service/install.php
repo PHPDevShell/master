@@ -152,7 +152,7 @@ function get_queries()
 	$query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDevShell_scripts_name_version', '" . $data['application_name'] . "', '');";
 
 	$query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDevShell_setting_admin_email', '" . $data['admin_email'] . "', '');";
-	$query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_users` VALUES ('1', 'Root User', '" . $data['admin_username'] . "', '" . $admin_password . "', '" . $data['admin_email'] . "', '1', '1', '" . $time . "', 'en', 'UTC', 'US');";
+	$query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_users` VALUES ('1', 'Root User', '" . $data['admin_username'] . "', '" . $admin_password . "', '" . $data['admin_email'] . "', '1', '" . $time . "', 'en', 'UTC', 'US');";
 
 	// Update version.
 	$query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_plugin_activation` VALUES ('AdminTools', 'install', '" . $db_version . "', '1');";

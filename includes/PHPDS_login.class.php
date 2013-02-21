@@ -70,9 +70,9 @@ interface iBaseLogin
 /**
  * This base class implements the fundations for an authentification plugin
  * It doesn't actually provides authentification (it will reject any request) but provides structure, cookie support ("remember me") and writing to the system log
- * 
+ *
  * Note: it doesn't in any deal with template or GUI, the auth plugin must do that
- * 
+ *
  * @author Jason Schoeman
  */
 class PHPDS_login extends PHPDS_dependant implements iBaseLogin
@@ -118,7 +118,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 
 	/**
 	 * Selects user details from provided cookie.
-	 * 
+	 *
 	 * @param varchar $cookie
 	 * @return array
 	 */
@@ -193,7 +193,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 	 * @author Jason Schoeman
 	 */
 	public function controlLogin()
-	{		
+	{
 		if (! empty($this->configuration['allow_remember']) && empty($_SESSION['user_id']) && isset($_COOKIE['pdspc']) && empty($_REQUEST['logout']) && empty($_POST['login'])) {
 			$this->lookupCookieLogin($_COOKIE['pdspc']);
 		} else
@@ -257,9 +257,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 		$user_display_name_db = $select_user_array['user_display_name'];
 		$user_email_db = $select_user_array['user_email'];
 		$user_id_db = $select_user_array['user_id'];
-		$user_group_db = $select_user_array['user_group'];
 		$user_role_db = $select_user_array['user_role'];
-		$user_group_name_db = $select_user_array['user_group_name'];
 		$user_role_name_db = $select_user_array['user_role_name'];
 		$user_language_db = $select_user_array['language'];
 		$user_region_db = $select_user_array['region'];
@@ -275,10 +273,8 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 		$_SESSION['user_email'] = $user_email_db;
 		$_SESSION['user_id'] = $user_id_db;
 		$_SESSION['user_name'] = $user_name_db;
-		$_SESSION['user_group'] = $user_group_db;
 		$_SESSION['user_role'] = $user_role_db;
 		$_SESSION['user_role_name'] = $user_role_name_db;
-		$_SESSION['user_group_name'] = $user_group_name_db;
 		$_SESSION['user_timezone'] = $user_timezone_db;
 
 		if (!empty($user_language_db)) {
@@ -325,10 +321,8 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 		unset($_SESSION['user_email']);
 		unset($_SESSION['user_id']);
 		unset($_SESSION['user_name']);
-		unset($_SESSION['user_group']);
 		unset($_SESSION['user_role']);
 		unset($_SESSION['user_display_name']);
-		unset($_SESSION['user_group_name']);
 		unset($_SESSION['user_role_name']);
 		unset($_SESSION['user_language']);
 		unset($_SESSION['user_timezone']);
@@ -367,8 +361,6 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 			$_SESSION['user_name'] = 'guest';
 			$_SESSION['user_display_name'] = 'Guest User';
 			$_SESSION['user_role_name'] = '';
-			$_SESSION['user_group_name'] = '';
-			$_SESSION['user_group'] = $settings_array['guest_group'];
 			$_SESSION['user_role'] = $settings_array['guest_role'];
 			$_SESSION['user_email'] = '';
 			$_SESSION['user_language'] = $conf['language'];

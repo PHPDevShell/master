@@ -4,18 +4,9 @@ class LOGIN_selectUserPersistentQuery extends PHPDS_query
 {
 	protected $sql = "
 		SELECT
-			t1.user_id, t1.user_display_name, t1.user_password, t1.user_name, t1.user_email, t1.user_group, t1.user_role, t1.language, t1.timezone as user_timezone, t1.region,
-			t2.user_group_name, t3.user_role_name
+			t1.user_id, t1.user_display_name, t1.user_password, t1.user_name, t1.user_email, t1.user_role, t1.language, t1.timezone as user_timezone, t1.region
 		FROM
 			_db_core_users t1
-		LEFT JOIN
-			_db_core_user_groups t2
-		ON
-			t1.user_group = t2.user_group_id
-		LEFT JOIN
-			_db_core_user_roles t3
-		ON
-			t1.user_role = t3.user_role_id
 		WHERE
 			t1.user_id = '%s'
 	";

@@ -74,19 +74,6 @@ class PHPDS_user extends PHPDS_dependant
 		return $this->db->invokeQuery('USER_belongsToRoleQuery', $user_id, $user_role);
 	}
 
-    /**
-     * Check if user belongs to given group.
-     *
-     * @param integer $user_id
-     * @param integer $user_role
-     * @return boolean
-     * @author Jason Schoeman <titan@phpdevshell.org>
-     */
-    public function belongsToGroup($user_id = false, $user_group=null)
-    {
-        return $this->db->invokeQuery('USER_belongsToGroupQuery', $user_id, $user_group);
-    }
-
 	/**
 	 * Creates a query to extend a role query, it will return false if user is root so everything can get listed.
 	 * This is meant to be used inside an existing role query.
@@ -264,7 +251,6 @@ class PHPDS_user extends PHPDS_dependant
         $conf['user_id']           = empty($_SESSION['user_id']) ? 0 : $_SESSION['user_id'];
         $conf['user_name']         = empty($_SESSION['user_name']) ? '' : $_SESSION['user_name'];
         $conf['user_display_name'] = empty($_SESSION['user_display_name']) ? '' : $_SESSION['user_display_name'];
-        $conf['user_group']        = empty($_SESSION['user_group']) ? 0 : $_SESSION['user_group'];
         $conf['user_role']         = empty($_SESSION['user_role']) ? 0 : $_SESSION['user_role'];
         $conf['user_email']        = empty($_SESSION['user_email']) ? '' : $_SESSION['user_email'];
         $conf['user_language']     = empty($_SESSION['user_language']) ? '' : $_SESSION['user_language'];

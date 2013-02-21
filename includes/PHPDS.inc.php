@@ -508,7 +508,6 @@ class PHPDS
 		// Set user session discription settings //////////////////////////////
 		$this->configuration['user_display_name'] = ! isset($_SESSION['user_display_name']) ? '' : $_SESSION['user_display_name'];
 		$this->configuration['user_role_name'] = ! isset($_SESSION['user_role_name']) ? '' : $_SESSION['user_role_name'];
-		$this->configuration['user_group_name'] = ! isset($_SESSION['user_group_name']) ? '' : $_SESSION['user_group_name'];
 
 		// Set default plugin language files //////////////////////////////////
 		$this->PHPDS_core()->loadDefaultPluginLanguage(); /////////////////////

@@ -556,26 +556,6 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Sets template group.
-     *
-     * @author Jason Schoeman
-     */
-    public function outputGroup()
-    {
-        // Check if output should be modified.
-        if ($this->modifyOutputGroup == false) {
-            // Set active role.
-            $active_group = '';
-            if ($this->user->isLoggedIn())
-                $active_group = $this->mod->group(___('Group'), $this->configuration['user_group_name']);
-            // Output active info.
-            print $active_group;
-        } else {
-            print $this->modifyOutputGroup;
-        }
-    }
-
-    /**
      * This returns/prints an image of the current script running.
      *
      * @param boolean Default is false, if set true, the heading will return instead of print.
@@ -1415,8 +1395,7 @@ class PHPDS_template extends PHPDS_dependant
             $HTML = $mod->loggedInInfo(
                 $configuration['user_display_name'],
                 $logouturl, $logoutname,
-                $mod->role(___('Role'), $configuration['user_role_name']),
-                $mod->group(___('Group'), $configuration['user_group_name']),
+                $mod->role($configuration['user_role_name']),
                 $nav->navigation);
         } else {
             $HTML = $this->factory('StandardLogin')->loginForm($return);

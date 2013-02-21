@@ -120,7 +120,8 @@ class crud extends PHPDS_dependant
 	}
 
 	/**
-	 * Ater each validation, add this as the condition to report the error and its message.
+	 * After each validation, add this as the condition to report the error and its message.
+     *
 	 * @param string $error_message
 	 * @param string $field This should be the field name, else it will auto detect.
 	 * @author Jason Schoeman
@@ -135,6 +136,7 @@ class crud extends PHPDS_dependant
 
 	/**
 	 * For a general form error, this can be used to halt the ok process.
+     *
 	 * @param string $error_message
 	 * @param string $id This should be the element id name, else it will use the form tag.
 	 * @author Jason Schoeman

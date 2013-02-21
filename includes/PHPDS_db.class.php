@@ -519,20 +519,6 @@ class PHPDS_db extends PHPDS_dependant
 	}
 
 	/**
-	 * Check if user belongs to given group. Returns true if user belongs to user group.
-	 *
-	 * @deprecated
-	 * @param integer $user_id
-	 * @param integer $user_group
-	 * @return boolean Returns true if user belongs to user group.
-	 * @author Jason Schoeman <titan@phpdevshell.org>
-	 */
-	public function belongsToGroup($user_id = false, $user_group)
-	{
-		return $this->user->belongsToGroup($user_id, $user_group);
-	}
-
-	/**
 	 * Creates a query to extend a role query, it will return false if user is root so everything can get listed.
 	 * This is meant to be used inside an existing role query.
 	 *

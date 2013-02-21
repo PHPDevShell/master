@@ -139,14 +139,8 @@ class GeneralSettings extends PHPDS_controller
 		// Load region iana repository.
 		$iana_region_array = $iana->readIanaRegistry('region');
 
-		// Query available users.
-		$get_user_db = $this->db->invokeQuery('PHPDS_getUserDbQuery', $this->configuration['user_group']);
-
 		// Query available roles.
 		$user_roles_db = $this->db->invokeQuery('PHPDS_userRolesDbQuery');
-
-		// Query available groups.
-		$user_groups_db = $this->db->invokeQuery('PHPDS_userGroupsDbQuery');
 
 		// Query available node items.
 		$node_db = $this->db->invokeQuery('PHPDS_nodeDbQuery');
