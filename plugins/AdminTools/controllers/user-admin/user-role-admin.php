@@ -15,6 +15,7 @@ class UserRoleAdmin extends PHPDS_controller
 	 */
 	public function execute()
 	{
+        sleep(4);
 		/* @var $crud crud */
 		$crud = $this->factory('crud');
         $this->crud = $crud;

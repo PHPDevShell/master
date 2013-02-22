@@ -14,7 +14,6 @@ class UserRoleAdminList extends PHPDS_controller
 	 */
 	public function execute()
 	{
-        sleep(3);
         $this->template->heading(__('Access Roles'));
         $this->remoteDeleteRole();
 		$this->view($this->db->invokeQuery('PHPDS_readRoleQuery'));

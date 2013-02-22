@@ -1,6 +1,6 @@
 <script type="text/javascript">
     $(document).ready(function () {
-        $("table").getAjaxDelete();
+        $("tbody").getAjaxDeleteClick();
     });
 </script>
 <div class="row-fluid">
@@ -22,13 +22,13 @@
                         {{user_role_id}}
                     </td>
                     <td>
-                        {{{translated_role_name}}}
+                        <a href="{{edit_role_url}}" class="click-elegance">{{translated_role_name}}</a>
                     </td>
                     <td>
                         {{user_role_note}}
                     </td>
                     <td class="tr">
-                        {{{delete_role}}}
+                        <a href="{{delete_role_url}}" class="btn btn-mini get-ajax-delete-click"><i class="icon-remove"></i></a>
                     </td>
                 </tr>
             {{/RESULTS}}

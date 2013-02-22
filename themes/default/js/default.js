@@ -61,14 +61,12 @@ function spinner (size) {
 function PHPDS_documentReady (root) {
     $(document).ready(function() {
         if (!root) root = $('BODY');
-        $("#bg", root).fadeTo(0, 0.3).fadeTo('slow', 1);
-        $("form.click-elegance").submit(function () {
-            $("#bg").fadeTo('slow', 0.3, function () {
-                $(".alert").slideUp('fast');
-                $("#ajax-loader-art").fadeIn('fast');
-            });
+        $("#bg").on('click', "button", function () {
+            var item = this;
+            $(item).addClass("disabled");
+            $("i", item).removeClass('icon-ok').append(spinner());
         });
-        $("#nav a, a.click-elegance, button.click-elegance").not('#login-url,.grand-parent a').click(function () {
+        $("#nav a, a.click-elegance").not('#login-url, a.dropdown-toggle').click(function () {
             $("#bg, .alert").fadeTo('slow', 0.3, function () {
                 $(".alert").slideUp('fast');
                 $("#ajax-loader-art").fadeIn('fast');
@@ -83,32 +81,37 @@ function PHPDS_documentReady (root) {
 (function ($) {
     $.fn.confirmDeleteClick = function () {
         var bg = this;
-        bg.on('click', ".first-click", function () {
+        bg.on('click', ".confirm-delete-click", function () {
             var first = this;
-            $(first).removeClass("first-click btn-warning").addClass("ok-click btn-danger click-elegance");
+            $(first).removeClass("confirm-delete-click btn-warning").addClass("pass-delete-click btn-danger click-elegance");
             return false;
         });
-        bg.on('click', ".ok-click", function () {
+        bg.on('click', ".pass-delete-click", function () {
             var item = this;
             $(item).addClass("disabled");
+            $("#bg, .alert").fadeTo('slow', 0.3, function () {
+                $(".alert").slideUp('fast');
+                $("#ajax-loader-art").fadeIn('fast');
+            });
         });
     }
 }(jQuery));
 
 (function ($) {
-    $.fn.getAjaxDelete = function () {
+    $.fn.getAjaxDeleteClick = function (size) {
+        size = typeof size !== 'undefined' ? size : 15;
         var bg = this;
-        bg.on('click', ".first-click", function () {
+        bg.on('click', ".get-ajax-delete-click", function () {
             var first = this;
-            $(first).removeClass("first-click").addClass("ajax-click btn-danger").parents("tr").addClass("error");
+            $(first).removeClass("get-ajax-delete-click").addClass("pass-ajax-delete-click btn-danger").parents("tr").addClass("error");
             $("i", first).removeClass("icon-remove").addClass("icon-trash icon-white");
             return false;
         });
-        bg.on('click', ".ajax-click", function () {
+        bg.on('click', ".pass-ajax-delete-click", function () {
             var item = this;
             var url = $(item).attr('href');
             $(item).addClass("disabled");
-            $("i", item).removeClass("icon-trash").append(spinner(15));
+            $("i", item).removeClass("icon-trash").append(spinner(size));
             $.get(url, function () {
                 $(item).parents("tr").fadeOut('slow');
             });

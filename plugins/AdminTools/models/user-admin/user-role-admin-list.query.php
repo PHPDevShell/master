@@ -67,9 +67,10 @@ class PHPDS_readRoleQuery extends PHPDS_query
 
 			$RESULTS['list'][] = array(
 				'user_role_id' => $user_role_id,
-				'translated_role_name' => '<a href="' . $page_edit . $user_role_id . '" class="click-elegance">' . $translated_role_name . '</a>',
+				'translated_role_name' => $translated_role_name,
 				'user_role_note' => $user_role_note,
-				'delete_role' => '<a href="' . $page_delete . $user_role_id . '" class="btn btn-mini first-click"><i class="icon-remove"></i></a>'
+				'edit_role_url' => $page_edit . $user_role_id,
+				'delete_role_url' => $page_delete . $user_role_id
 			);
 		}
 		if (! empty($RESULTS['list'])) {

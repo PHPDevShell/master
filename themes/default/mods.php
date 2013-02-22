@@ -537,10 +537,10 @@ HTML;
 				$url = $mr['href'];
 			}
 		}
-		($mr['new_window'] == 1) ? $target = '_blank' : $target = '_self';
-		$extra = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
+        $target = ($mr['new_window'] == 1) ? 'target="_blank"' : '';
+		$extra  = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
 		return <<<HTML
-				<a tabindex="-1" href="{$url}" target="{$target}" {$extra} {$noclick}>{$mr['node_name']}</a>
+				<a tabindex="-1" href="{$url}" {$target} {$extra} {$noclick}>{$mr['node_name']}</a>
 HTML;
 	}
 
@@ -696,7 +696,7 @@ HTML;
 						  url: "{$widget_url}",
 						  dataType: 'html',
 						  {$options}
-						  data: "widget=true",
+						  data: 'widget=true',
 						  beforeSend: function() {
 							 $("#{$element_id}").append('<img id="loading_{$element_id}" src="themes/cloud/images/widget-loader.gif" title="{$text}" alt="{$text}" />');
 						  },
@@ -957,7 +957,7 @@ HTML;
                         var item = this;
                         var id = $(item).attr('data-tag-delete');
                         $(item).addClass("disabled");
-                        $("i", item).removeClass('icon-minus icon-white').append(spinner(15));
+                        $("i", item).removeClass('icon-minus').append(spinner());
                         $.get("{$delete_url}", function () {
                             $(item).parent().parent().fadeOut('slow');
                         });
