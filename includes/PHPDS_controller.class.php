@@ -166,11 +166,23 @@ class PHPDS_controller extends PHPDS_dependant
 			} else {
 				$result = $this->runAJAX();
 			}
+            $this->fetchAjaxNotif();
 		} else {
 			$result = $this->runRegular();
 		}
 		return $result;
 	}
+
+    /**
+     * Will send all "TYPE messages" passed to notif to header for processing.
+     */
+    public function fetchAjaxNotif ()
+    {
+        $json_notifs = $this->notif->fetchAsJson();
+        if (! empty($json_notifs)) {
+            header("ajaxResponseMessage: " . $json_notifs);
+        }
+    }
 
 	/**
 	 * Run a controller when called with ajax

@@ -112,8 +112,17 @@ function PHPDS_documentReady (root) {
             var url = $(item).attr('href');
             $(item).addClass("disabled");
             $("i", item).removeClass("icon-trash").append(spinner(size));
-            $.get(url, function () {
+            $.get(url, function (data, textStatus, request) {
                 $(item).parents("tr").fadeOut('slow');
+                var json = request.getResponseHeader('ajaxResponseMessage');
+                if (json) {
+                    var mobj = jQuery.parseJSON(json);
+
+                    if (mobj.type == 'error') {
+                        $('#notify').append('<div class="alert fade in"><button type="button" class="close" data-dismiss="alert">&times;</button>' + mobj.message + '</div>');
+                        $('.alert').delay(200).fadeOut(1500);
+                    }
+                }
             });
             return false;
         });
