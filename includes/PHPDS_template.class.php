@@ -959,6 +959,9 @@ class PHPDS_template extends PHPDS_dependant
                         case 'info':
                             $title = ___('Info');
                             break;
+                        case 'error':
+                            $title = ___('Error');
+                            break;
                         case 'warning':
                             $title = ___('Warning');
                             break;

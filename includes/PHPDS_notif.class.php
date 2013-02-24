@@ -45,9 +45,18 @@ class PHPDS_notif extends PHPDS_dependant
     public function fetchAsJson($priority = PHPDS_notif::MESSAGE)
     {
         $notifications = $this->fetch();
-        $notifications = json_encode($notifications);
-
-        return $notifications;
+        if (is_array($notifications)) {
+            foreach($notifications as $notif) {
+                if (! empty($notif[0]) && !empty($notif[1])) {
+                    $notif_new_array[] = array('type'=>$notif[0], 'message'=>$notif[1]);
+                }
+            }
+        }
+        if (! empty($notif_new_array)) {
+            return json_encode($notif_new_array);
+        } else {
+            return false;
+        }
     }
 
 	public function __destruct()

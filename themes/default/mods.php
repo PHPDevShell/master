@@ -1092,6 +1092,7 @@ HTML;
 			// error
 			case 'warning':
 			case 'critical':
+			case 'error':
 				$notify_type = 'alert-error';
                 $fadeout = 0;
 			break;

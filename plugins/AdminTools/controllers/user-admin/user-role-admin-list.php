@@ -38,7 +38,6 @@ class UserRoleAdminList extends PHPDS_controller
     private function deleteRole ()
     {
         $iddelete = $this->G('delete-role');
-
         // Delete role.
         $deleted_role = $this->db->deleteQuick('_db_core_user_roles', 'user_role_id',  $iddelete, 'user_role_name');
         $this->db->deleteQuick('_db_core_user_role_permissions', 'user_role_id',  $iddelete);
@@ -61,10 +60,7 @@ class UserRoleAdminList extends PHPDS_controller
     public function viaAJAX()
     {
         if ($this->G('delete-role')) {
-            // return ($this->deleteRole()) ? 'true' : 'false';
-            $this->template->ok('So smooth, item deleted.');
-            $this->template->warning('So smooth, so cool.');
-            return 'true';
+            return ($this->deleteRole()) ? 'success' : 'fail';
         }
     }
 }

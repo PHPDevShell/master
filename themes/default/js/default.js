@@ -61,13 +61,11 @@ function spinner (size) {
 function PHPDS_documentReady (root) {
     $(document).ready(function() {
         if (!root) root = $('BODY');
-        $("#bg").on('click', "button", function () {
-            var item = this;
-            $(item).addClass("disabled");
-            $("i", item).removeClass('icon-ok').append(spinner());
-        });
-        $("#nav a, a.click-elegance").not('#login-url, a.dropdown-toggle').click(function () {
-            $("#bg, .alert").fadeTo('slow', 0.3, function () {
+        /** Gives an elegant effect upon load, remove this line if you font like it */
+        $("#bg", root).fadeTo(0, 0.3).fadeTo('fast', 1);
+        /****************************************************************************/
+        $("#nav a, button.click-elegance, a.click-elegance").not('#login-url, a.dropdown-toggle').click(function () {
+            $("#bg, .alert").fadeTo('fast', 0.3, function () {
                 $(".alert").slideUp('fast');
                 $("#ajax-loader-art").fadeIn('fast');
             });
@@ -88,6 +86,7 @@ function PHPDS_documentReady (root) {
         });
         bg.on('click', ".pass-delete-click", function () {
             var item = this;
+            if ($(item).hasClass('disabled')) return false;
             $(item).addClass("disabled");
             $("#bg, .alert").fadeTo('slow', 0.3, function () {
                 $(".alert").slideUp('fast');
@@ -97,34 +96,74 @@ function PHPDS_documentReady (root) {
     }
 }(jQuery));
 
+function ajaxMessage (request, delaytime, fadeout) {
+    delaytime = typeof delaytime !== 'undefined' ? delaytime : 500;
+    fadeout = typeof fadeout !== 'undefined' ? fadeout : 1000;
+    var json = request.getResponseHeader('ajaxResponseMessage');
+    if (json) {
+        var mobj = jQuery.parseJSON(json);
+        for (var i = 0; i < mobj.length; i++) {
+            if (mobj[i].type) {
+                var notify_type, id_tmp;
+                var kill = true;
+                switch (mobj[i].type) {
+                    case "ok":
+                        notify_type = 'alert-success';
+                        break;
+
+                    case "info":
+                        notify_type = 'alert-info';
+                        break;
+
+                    case "warning":
+                    case "error":
+                        notify_type = 'alert-error';
+                        break;
+
+                    case "critical":
+                        notify_type = 'alert-error';
+                        kill = false;
+                        break;
+
+                    default:
+                        notify_type = 'alert-notice';
+                        kill = false;
+                }
+                var notifyjq = $('#notify');
+                notifyjq.append('<div class="alert ' + notify_type + ' fade in"><button type="button" class="close" data-dismiss="alert">&times;</button>' + mobj[i].message + '</div>');
+                if (kill) {
+                    $('.' + notify_type, notifyjq).delay(delaytime).fadeOut(fadeout);
+                }
+            }
+        }
+    }
+}
+
 (function ($) {
     $.fn.getAjaxDeleteClick = function (size) {
         size = typeof size !== 'undefined' ? size : 15;
-        var bg = this;
-        bg.on('click', ".get-ajax-delete-click", function () {
-            var first = this;
-            $(first).removeClass("get-ajax-delete-click").addClass("pass-ajax-delete-click btn-danger").parents("tr").addClass("error");
-            $("i", first).removeClass("icon-remove").addClass("icon-trash icon-white");
-            return false;
-        });
-        bg.on('click', ".pass-ajax-delete-click", function () {
-            var item = this;
-            var url = $(item).attr('href');
-            $(item).addClass("disabled");
-            $("i", item).removeClass("icon-trash").append(spinner(size));
-            $.get(url, function (data, textStatus, request) {
-                $(item).parents("tr").fadeOut('slow');
-                var json = request.getResponseHeader('ajaxResponseMessage');
-                if (json) {
-                    var mobj = jQuery.parseJSON(json);
-
-                    if (mobj.type == 'error') {
-                        $('#notify').append('<div class="alert fade in"><button type="button" class="close" data-dismiss="alert">&times;</button>' + mobj.message + '</div>');
-                        $('.alert').delay(200).fadeOut(1500);
-                    }
-                }
+        return this.each(function () {
+            var bg = $(this);
+            bg.on('click', ".get-ajax-delete-click", function () {
+                var first = this;
+                $(first).removeClass("get-ajax-delete-click").addClass("pass-ajax-delete-click btn-danger").parents("tr").addClass("error");
+                $("i", first).removeClass("icon-remove").addClass("icon-trash icon-white");
+                return false;
             });
-            return false;
+            bg.on('click', ".pass-ajax-delete-click", function () {
+                var item = this;
+                var url = $(item).attr('href');
+                if ($(item).hasClass('disabled')) return false;
+                $(item).addClass("disabled");
+                $("i", item).removeClass("icon-trash").append(spinner(size));
+                $.get(url, function (data, textStatus, request) {
+                    if (data === 'success') {
+                        $(item).parents("tr").fadeOut('slow');
+                    }
+                    ajaxMessage(request);
+                });
+                return false;
+            });
         });
     }
 }(jQuery));
