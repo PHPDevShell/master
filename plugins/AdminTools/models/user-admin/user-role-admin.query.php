@@ -19,6 +19,26 @@ class PHPDS_readRoleUserQuery extends PHPDS_query
 }
 
 /**
+ * Check if role name already exists.
+ * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
+ *
+ */
+class PHPDS_readRoleNameQuery extends PHPDS_query
+{
+    protected $sql = "
+		SELECT
+			user_role_id
+		FROM
+			_db_core_user_roles
+		WHERE
+			user_role_name = '%s'
+	    AND
+	        user_role_id != %u
+		";
+    protected $singleRow = true;
+}
+
+/**
  * User Role Admin - Read Role Node Permission.
  * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
  *

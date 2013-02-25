@@ -109,11 +109,14 @@ class UserRoleAdmin extends PHPDS_controller
     public function viaAJAX()
     {
         if ($this->G('delete-tag')) {
-            $this->tagger->tagDelete($this->G('delete-tag'));
-            $this->template->ok(sprintf("Tag id %u deleted", $this->G('delete-tag')));
-            return 'true';
-        } else {
-            return 'false';
+            if ($this->tagger->tagDelete($this->G('delete-tag'))) {
+                $this->template->ok(sprintf("Tag id %u deleted", $this->G('delete-tag')));
+                return 'success';
+            } else {
+                return 'fail';
+            }
+        } else if ($this->P('user_role_name_watch')) {
+            return ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'), $this->crud->user_role_id)) ? 'true' : 'false';
         }
     }
 }

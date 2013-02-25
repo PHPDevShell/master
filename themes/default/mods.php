@@ -537,10 +537,10 @@ HTML;
 				$url = $mr['href'];
 			}
 		}
-        $target = ($mr['new_window'] == 1) ? 'target="_blank"' : '';
-		$extra  = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
+        $target    = ($mr['new_window'] == 1) ? 'target="_blank"' : '';
+		$extra     = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
 		return <<<HTML
-				<a tabindex="-1" href="{$url}" {$target} {$extra} {$noclick}>{$mr['node_name']}</a>
+				<a tabindex="-1" href="{$url}" class="{$class}" {$target} {$extra} {$noclick}>{$mr['node_name']}</a>
 HTML;
 	}
 

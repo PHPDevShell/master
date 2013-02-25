@@ -96,7 +96,7 @@ class PHPDS_legacyConnector extends PHPDS_dependant implements iPHPDS_dbConnecto
 	protected function applyConfig($db_config = '')
 	{
 		$db = $this->db;
-		
+
 		// Retrieve all the database settings
 		$db_settings = PU_GetDBSettings($this->configuration, $db_config);
 
@@ -121,7 +121,7 @@ class PHPDS_legacyConnector extends PHPDS_dependant implements iPHPDS_dbConnecto
 	/**
 	 * Connect to the database server (compatibility method)
 	 *
-	 * @date				20100219
+	 * @date	    20100219
 	 * @version		1.0
 	 * @author		greg
 	 * @see stable/phpdevshell/includes/PHPDS_db_connector#connect()
@@ -130,7 +130,7 @@ class PHPDS_legacyConnector extends PHPDS_dependant implements iPHPDS_dbConnecto
 	{
 		// Apply database config settings to this instance of the connector
 		$this->applyConfig($db_config);
-		
+
 		try {
 			if ($this->dbPersistent == true) {
 				$this->link = mysql_pconnect($this->dbHost, $this->dbUsername, $this->dbPassword);
@@ -155,7 +155,7 @@ class PHPDS_legacyConnector extends PHPDS_dependant implements iPHPDS_dbConnecto
 
 	/**
 	 * Actually send the query to MySQL (through $db)
-	 * 
+	 *
 	 * May throw a PHPDS_databaseException
 	 *
 	 * @date		20100219
@@ -341,17 +341,17 @@ class PHPDS_legacyConnector extends PHPDS_dependant implements iPHPDS_dbConnecto
 			$this->query("ROLLBACK");
 		}
 	}
-	
-	
+
+
 	/**
 	 * magic method to get read-only access to various data
-	 * 
+	 *
 	 * @since 3.2.1
 	 * @version 1.0
 	 * @author greg <greg@phpdevshell.org>
-	 * 
+	 *
 	 * @date 20120611 (v1.0) (greg) added
-	 * 
+	 *
 	 * @param string $name name for the parameter to get (ie. "DSN", "Charset", "Host", ...)
 	 */
 	public function __get($name)
