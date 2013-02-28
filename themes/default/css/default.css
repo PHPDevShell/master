@@ -147,6 +147,26 @@ li .login-actions:after {
     display: none;
 }
 
-input.error {
-    text-decoration:line-through;
+input.error, textarea.error {
+    text-decoration: underline;
+    color: #b94a48;
+    border-color: #b94a48;
+}
+
+input.success, textarea.success {
+    text-decoration: underline;
+    color: #468847;
+    border-color: #468847;
+}
+
+input.warning, textarea.warning {
+    text-decoration: underline;
+    color: #c09853;
+    border-color: #c09853;
+}
+
+input.info, textarea.info {
+    text-decoration: underline;
+    color: #3a87ad;
+    border-color: #3a87ad;
 }

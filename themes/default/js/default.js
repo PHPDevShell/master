@@ -215,34 +215,25 @@ function initPage() {
                 var identifier = fields.attr('name') + '_watch';
                 var tmp_tag = identifier + '_ajaxtag';
                 var fieldwatch = {};
-                fields.keyup(function () {
-                    if (fields.length < 3) {
-                        $("i." + tmp_tag).remove();
-                        if (fields.parent("div").length) {
-                            fields.parent("div").removeClass('control-group error success');
-                        }
-                    }
-                });
-                $(fields).typeWatch(
-                    {
+                $(fields).typeWatch({
                     callback: function(value) {
                         fieldwatch[identifier] = value;
                         $.post(url, fieldwatch, function (data, textStatus, request) {
                             $("i." + tmp_tag).remove();
-                            if (fields.parent("div").length) {
-                                fields.parent("div").removeClass('control-group error success');
-                            } else {
-                                fields.wrap("<div />");
-                            }
-                            /* if (fieldvalue == value); */
+                            fields.removeClass('error success');
                             if (data == 'true' && fieldvalue != value) {
-                                fields.parent("div").addClass('control-group error');
+                                fields.addClass('error');
                                 fields.after('<i class="' + tmp_tag + ' icon-remove pull-right"></i>');
                             } else {
-                                fields.parent("div").addClass('control-group success');
+                                fields.addClass('success');
                                 fields.after('<i class="' + tmp_tag + ' icon-ok pull-right"></i>');
                             }
+                            $(fields).focus();
                         });
+                    },
+                    elsedo: function(value) {
+                        $("i." + tmp_tag).remove();
+                        fields.removeClass('error success');
                     }
                 });
             });
@@ -366,20 +357,23 @@ function initPage() {
             var options = jQuery.extend({
                 wait: 500,
                 callback: function() { },
-                highlight: true,
+                elsedo: function() { },
+                highlight: false,
                 captureLength: 3,
                 inputTypes: _supportedInputTypes
             }, o);
 
             function checkElement(timer, override) {
                 var value = jQuery(timer.el).val();
-
                 // Fire if text >= options.captureLength AND text != saved text OR if override AND text >= options.captureLength
                 if ((value.length >= options.captureLength && value.toUpperCase() != timer.text)
                     || (override && value.length >= options.captureLength))
                 {
                     timer.text = value.toUpperCase();
                     timer.cb.call(timer.el, value);
+                } else {
+                    timer.text = value.toUpperCase();
+                    timer.ed.call(timer.el, value);
                 }
             };
 
@@ -392,16 +386,14 @@ function initPage() {
                         timer: null,
                         text: jQuery(elem).val().toUpperCase(),
                         cb: options.callback,
+                        ed: options.elsedo,
                         el: elem,
                         wait: options.wait
                     };
 
                     // Set focus action (highlight)
                     if (options.highlight) {
-                        jQuery(elem).focus(
-                            function() {
-                                this.select();
-                            });
+                        jQuery(elem).select();
                     }
 
                     // Key watcher / clear and reset the timer
