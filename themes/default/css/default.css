@@ -146,3 +146,7 @@ li .login-actions:after {
 .quickfilter-no-results {
     display: none;
 }
+
+input.error {
+    text-decoration:line-through;
+}

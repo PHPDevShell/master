@@ -116,7 +116,7 @@ class UserRoleAdmin extends PHPDS_controller
                 return 'fail';
             }
         } else if ($this->P('user_role_name_watch')) {
-            return ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'), $this->crud->user_role_id)) ? 'true' : 'false';
+            return ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'))) ? 'true' : 'false';
         }
     }
 }

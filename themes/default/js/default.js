@@ -212,21 +212,35 @@ function initPage() {
                 var fields = $(this);
                 var url = $(location).attr('href');
                 var fieldvalue = fields.attr('value');
+                var identifier = fields.attr('name') + '_watch';
+                var tmp_tag = identifier + '_ajaxtag';
                 var fieldwatch = {};
-                $(fields).typeWatch({
+                fields.keyup(function () {
+                    if (fields.length < 3) {
+                        $("i." + tmp_tag).remove();
+                        if (fields.parent("div").length) {
+                            fields.parent("div").removeClass('control-group error success');
+                        }
+                    }
+                });
+                $(fields).typeWatch(
+                    {
                     callback: function(value) {
-                        fieldwatch[fields.attr('name') + '_watch'] = value;
+                        fieldwatch[identifier] = value;
                         $.post(url, fieldwatch, function (data, textStatus, request) {
-                            /* if (fieldvalue == value); */
-                            fields.parents("p").removeClass("control-group success error");
-                            fields.parents("p");
-                            fields.detach("i");
-                            if (data == 'true') {
-                                fields.parents("p").removeClass("control-group success").addClass("control-group error");
-                                fields.after('&nbsp;<i class="icon-remove pull-right"></i>');
+                            $("i." + tmp_tag).remove();
+                            if (fields.parent("div").length) {
+                                fields.parent("div").removeClass('control-group error success');
                             } else {
-                                fields.parents("p").removeClass("control-group error").addClass("control-group success");
-                                fields.after('&nbsp;<i class="icon-ok pull-right"></i>');
+                                fields.wrap("<div />");
+                            }
+                            /* if (fieldvalue == value); */
+                            if (data == 'true' && fieldvalue != value) {
+                                fields.parent("div").addClass('control-group error');
+                                fields.after('<i class="' + tmp_tag + ' icon-remove pull-right"></i>');
+                            } else {
+                                fields.parent("div").addClass('control-group success');
+                                fields.after('<i class="' + tmp_tag + ' icon-ok pull-right"></i>');
                             }
                         });
                     }
@@ -350,7 +364,7 @@ function initPage() {
 
             // Options
             var options = jQuery.extend({
-                wait: 750,
+                wait: 500,
                 callback: function() { },
                 highlight: true,
                 captureLength: 3,
