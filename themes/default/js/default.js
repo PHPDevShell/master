@@ -157,9 +157,9 @@ function initPage() {
                                 break;
 
                             default:
-                                notify_type = '';
+                                notify_type = 'error';
                         }
-                        $('name["'+ this.field +'"]').addClass(notify_type);
+                        $('[name="'+ this.field +'"]').addClass(notify_type);
                     }
                 }
             });
