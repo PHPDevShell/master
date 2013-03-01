@@ -1,3 +1,4 @@
+
 /**
  * Call a PHP function
  *
@@ -63,6 +64,25 @@ function destroyPage() {
  * @param root DOM object to assign.
  */
 function PHPDS_documentReady (root) {
+    $(document).ajaxError(function(e, jqXHR, settings, exception) {
+        var url = $(location).attr('href');
+        if(jqXHR.status == 401) {
+            location.href = url;
+            throw new Error('Unauthorized');
+        }
+        if(jqXHR.status == 403) {
+            location.href = url;
+            throw new Error('Login Required');
+        }
+        if(jqXHR.status == 404) {
+            location.href = url;
+            throw new Error('Page not found');
+        }
+        if(jqXHR.status == 418) {
+            location.href = url;
+            throw new Error('Spam detected');
+        }
+    });
     $(document).ready(function() {
         if (!root) root = $('BODY');
         $.pronto();
@@ -75,10 +95,33 @@ function PHPDS_documentReady (root) {
 
 function initPage() {
     // bind events and initialize plugins
-
     /** Gives an elegant effect upon load, remove this line if you font like it */
     $("#bg").fadeTo(0, 0.3).fadeTo('slow', 1);
     /****************************************************************************/
+}
+
+    (function ($) {
+        $.fn.serializeObject = function(extendArray)
+        {
+            var o = {};
+            if (extendArray !== undefined) {
+                var name   = $(extendArray).attr('name');
+                o[name]    = $(extendArray).val();
+            }
+            var a = this.serializeArray();
+            $.each(a, function() {
+                if (o[this.name] !== undefined) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
+                }
+            });
+            return o;
+        };
+    })(jQuery);
 
     (function ($) {
         $.fn.confirmDeleteClick = function () {
@@ -99,6 +142,29 @@ function initPage() {
             });
         }
     })(jQuery);
+
+    function ajaxInputError (request) {
+        var json = request.getResponseHeader('ajaxInputErrorMessage');
+        if (json) {
+            var mobj = jQuery.parseJSON(json);
+            $.each(mobj, function() {
+                if (this.type) {
+                    if (this.type) {
+                        var notify_type;
+                        switch (this.type) {
+                            case "error":
+                                notify_type = 'error';
+                                break;
+
+                            default:
+                                notify_type = '';
+                        }
+                        $('name["'+ this.field +'"]').addClass(notify_type);
+                    }
+                }
+            });
+        }
+    }
 
     function ajaxMessage (request, delaytime, fadeout) {
         delaytime = typeof delaytime !== 'undefined' ? delaytime : 500;
@@ -436,7 +502,7 @@ function initPage() {
 
         };
     })(jQuery);
-}
+
 /*
  * Pronto Plugin
  * @author Ben Plum

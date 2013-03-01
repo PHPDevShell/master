@@ -154,7 +154,7 @@ class PHPDS_controller extends PHPDS_dependant
 	public function run()
 	{
 		(is_object($this->security)) ? $this->security->securityIni() : exit('Access Denied!');
-
+        $this->onLoad();
 		$result = null;
 		if (PU_isAJAX ()) {
 			/**
@@ -301,4 +301,12 @@ class PHPDS_controller extends PHPDS_dependant
 	{
 		// Your code here
 	}
+
+    /**
+     * This method will always load, its almost like the construct method but loads at a later stage so that post and other data can be read.
+     */
+    public function onLoad()
+    {
+        // Your code here
+    }
 }
