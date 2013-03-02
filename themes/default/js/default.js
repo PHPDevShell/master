@@ -52,7 +52,7 @@ function PHPDS_remoteCall(functionName, params, extParams) {
 
 function spinner (size) {
     size = typeof size !== 'undefined' ? size : 15;
-    return '<img src="themes/default/images/loader.gif" width="' + size + '" height="' + size + '" />';
+    return '<img class="ajax-spinner-image" src="themes/default/images/loader.gif" width="' + size + '" height="' + size + '" />';
 }
 
 function destroyPage() {

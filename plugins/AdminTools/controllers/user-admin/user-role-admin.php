@@ -108,6 +108,7 @@ class UserRoleAdmin extends PHPDS_controller
                 $this->P('tagger_id'));
             $this->template->ok(sprintf(__('Saved %s.'), $crud->f->user_role_name));
         } else {
+            $this->template->warning(__("Cannot save, check errors!"));
             $crud->errorShow();
         }
 

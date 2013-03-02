@@ -5,9 +5,19 @@
         $("form").confirmDeleteClick();
         $("#user_role_name").singleValidate();
         $('button[type="submit"]').on('click', function () {
-            $.post("{{self_url}}", $(".ajax-form").serializeObject(this), function (data, textStatus, request) {
+            var item = this;
+            if ($(item).hasClass('disabled')) return false;
+            $(item).removeClass("btn-primary").addClass("btn-warning disabled");
+            $("i", item).removeClass("icon-ok").append(spinner());
+            $.post("{{self_url}}", $(".ajax-form").serializeObject(item), function (data, textStatus, request) {
                 ajaxMessage(request);
                 ajaxInputError(request);
+                $(item).delay(100).queue(function (refresh) {
+                    $(this).removeClass("disabled btn-warning").addClass("btn-primary");
+                    $(".ajax-spinner-image").remove();
+                    $("i", this).addClass("icon-ok");
+                    refresh();
+                })
             });
             return false;
         });
@@ -51,7 +61,7 @@
             <fieldset>
                 <legend>&nbsp;</legend>
                 <p>
-                    <button type="submit" name="save" value="save" class="btn btn-primary click-elegance"><i class="icon-ok icon-white"></i></button>
+                    <button type="submit" name="save" value="save" class="btn btn-primary"><i class="icon-ok icon-white"></i></button>
                     <button type="submit" name="new" value="new" class="btn btn-success click-elegance"><i class="icon-plus icon-white"></i></button>
                     <button type="reset" name="reset" value="reset" class="btn"><i class="icon-refresh"></i></button>
                     {{#delete_url}}
