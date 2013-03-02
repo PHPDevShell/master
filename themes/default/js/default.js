@@ -159,7 +159,12 @@ function initPage() {
                             default:
                                 notify_type = 'error';
                         }
-                        $('[name="'+ this.field +'"]').addClass(notify_type);
+                        var errorfield = $('[name="' + this.field + '"]');
+                        if (this.message == '') {
+                            errorfield.addClass(notify_type);
+                        } else {
+                            errorfield.addClass(notify_type).before('<div class="control-group error"><label class="control-label error-label">' + this.message + '</label></div>');
+                        }
                     }
                 }
             });
@@ -227,7 +232,7 @@ function initPage() {
                     $(item).addClass("disabled");
                     $("i", item).removeClass("icon-trash").append(spinner(size));
                     $.get(url, function (data, textStatus, request) {
-                        if (data === 'success') {
+                        if (data === 'true') {
                             $(item).parents("tr").fadeOut('slow');
                         }
                         ajaxMessage(request);
@@ -287,14 +292,19 @@ function initPage() {
                         $.post(url, fieldwatch, function (data, textStatus, request) {
                             $("i." + tmp_tag).remove();
                             fields.removeClass('error success');
+                            var parent_form = fields.parents("form");
                             if (data == 'true' && fieldvalue != value) {
                                 fields.addClass('error');
                                 fields.after('<i class="' + tmp_tag + ' icon-remove pull-right"></i>');
+                                $('button[type="submit"]', parent_form).addClass("disabled");
                             } else {
                                 fields.addClass('success');
                                 fields.after('<i class="' + tmp_tag + ' icon-ok pull-right"></i>');
+                                $('button[type="submit"]', parent_form).removeClass("disabled");
                             }
                             $(fields).focus();
+                            ajaxInputError(request);
+                            ajaxMessage(request);
                         });
                     },
                     elsedo: function(value) {

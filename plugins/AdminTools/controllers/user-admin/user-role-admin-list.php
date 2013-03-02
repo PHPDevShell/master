@@ -60,7 +60,7 @@ class UserRoleAdminList extends PHPDS_controller
     public function viaAJAX()
     {
         if ($this->G('delete-role')) {
-            return ($this->deleteRole()) ? 'success' : 'fail';
+            return ($this->deleteRole()) ? 'true' : 'false';
         }
     }
 }

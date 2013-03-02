@@ -120,13 +120,18 @@ class UserRoleAdmin extends PHPDS_controller
         if ($this->G('delete-tag')) {
             if ($this->tagger->tagDelete($this->G('delete-tag'))) {
                 $this->template->ok(sprintf("Tag id %u deleted", $this->G('delete-tag')));
-                return 'success';
+                return 'true';
             } else {
-                return 'fail';
+                return 'false';
             }
         }
         if ($this->P('user_role_name_watch')) {
-            return ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'))) ? 'true' : 'false';
+            if ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'))) {
+                $this->crud->errorElse("Role already exist", 'user_role_name');
+                return 'true';
+            } else {
+                return 'false';
+            }
         }
         if ($this->P('save')) {
             $this->saveAction();
