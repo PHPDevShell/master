@@ -102,8 +102,16 @@ class crud extends PHPDS_dependant
 	public function errorShow()
 	{
 		$t = $this->template;
-		if (! empty($this->errorExist))
-			$t->addJsToHead($t->mod->errorField($this->errorExist));
+		if (! empty($this->errorExist)) {
+            if (PU_isAJAX ()) {
+                $json_notifs = json_encode($this->errorExist);
+                if (! empty($json_notifs)) {
+                    header("ajaxInputErrorMessage: " . $json_notifs);
+                }
+            } else {
+			    $t->addJsToHead($t->mod->errorField($this->errorExist));
+            }
+        }
 	}
 
 	/**
@@ -501,7 +509,7 @@ class crud extends PHPDS_dependant
 	}
 
 	/**
-	 * check if field empty string ,orject,array
+	 * check if field empty string ,object,array
 	 * @param   string expecting form field name
 	 * @param	mixed The default value that should be used when empty.
 	 * @return  boolean

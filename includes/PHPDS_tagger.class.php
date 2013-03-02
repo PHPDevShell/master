@@ -141,7 +141,7 @@ class PHPDS_tagger extends PHPDS_dependant
 	}
 
 	/**
-	 * This function creates tag view list with form input fields.
+	 * This function creates tag view list with form input fields. Can also store it if available
      *
 	 *
 	 * @param string $object
@@ -170,6 +170,28 @@ class PHPDS_tagger extends PHPDS_dependant
 
 		return $tagarea;
 	}
+
+    /**
+     * Will store tags when needed.
+     *
+     * @param string $object
+     * @param string $target
+     * @param array $taggernames Array of names posted by the tagger form.
+     * @param array $taggervalues Array of values posted by the tagger form.
+     * @param array $taggerids Array of updated ids posted by the tagger form.
+     * @param array $taggerdeletes Array of deleted tags posted by the tagger form.
+     * @return string
+     *
+     * @version 1.0
+     * @author jason <titan@phpdevshell.org>
+     * @date 20130301
+     */
+    public function tagUpdate($object, $target, $taggernames, $taggervalues, $taggerids)
+    {
+        if (!empty($taggernames) && is_array($taggernames)) {
+            $this->db->invokeQuery('PHPDS_updateTagsQuery', $object, $target, $taggernames, $taggervalues, $taggerids);
+        }
+    }
 
     /**
      * Quick delete action for a single tag.

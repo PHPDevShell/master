@@ -7,7 +7,14 @@
  */
 class UserRoleAdmin extends PHPDS_controller
 {
-    private $crud;
+    public $crud;
+
+    public function onLoad()
+    {
+         /* @var $crud crud */
+        $crud = $this->factory('crud');
+        $this->crud = $crud;
+    }
 
 	/**
 	 * Execute Controller
@@ -15,9 +22,6 @@ class UserRoleAdmin extends PHPDS_controller
 	 */
 	public function execute()
 	{
-		/* @var $crud crud */
-		$crud = $this->factory('crud');
-        $this->crud = $crud;
         $permission = array();
 
         if ($this->G('edit-role') || $this->P('save')) {
@@ -35,13 +39,12 @@ class UserRoleAdmin extends PHPDS_controller
         }
 
 		if ($this->P('new')) {
-			$crud->f->user_role_id = 0;
-			$crud->f->user_role_name = '';
-			$crud->f->user_role_note = '';
+			$this->crud->f->user_role_id = 0;
+			$this->crud->f->user_role_name = '';
+			$this->crud->f->user_role_note = '';
 		}
 
         $this->view($this->db->invokeQuery('PHPDS_readNodesQuery', $permission));
-
 	}
 
     private function view($node_item_options)
@@ -81,8 +84,9 @@ class UserRoleAdmin extends PHPDS_controller
         $crud->addField('user_role_id');
         $crud->addField('user_role_note');
 
-        if (!$crud->is('user_role_name'))
+        if (!$crud->is('user_role_name')) {
             $crud->error();
+        }
 
         if ($this->P('permission')) {
             $permission = $this->P('permission');
@@ -97,7 +101,11 @@ class UserRoleAdmin extends PHPDS_controller
             $crud->f->user_role_id = $this->db->invokeQuery('PHPDS_writeRoleQuery', $crud->f->user_role_id, $crud->f->user_role_name, $crud->f->user_role_note);
             $this->db->invokeQuery('PHPDS_deletePermissionsQuery', $crud->f->user_role_id);
             $this->db->invokeQuery('PHPDS_writePermissionsQuery', $crud->f->user_role_id, $permission);
-
+            $this->tagger->tagUpdate('role',
+                $crud->f->user_role_id,
+                $this->P('tagger_name'),
+                $this->P('tagger_value'),
+                $this->P('tagger_id'));
             $this->template->ok(sprintf(__('Saved %s.'), $crud->f->user_role_name));
         } else {
             $crud->errorShow();
@@ -115,8 +123,13 @@ class UserRoleAdmin extends PHPDS_controller
             } else {
                 return 'fail';
             }
-        } else if ($this->P('user_role_name_watch')) {
+        }
+        if ($this->P('user_role_name_watch')) {
             return ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'))) ? 'true' : 'false';
+        }
+        if ($this->P('save')) {
+            $this->saveAction();
+            return 'true';
         }
     }
 }

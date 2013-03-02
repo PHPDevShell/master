@@ -4,9 +4,16 @@
         $(".checkall").checkAllCheckbox();
         $("form").confirmDeleteClick();
         $("#user_role_name").singleValidate();
+        $('button[type="submit"]').on('click', function () {
+            $.post("{{self_url}}", $(".ajax-form").serializeObject(this), function (data, textStatus, request) {
+                ajaxMessage(request);
+                ajaxInputError(request);
+            });
+            return false;
+        });
     });
 </script>
-<form action="{{self_url}}" method="post" class="validate">
+<form action="{{self_url}}" method="post" class="validate ajax-form">
     <div class="row">
         <div class="span4">
 			<fieldset>
