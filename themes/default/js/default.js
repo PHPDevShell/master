@@ -148,6 +148,9 @@ function initPage() {
         if (json) {
             var mobj = jQuery.parseJSON(json);
             $.each(mobj, function() {
+                var field = this.field;
+                var label_tag = field + '_ajaxlabel';
+                $('span.' + label_tag).remove();
                 if (this.type) {
                     if (this.type) {
                         var notify_type;
@@ -155,15 +158,12 @@ function initPage() {
                             case "error":
                                 notify_type = 'error';
                                 break;
-
                             default:
                                 notify_type = 'error';
                         }
-                        var errorfield = $('[name="' + this.field + '"]');
-                        if (this.message == '') {
-                            errorfield.addClass(notify_type);
-                        } else {
-                            errorfield.addClass(notify_type).before('<div class="control-group error"><label class="control-label error-label">' + this.message + '</label></div>');
+                        $('[name="' + field + '"]').addClass(notify_type);
+                        if (this.message != '' && !$('.' + label_tag).hasClass(label_tag)) {
+                            $('[for="' + field + '"]').append('<span class="'+ label_tag +' text-error">: ' + this.message + '</span>');
                         }
                     }
                 }
@@ -282,9 +282,12 @@ function initPage() {
             return this.each(function () {
                 var fields = $(this);
                 var url = $(location).attr('href');
+                var fieldname = fields.attr('name');
                 var fieldvalue = fields.attr('value');
-                var identifier = fields.attr('name') + '_watch';
+                var identifier = fieldname + '_watch';
                 var tmp_tag = identifier + '_ajaxtag';
+                var label_tag = fieldname + '_ajaxlabel';
+
                 var fieldwatch = {};
                 $(fields).typeWatch({
                     callback: function(value) {
@@ -301,6 +304,7 @@ function initPage() {
                                 fields.addClass('success');
                                 fields.after('<i class="' + tmp_tag + ' icon-ok pull-right"></i>');
                                 $('button[type="submit"]', parent_form).removeClass("disabled");
+                                $('span.' + label_tag).fadeOut('slow').remove();
                             }
                             $(fields).focus();
                             ajaxInputError(request);
@@ -309,6 +313,7 @@ function initPage() {
                     },
                     elsedo: function(value) {
                         $("i." + tmp_tag).remove();
+                        $('span.' + label_tag).remove();
                         fields.removeClass('error success');
                     }
                 });

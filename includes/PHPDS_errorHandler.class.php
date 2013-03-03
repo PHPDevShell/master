@@ -535,32 +535,41 @@ class PHPDS_errorHandler extends PHPDS_dependant
 		// Need this for absolute URL configuration to be sef safe.
 		$aurl = $protocol . $_SERVER['SERVER_NAME'] . str_replace('/index.php', '', $_SERVER['PHP_SELF']);
 
-		ob_start();
-		// Load error page: $e is the handled exception
-		require BASEPATH.'themes/default/error.php';
-		$output = ob_get_clean();
+        if (PU_isAJAX()) {
+            // If the error occurred during an AJAX request, we'll send back a lightweight ouput
+            $message = $this->display ? "$message - file $filepath line $lineno" : 'Error Concealed - Disabled in config';
+            PU_silentHeader('Status: 500 ' . $message);
+            PU_silentHeader('HTTP/1.1 500 ' . $message);
+            print $message;
+            return null;
+        } else {
+            ob_start();
+            // Load error page: $e is the handled exception
+            require BASEPATH . 'themes/default/error.php';
+            $output = ob_get_clean();
 
-		if (!empty($this->crumbs)) {
-			$output = str_replace('<crumbs/>', implode("\n", $this->crumbs), $output);
-		}
+            if (!empty($this->crumbs)) {
+                $output = str_replace('<crumbs/>', implode("\n", $this->crumbs), $output);
+            }
 
-		if (PU_isAJAX()) {
-			// If the error occurred during an AJAX request, we'll send back a lightweight ouput
-			$message = $this->display ? "$message - file $filepath line $lineno" : 'Error Concealed - Disabled in config';
-			PU_silentHeader('Status: 500 '.$message);
-			PU_silentHeader('HTTP/1.1 500 '.$message);
-			print $message;
-		} else {
-			// for a regular request, we present a nicely formatted html page; if provided, an extended description of the error is displayed
-			if ($detailed) {
-				echo $output;
-			} else {
-				$message = '';
-				require BASEPATH.'themes/default/error.php'; // $message being empty, only a genetic message is output
-			}
-		}
-
-		return $output;
+            if (PU_isAJAX()) {
+                // If the error occurred during an AJAX request, we'll send back a lightweight ouput
+                $message = $this->display ? "$message - file $filepath line $lineno" : 'Error Concealed - Disabled in config';
+                PU_silentHeader('Status: 500 ' . $message);
+                PU_silentHeader('HTTP/1.1 500 ' . $message);
+                print $message;
+                return '';
+            } else {
+                // for a regular request, we present a nicely formatted html page; if provided, an extended description of the error is displayed
+                if ($detailed) {
+                    print $output;
+                } else {
+                    $message = '';
+                    require BASEPATH . 'themes/default/error.php'; // $message being empty, only a genetic message is output
+                }
+            }
+            return $output;
+        }
 	}
 }
 

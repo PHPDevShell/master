@@ -127,7 +127,8 @@ class UserRoleAdmin extends PHPDS_controller
         }
         if ($this->P('user_role_name_watch')) {
             if ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'))) {
-                $this->crud->errorElse("Role already exist", 'user_role_name');
+                $this->crud->error("Role already exist", 'user_role_name');
+                $this->crud->errorShow();
                 return 'true';
             } else {
                 return 'false';
