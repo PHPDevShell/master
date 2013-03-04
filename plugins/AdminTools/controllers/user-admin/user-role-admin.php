@@ -8,6 +8,7 @@
 class UserRoleAdmin extends PHPDS_controller
 {
     public $crud;
+    public $id;
 
     public function onLoad()
     {

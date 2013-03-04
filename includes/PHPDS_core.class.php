@@ -88,9 +88,6 @@ class PHPDS_core extends PHPDS_dependant
 			$this->themeFile = 'theme.php';
 			$this->ajaxType = false;
 		}
-		if (!empty($this->themeFile)) {
-			$this->loadMods();
-		}
 	}
 
 	/**

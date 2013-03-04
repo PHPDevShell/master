@@ -24,7 +24,9 @@
             <div class="collapse nav-collapse">
                 <ul id="main-nav" class="nav">
                     <?php $template->outputMenu() ?>
+
                 </ul>
+                <?php echo rand(0, 100) ?>
             </div>
         </div>
     </div>

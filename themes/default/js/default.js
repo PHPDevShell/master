@@ -50,15 +50,6 @@ function PHPDS_remoteCall(functionName, params, extParams) {
     );
 }
 
-function spinner (size) {
-    size = typeof size !== 'undefined' ? size : 15;
-    return '<img class="ajax-spinner-image" src="themes/default/images/loader.gif" width="' + size + '" height="' + size + '" />';
-}
-
-function destroyPage() {
-    // unbind events and remove plugins
-}
-
 /**
  * Apply default formatting to the objects inside the given root element (root element is optional, defaults to BODY)
  * @param root DOM object to assign.
@@ -83,6 +74,10 @@ function PHPDS_documentReady (root) {
             throw new Error('Spam detected');
         }
     });
+    $(document).ajaxComplete(function(event, XMLHttpRequest, ajaxOptions) {
+        ajaxMessage(XMLHttpRequest);
+        ajaxInputError(XMLHttpRequest);
+    });
     $(document).ready(function() {
         if (!root) root = $('BODY');
         $.pronto();
@@ -91,6 +86,10 @@ function PHPDS_documentReady (root) {
             .on("pronto.load", destroyPage);
         initPage();
     });
+}
+
+function destroyPage() {
+    // unbind events and remove plugins
 }
 
 function initPage() {
@@ -105,8 +104,8 @@ function initPage() {
         {
             var o = {};
             if (extendArray !== undefined) {
-                var name   = $(extendArray).attr('name');
-                o[name]    = $(extendArray).val();
+                var name = $(extendArray).attr('name');
+                o[name] = $(extendArray).val();
             }
             var a = this.serializeArray();
             $.each(a, function() {
@@ -235,7 +234,6 @@ function initPage() {
                         if (data === 'true') {
                             $(item).parents("tr").fadeOut('slow');
                         }
-                        ajaxMessage(request);
                     });
                     return false;
                 });
@@ -287,6 +285,7 @@ function initPage() {
                 var identifier = fieldname + '_watch';
                 var tmp_tag = identifier + '_ajaxtag';
                 var label_tag = fieldname + '_ajaxlabel';
+                $('span.' + label_tag).remove();
 
                 var fieldwatch = {};
                 $(fields).typeWatch({
@@ -300,15 +299,14 @@ function initPage() {
                                 fields.addClass('error');
                                 fields.after('<i class="' + tmp_tag + ' icon-remove pull-right"></i>');
                                 $('button[type="submit"]', parent_form).addClass("disabled");
+                                $('span.' + label_tag).remove();
                             } else {
                                 fields.addClass('success');
                                 fields.after('<i class="' + tmp_tag + ' icon-ok pull-right"></i>');
                                 $('button[type="submit"]', parent_form).removeClass("disabled");
-                                $('span.' + label_tag).fadeOut('slow').remove();
+                                $('span.' + label_tag).remove();
                             }
                             $(fields).focus();
-                            ajaxInputError(request);
-                            ajaxMessage(request);
                         });
                     },
                     elsedo: function(value) {
@@ -581,15 +579,11 @@ if (jQuery) (function($) {
             ) {
             return;
         }
-
-        $("#bg, .alert").fadeTo('fast', 0.3, function () {
-            $(".alert").slideUp('fast');
+        $("#bg").fadeTo('fast', 0.3, function () {
             $("#ajax-loader-art").fadeIn('fast');
         });
-
         e.preventDefault();
         e.stopPropagation();
-
         _request(link.href);
     }
 
@@ -598,14 +592,19 @@ if (jQuery) (function($) {
         $window.trigger("pronto.request");
         // Call new content
         $.ajax({
-            url: url + ((url.indexOf("?") > -1) ? "&ajax=true" : "?ajax=true"),
+            url: url + ((url.indexOf("?") > -1) ? "&ajaxpage=true" : "?ajaxpage=true"),
             dataType: "json",
+            beforeSend: function() {
+
+            },
             success: function(response) {
                 _render(url, response, true);
-                $("#ajax-loader-art").fadeOut();
             },
             error: function(response) {
                 window.location.href = url;
+            },
+            complete: function() {
+                $("#ajax-loader-art").fadeOut('slow');
             }
         });
     }
@@ -630,7 +629,7 @@ if (jQuery) (function($) {
         _gaCaptureView(url);
 
         // Update DOM
-        document.title = _unescapeHTML(response.title);
+        document.title = response.title;
         options.$container.html(response.content);
 
         // Push new states to the stack
@@ -644,15 +643,6 @@ if (jQuery) (function($) {
         currentURL = url;
 
         $window.trigger("pronto.render");
-    }
-
-    function _unescapeHTML(unsafe) {
-        return unsafe.replace(/&lt;/g, "<")
-            .replace(/&gt;/g, ">")
-            .replace(/&nbsp;/g, " ")
-            .replace(/&amp;/g, "&")
-            .replace(/&quot;/g, '"')
-            .replace(/&#039;/g, "'");
     }
 
     // Google Analytics support
@@ -671,4 +661,9 @@ if (jQuery) (function($) {
         return this;
     };
 })(jQuery);
+
+function spinner (size) {
+    size = typeof size !== 'undefined' ? size : 15;
+    return '<img class="ajax-spinner-image" src="themes/default/images/loader.gif" width="' + size + '" height="' + size + '" />';
+}
 

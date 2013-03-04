@@ -10,7 +10,6 @@
             $(item).removeClass("btn-primary").addClass("btn-warning disabled");
             $("i", item).removeClass("icon-ok").append(spinner());
             $.post("{{self_url}}", $(".ajax-form").serializeObject(item), function (data, textStatus, request) {
-                ajaxMessage(request);
                 ajaxInputError(request);
                 $(item).delay(100).queue(function (refresh) {
                     $(this).removeClass("disabled btn-warning").addClass("btn-primary");
@@ -36,7 +35,7 @@
                 {{/user_role_id}}
                 <p>
 				    <label for="user_role_name">{{#i}}Name{{/i}}</label>
-				    <input id="user_role_name" type="text" name="user_role_name" value="{{user_role_name}}" required="required">
+				    <input id="user_role_name" type="text" name="user_role_name" value="{{user_role_name}}" required="required" data-id="{{user_role_id}}">
                 </p>
                 <p>
 				    <label for="user_role_note">{{#i}}Notes{{/i}}</label>
