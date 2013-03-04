@@ -161,7 +161,7 @@ class PHPDS_controller extends PHPDS_dependant
 			 * This allows to load a widget/ajax theme controller via ajax without triggering the runAjax.
 			 * Now runAjax can still be used within the widget/ajax node type controller.
 			 */
-            if (! empty($this->_GET['ajaxpage'])) {
+            if (! empty($this->_GET['via-ajax'])) {
                 $this->core->loadMods();
                 ob_get_contents();
                 $this->execute();

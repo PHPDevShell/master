@@ -134,7 +134,7 @@ HTML;
 		}
 
 		if (!empty($not_registered_yet)) {
-			$not_registered_yet = '<a href="' . $not_registered_yet . '" class="click-elegance">' . $not_registered_yet_text . '</a>';
+			$not_registered_yet = '<a href="' . $not_registered_yet . '" class="via-ajax">' . $not_registered_yet_text . '</a>';
 		} else {
 			$not_registered_yet = '';
 		}
@@ -142,7 +142,7 @@ HTML;
 		$HTML = <<<HTML
 
 			<div class="login-actions">
-				<form id="login" action="{$action}" method="post" class="validate click-elegance">
+				<form id="login" action="{$action}" method="post" class="validate via-ajax">
 					<fieldset>
 						<legend>{$login_label}</legend>
 						<p>
@@ -159,7 +159,7 @@ HTML;
 							<button type="submit" name="login" class="btn btn-primary"><i class="icon-ok icon-white"></i> {$button_name}</button><br>
 						</p>
 						<p>
-							<a href="{$lost_password}" class="click-elegance">{$lost_password_text}</a><br>
+							<a href="{$lost_password}" class="via-ajax">{$lost_password_text}</a><br>
 							{$not_registered_yet}
 						</p>
 						<input type="hidden" name="login" value="login">
@@ -364,7 +364,7 @@ HTML;
 		$HTML = <<<HTML
 
             <div id="search-field-outer">
-                <form action="{$action}" method="post" class="click-elegance">
+                <form action="{$action}" method="post" class="via-ajax">
                     <div id="searchForm">
                         <div class="input-append">
                             <input id="search_field" type="text" name="search_field" value="{$value}" class="{$class}">
@@ -437,9 +437,9 @@ HTML;
             }
 
             if (empty($asc) && empty($desc)) {
-                return '<th><a href="' . $order_url . '&order=asc" class="click-elegance">' . $th_ . '</a></th>';
+                return '<th><a href="' . $order_url . '&order=asc" class="via-ajax">' . $th_ . '</a></th>';
             } else {
-                return '<th><a href="' . $order_url . '&order=' . $filter . '" class="click-elegance">' . $th_ . $asc_ . $desc_ . '</a></th>';
+                return '<th><a href="' . $order_url . '&order=' . $filter . '" class="via-ajax">' . $th_ . $asc_ . $desc_ . '</a></th>';
             }
         } else {
             return "<th>{$th_}</th>";
@@ -477,7 +477,7 @@ HTML;
 
 		return <<<HTML
 
-			<li><a href="{$url}" class="click-elegance">{$name}</a></li>
+			<li><a href="{$url}" class="via-ajax">{$name}</a></li>
 
 HTML;
 	}
