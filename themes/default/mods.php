@@ -569,7 +569,7 @@ HTML;
 
 	public function menuLiParent($tree, $link, $class, $node_data = null)
 	{
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_'.PU_safeName($node_data['node_id']).'"';
+		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
 		return <<<HTML
 
 			<li class="{$class} dropdown" {$id}>
@@ -582,7 +582,7 @@ HTML;
 
 	public function subMenuLiParent($tree, $link, $class, $node_data = null)
 	{
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_'.PU_safeName($node_data['node_id']).'"';
+		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
 
 		return <<<HTML
 				<li class="{$class} dropdown-submenu" {$id}>
@@ -599,7 +599,7 @@ HTML;
 		 * current
 		 * inactive
 		 */
-		$id = empty($node_data['node_id']) ? '' : ' id="node_'.PU_safeName($node_data['node_id']).'"';
+		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
 		return <<<HTML
 
 			<li class="{$class}" {$id}>{$link}</li>
@@ -614,7 +614,7 @@ HTML;
 		 * current
 		 * inactive
 		 */
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_'.PU_safeName($node_data['node_id']).'"';
+		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
 		return <<<HTML
 
 			<li class="{$class}" {$id}>{$link}</li>
@@ -634,7 +634,7 @@ HTML;
 		 * active
 		 * inactive
 		 */
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_'.PU_safeName($node_data['node_id']).'"';
+		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
 		return <<<HTML
 
 			<li class="{$class}" {$id}>{$link}</li>

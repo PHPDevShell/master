@@ -161,16 +161,8 @@ class PHPDS_controller extends PHPDS_dependant
 			 * This allows to load a widget/ajax theme controller via ajax without triggering the runAjax.
 			 * Now runAjax can still be used within the widget/ajax node type controller.
 			 */
-            if ($this->core->ajaxType == 'page') {
-                ob_get_contents();
-                $this->execute();
-                $content = ob_get_clean();
-                $result = json_encode(array(
-                    "title" => 'Some page Title',
-                    "content" => $content
-                ));
-                print $result;
-            } else if ($this->core->ajaxType != 'raw') {
+            if ($this->core->ajaxType != 'light') {
+                $this->tellHeaderAboutNode();
 				$result = $this->execute();
 			} else {
 				$result = $this->runAJAX();
@@ -191,6 +183,22 @@ class PHPDS_controller extends PHPDS_dependant
         if (! empty($json_notifs)) {
             PU_silentHeader("ajaxResponseMessage: " . $json_notifs);
         }
+    }
+
+    /**
+     * Tell the response more about the requested node.
+     */
+    public function tellHeaderAboutNode ()
+    {
+        $n = $this->navigation->navigation;
+        $c = $this->configuration;
+
+        $node_name = $n[$c['m']]['node_name'];
+        $node_id   = $n[$c['m']]['node_id'];
+
+        $json = json_encode(array('title'=>$node_name, 'node_id'=>$node_id));
+
+        PU_silentHeader("ajaxAboutNode: " . $json);
     }
 
 	/**

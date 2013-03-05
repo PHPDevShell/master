@@ -579,14 +579,19 @@ if (jQuery) (function($) {
         // Call new content
         $.ajax({
             url: url + ((url.indexOf("?") > -1) ? "&via-ajax=page" : "?via-ajax=page"),
-            dataType: "json",
             success: function(response) {
                 _render(url, response, true);
             },
             error: function(response) {
                 window.location.href = url;
             },
-            complete: function() {
+            complete: function(jqXHR) {
+                var response_ = jqXHR.getResponseHeader("ajaxAboutNode");
+                if (response_) {
+                    var repj = jQuery.parseJSON(response_);
+                    document.title = repj.title;
+                    $("#nav").removeClass("active");
+                }
                 $("#ajax-loader-art").hide();
                 $("#bg").fadeTo(0, 0.3).fadeTo('fast', 1);
             }
@@ -612,15 +617,14 @@ if (jQuery) (function($) {
         _gaCaptureView(url);
 
         // Update DOM
-        document.title = response.title;
-        options.$container.html(response.content);
+        options.$container.html(response);
 
         // Push new states to the stack
         if (doPush) {
             history.pushState({
                 url: url,
                 data: response
-            }, "state-"+url, url);
+            }, "state-" + url, url);
         }
 
         currentURL = url;

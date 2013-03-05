@@ -47,13 +47,45 @@ class PHPDS_core extends PHPDS_dependant
 	 */
 	public function setDefaultNodeParams()
 	{
+        $configuration = $this->configuration;
+        $navigation    = $this->navigation->navigation;
+        $current_node = $navigation[$configuration['m']];
+
+        // Option 1 : Switch via node
+        if (! empty($current_node['node_id'])) {
+            // Determine correct node theme.
+            switch ($current_node['node_type']) {
+                // Widget Ajax.
+                case 9:
+                    $this->ajaxType  = 'widget';
+                    $this->themeFile = '';
+                    $this->loadMods();
+                    break;
+                // HTML Ajax.
+                case 10:
+                    $this->ajaxType  = 'html';
+                    $this->themeFile = '';
+                    $this->loadMods();
+                // HTML Ajax Lightbox.
+                case 11:
+                    $this->ajaxType  = 'lightbox';
+                    $this->themeFile = '';
+                    $this->loadMods();
+                    break;
+                // Raw Ajax (json,xml,etc).
+                case 12:
+                    $this->ajaxType  = 'light';
+                    break;
+            }
+        }
+
+        // Option 2 : Switch via get request
 		if (! empty($_GET['via-ajax'])) {
 			// Determine correct node theme.
 			switch ($_GET['via-ajax']) {
 				// Widget Ajax.
 				case 'widget':
 					$this->themeFile = '';
-                    $this->loadMods();
 					$this->ajaxType = 'widget';
 					break;
 				// HTML Ajax.
@@ -75,13 +107,13 @@ class PHPDS_core extends PHPDS_dependant
                     break;
 				default:
                     $this->themeFile = '';
-                    $this->ajaxType = 'raw';
+                    $this->ajaxType = 'light';
 					break;
 			}
 		} else {
             if (PU_isAJAX()) {
                 $this->themeFile = '';
-                $this->ajaxType = 'raw';
+                $this->ajaxType = 'light';
             } else {
                 $this->themeFile = 'theme.php';
                 $this->loadMods();
@@ -162,7 +194,6 @@ class PHPDS_core extends PHPDS_dependant
 	{
 		$this->setDefaultNodeParams();
 		try {
-
 			ob_start();
 			$this->db->startTransaction();
 			$this->executeController();
@@ -238,23 +269,6 @@ class PHPDS_core extends PHPDS_dependant
 	{
 		$navigation = $this->navigation->navigation;
 		$configuration = $this->configuration;
-
-		// Are we in demo mode?
-		/**
-		 * @todo Find a better place for this! Its not cool here.
-		 */
-		/*
-		if ($configuration['demo_mode'] == true) {
-			if ($configuration['user_role'] != $configuration['root_role']) {
-				// Show demo mode message for end user.
-				$this->template->notice(sprintf(___('%s is currently in a demo mode state, no actual database transactions will occur.'), $configuration['scripts_name_version']));
-			} else {
-				// Show demo mode message for root user.
-				$this->template->notice(sprintf(___('%s is currently in a demo mode state, only Root users are able to save database transactions.'), $configuration['scripts_name_version']));
-			}
-		}
-		 *
-		 */
 
 		// Node Types:
 		// 1. Standard Page from Plugin
