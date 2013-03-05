@@ -547,7 +547,7 @@ if (jQuery) (function($) {
                 "title": $("head").find("title").text(),
                 "content": $(options.container).html()
             }
-        }, "state-"+window.location.href, window.location.href);
+        }, "state-" + window.location.href, window.location.href);
 
         currentURL = window.location.href;
 
@@ -578,7 +578,7 @@ if (jQuery) (function($) {
         $window.trigger("pronto.request");
         // Call new content
         $.ajax({
-            url: url + ((url.indexOf("?") > -1) ? "&via-ajax=true" : "?via-ajax=true"),
+            url: url + ((url.indexOf("?") > -1) ? "&via-ajax=page" : "?via-ajax=page"),
             dataType: "json",
             success: function(response) {
                 _render(url, response, true);

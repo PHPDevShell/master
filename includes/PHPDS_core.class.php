@@ -25,11 +25,6 @@ class PHPDS_core extends PHPDS_dependant
 	 */
 	public $haltController;
 	/**
-	 * Signs the request as an ajax request.
-	 * @var boolean
-	 */
-	public $ajaxType = null;
-	/**
 	 * The node structure that should be used "theme.php" for normal theme.
 	 * @var string
 	 */
@@ -52,41 +47,46 @@ class PHPDS_core extends PHPDS_dependant
 	 */
 	public function setDefaultNodeParams()
 	{
-		$configuration = $this->configuration;
-		$navigation = $this->navigation->navigation;
-
-		$current_node = $navigation[$configuration['m']];
-
-		if (! empty($current_node['node_id'])) {
+		if (! empty($_GET['via-ajax'])) {
 			// Determine correct node theme.
-			switch ($current_node['node_type']) {
-				// HTML Widget.
-				case 9:
-					$this->themeFile = 'widget.php';
-					$this->ajaxType = false;
+			switch ($_GET['via-ajax']) {
+				// Widget Ajax.
+				case 'widget':
+					$this->themeFile = '';
+                    $this->loadMods();
+					$this->ajaxType = 'widget';
 					break;
 				// HTML Ajax.
-				case 10:
-					$this->themeFile = 'ajax.php';
-					$this->ajaxType = false;
-				// HTML Ajax Lightbox.
-				case 11:
-					$this->themeFile = 'lightbox.php';
-					$this->ajaxType = false;
-					break;
-				// Raw Ajax (json,xml,etc).
-				case 12:
+				case 'html':
 					$this->themeFile = '';
-					$this->ajaxType = true;
+                    $this->loadMods();
+					$this->ajaxType = 'html';
+				// HTML Ajax Lightbox.
+				case 'lightbox':
+					$this->themeFile = '';
+                    $this->loadMods();
+					$this->ajaxType = 'lightbox';
 					break;
+                // HTML Ajax Page.
+                case 'page':
+                    $this->themeFile = '';
+                    $this->loadMods();
+                    $this->ajaxType = 'page';
+                    break;
 				default:
-					$this->ajaxType = PU_isAJAX();
-					$this->themeFile = $this->ajaxType ? '' :  'theme.php';
+                    $this->themeFile = '';
+                    $this->ajaxType = 'raw';
 					break;
 			}
 		} else {
-			$this->themeFile = 'theme.php';
-			$this->ajaxType = false;
+            if (PU_isAJAX()) {
+                $this->themeFile = '';
+                $this->ajaxType = 'raw';
+            } else {
+                $this->themeFile = 'theme.php';
+                $this->loadMods();
+                $this->ajaxType = null;
+            }
 		}
 	}
 

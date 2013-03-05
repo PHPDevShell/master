@@ -156,13 +156,12 @@ class PHPDS_controller extends PHPDS_dependant
 		(is_object($this->security)) ? $this->security->securityIni() : exit('Access Denied!');
         $this->onLoad();
 		$result = null;
-		if (PU_isAJAX ()) {
+		if ($this->core->ajaxType) {
 			/**
 			 * This allows to load a widget/ajax theme controller via ajax without triggering the runAjax.
 			 * Now runAjax can still be used within the widget/ajax node type controller.
 			 */
-            if (! empty($this->_GET['via-ajax'])) {
-                $this->core->loadMods();
+            if ($this->core->ajaxType == 'page') {
                 ob_get_contents();
                 $this->execute();
                 $content = ob_get_clean();
@@ -171,15 +170,13 @@ class PHPDS_controller extends PHPDS_dependant
                     "content" => $content
                 ));
                 print $result;
-            } else if ($this->core->ajaxType == false || ! empty($this->_GET['widget']) || ! empty($this->_GET['ajax']) || ! empty($this->_GET['lightbox'])) {
-                $this->core->loadMods();
+            } else if ($this->core->ajaxType != 'raw') {
 				$result = $this->execute();
 			} else {
 				$result = $this->runAJAX();
 			}
             $this->fetchAjaxNotif();
 		} else {
-            $this->core->loadMods();
 			$result = $this->runRegular();
 		}
 		return $result;
@@ -192,7 +189,7 @@ class PHPDS_controller extends PHPDS_dependant
     {
         $json_notifs = $this->notif->fetchAsJson();
         if (! empty($json_notifs)) {
-            header("ajaxResponseMessage: " . $json_notifs);
+            PU_silentHeader("ajaxResponseMessage: " . $json_notifs);
         }
     }
 
@@ -209,7 +206,6 @@ class PHPDS_controller extends PHPDS_dependant
 	public function runRegular()
 	{
 		$raw_data = $this->execute();
-
 		return $this->handleResult($raw_data);
 	}
 
