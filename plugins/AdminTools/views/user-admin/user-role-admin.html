@@ -1,7 +1,5 @@
 <script type="text/javascript">
     $(document).ready(function () {
-        $("textarea").textareaAutoExpand();
-        $(".checkall").checkAllCheckbox();
         $("form").confirmDeleteClick();
         $("#user_role_name").singleValidate();
         $('button[type="submit"]').on('click', function () {
@@ -39,7 +37,7 @@
                 </p>
                 <p>
 				    <label for="user_role_note">{{#i}}Notes{{/i}}</label>
-				    <textarea id="user_role_note" name="user_role_note" class="text-area-autoexpand">{{user_role_note}}</textarea>
+				    <textarea id="user_role_note" name="user_role_note" data-action="auto-expand">{{user_role_note}}</textarea>
                 </p>
             </fieldset>
             <fieldset>
@@ -61,12 +59,12 @@
                 <legend>&nbsp;</legend>
                 <p>
                     <button type="submit" name="save" value="save" class="btn btn-primary"><i class="icon-ok icon-white"></i></button>
-                    <button type="submit" name="new" value="new" class="btn btn-success via-ajax"><i class="icon-plus icon-white"></i></button>
+                    <button type="submit" name="new" value="new" class="btn btn-success"><i class="icon-plus icon-white"></i></button>
                     <button type="reset" name="reset" value="reset" class="btn"><i class="icon-refresh"></i></button>
                     {{#delete_url}}
-                    <a href="{{delete_url}}" class="btn btn-warning confirm-delete-click via-ajax"><i class="icon-trash icon-white"></i></a>
+                    <a href="{{delete_url}}" class="btn btn-warning confirm-delete-click" data-via-ajax="page"><i class="icon-trash icon-white"></i></a>
                     {{/delete_url}}
-                    <a href="{{list_url}}" class="btn btn-inverse pull-right via-ajax"><i class="icon-align-justify icon-white"></i></a>
+                    <a href="{{list_url}}" class="btn btn-inverse pull-right" data-via-ajax="page"><i class="icon-align-justify icon-white"></i></a>
                 </p>
             </fieldset>
 		</div>

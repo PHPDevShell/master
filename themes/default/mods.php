@@ -134,7 +134,7 @@ HTML;
 		}
 
 		if (!empty($not_registered_yet)) {
-			$not_registered_yet = '<a href="' . $not_registered_yet . '" class="via-ajax">' . $not_registered_yet_text . '</a>';
+			$not_registered_yet = '<a href="' . $not_registered_yet . '" data-via-ajax="page">' . $not_registered_yet_text . '</a>';
 		} else {
 			$not_registered_yet = '';
 		}
@@ -142,7 +142,7 @@ HTML;
 		$HTML = <<<HTML
 
 			<div class="login-actions">
-				<form id="login" action="{$action}" method="post" class="validate via-ajax">
+				<form id="login" action="{$action}" method="post" class="validate">
 					<fieldset>
 						<legend>{$login_label}</legend>
 						<p>
@@ -159,7 +159,7 @@ HTML;
 							<button type="submit" name="login" class="btn btn-primary"><i class="icon-ok icon-white"></i> {$button_name}</button><br>
 						</p>
 						<p>
-							<a href="{$lost_password}" class="via-ajax">{$lost_password_text}</a><br>
+							<a href="{$lost_password}" data-via-ajax="page">{$lost_password_text}</a><br>
 							{$not_registered_yet}
 						</p>
 						<input type="hidden" name="login" value="login">
@@ -364,7 +364,7 @@ HTML;
 		$HTML = <<<HTML
 
             <div id="search-field-outer">
-                <form action="{$action}" method="post" class="via-ajax">
+                <form action="{$action}" method="post">
                     <div id="searchForm">
                         <div class="input-append">
                             <input id="search_field" type="text" name="search_field" value="{$value}" class="{$class}">
@@ -437,9 +437,9 @@ HTML;
             }
 
             if (empty($asc) && empty($desc)) {
-                return '<th><a href="' . $order_url . '&order=asc" class="via-ajax">' . $th_ . '</a></th>';
+                return '<th><a href="' . $order_url . '&order=asc" data-via-ajax="page">' . $th_ . '</a></th>';
             } else {
-                return '<th><a href="' . $order_url . '&order=' . $filter . '" class="via-ajax">' . $th_ . $asc_ . $desc_ . '</a></th>';
+                return '<th><a href="' . $order_url . '&order=' . $filter . '" data-via-ajax="page">' . $th_ . $asc_ . $desc_ . '</a></th>';
             }
         } else {
             return "<th>{$th_}</th>";
@@ -477,7 +477,7 @@ HTML;
 
 		return <<<HTML
 
-			<li><a href="{$url}" class="via-ajax">{$name}</a></li>
+			<li><a href="{$url}" data-via-ajax="page">{$name}</a></li>
 
 HTML;
 	}
@@ -539,8 +539,9 @@ HTML;
 		}
         $target    = ($mr['new_window'] == 1) ? 'target="_blank"' : '';
 		$extra     = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
+        $via       = ($class == 'first-child' || $class == 'child') ? 'data-via-ajax="page"' : '';
 		return <<<HTML
-				<a tabindex="-1" href="{$url}" class="{$class}" {$target} {$extra} {$noclick}>{$mr['node_name']}</a>
+				<a tabindex="-1" href="{$url}" class="{$class}" {$target} {$extra} {$noclick} {$via}>{$mr['node_name']}</a>
 HTML;
 	}
 
@@ -952,7 +953,6 @@ HTML;
                     $("#addtag").click(function () {
                         $(".clonetags p").clone().insertAfter("#moretags");
                     });
-
                     $(".delete-tag button").click(function() {
                         var item = this;
                         var id = $(item).attr('data-tag-delete');

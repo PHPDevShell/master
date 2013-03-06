@@ -1,8 +1,3 @@
-<script type="text/javascript">
-    $(document).ready(function () {
-        $("tbody").getAjaxDeleteClick();
-    });
-</script>
 <div class="row-fluid">
     <div class="span12 action-table">
         {{{searchForm}}}
@@ -11,7 +6,7 @@
             <thead>
                 <tr>
                     {{{th}}}
-                    <th class="tr"><a href="{{new}}" class="btn btn-inverse btn-mini via-ajax"><i class="icon-plus icon-white"></i></a></th>
+                    <th class="tr"><a href="{{new}}" class="btn btn-inverse btn-mini" data-via-ajax="page"><i class="icon-plus icon-white"></i></a></th>
                 </tr>
             </thead>
             {{/show}}
@@ -22,13 +17,13 @@
                         {{user_role_id}}
                     </td>
                     <td>
-                        <a href="{{edit_role_url}}" class="via-ajax">{{translated_role_name}}</a>
+                        <a href="{{edit_role_url}}" data-via-ajax="page">{{translated_role_name}}</a>
                     </td>
                     <td>
                         {{user_role_note}}
                     </td>
                     <td class="tr">
-                        <a href="{{delete_role_url}}" class="btn btn-mini get-ajax-delete-click"><i class="icon-remove"></i></a>
+                        <a href="{{delete_role_url}}" class="btn btn-mini get-ajax-delete-click" data-via-ajax="delete-row"><i class="icon-remove"></i></a>
                     </td>
                 </tr>
             {{/RESULTS}}
