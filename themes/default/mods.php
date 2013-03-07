@@ -917,9 +917,9 @@ HTML;
                 $delete_url = $nav->buildURL(null, 'delete-tag=' . $tagid);
                 $existingtags .= <<<HTML
 
-                    <div>
-                        <p class="delete-tag pull-right">
-                            <button data-tag-delete="{$delete_url}" type="button" class="btn btn-warning"><i class="icon-minus icon-white"></i></button>
+                    <div class="tagger-tags">
+                        <p class="pull-right">
+                            <button data-tag-delete="{$delete_url}" type="button" class="delete-tag btn btn-warning"><i class="icon-minus icon-white"></i></button>
                         </p>
                         <p>
                             <input type="hidden" name="tagger_id[{$tagid}_update]" value="{$tagid}">
@@ -939,33 +939,36 @@ HTML;
             <p id="moretags" class="pull-right">
                 <button id="addtag" type="button" class="btn btn-info"><i class="icon-chevron-down icon-white"></i></button>
             </p>
-            <div class="clonetags">
-                <p>
-                    <input type="text" name="tagger_name[]" value="" placeholder="{$tagnametext}"><br>
-                    <textarea id="tagger" name="tagger_value[]" placeholder="{$tagvaluetext}"></textarea>
-                </p>
-            </div>
+            <p>
+                <input type="text" name="tagger_name[]" value="" placeholder="{$tagnametext}"><br>
+                <textarea id="tagger" name="tagger_value[]" placeholder="{$tagvaluetext}"></textarea>
+            </p>
 
             <hr>
             {$existingtags}
 			<script type="text/javascript">
                 $(function() {
                     $("#addtag").click(function () {
-                        $(".clonetags p").clone().insertAfter("#moretags");
+                        $("#moretags").after('<p><input type="text" name="tagger_name[]" value="" placeholder="{$tagnametext}"><br><textarea id="tagger" name="tagger_value[]" placeholder="{$tagvaluetext}"></textarea></p>');
                     });
-                    $(".delete-tag button").click(function() {
+                    var tagger = $(".tagger-tags");
+                    tagger.on('click', ".delete-tag", function() {
+                        var first = this;
+                        $(first).removeClass("btn-warning delete-tag").addClass("btn-danger delete-tag-ready");
+                        return false;
+                    });
+                    tagger.on('click', ".delete-tag-ready", function() {
                         var item = this;
-                        var id = $(item).attr('data-tag-delete');
+                        var delete_url = $(item).attr('data-tag-delete');
                         $(item).addClass("disabled");
                         $("i", item).removeClass('icon-minus').append(spinner());
-                        $.get("{$delete_url}", function () {
+                        $.get(delete_url, function () {
                             $(item).parent().parent().fadeOut('slow');
                         });
                     });
                 });
             </script>
 HTML;
-
         return $HTML;
     }
 

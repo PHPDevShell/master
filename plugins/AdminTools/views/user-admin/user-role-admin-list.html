@@ -1,3 +1,4 @@
+<!-- HTML -->
 <div class="row-fluid">
     <div class="span12 action-table">
         {{{searchForm}}}
@@ -23,7 +24,7 @@
                         {{user_role_note}}
                     </td>
                     <td class="tr">
-                        <a href="{{delete_role_url}}" class="btn btn-mini get-ajax-delete-click" data-via-ajax="delete-row"><i class="icon-remove"></i></a>
+                        <a href="{{delete_role_url}}" class="btn btn-mini delete-row"><i class="icon-remove"></i></a>
                     </td>
                 </tr>
             {{/RESULTS}}
@@ -37,4 +38,11 @@
         {{{pagination}}}
     </div>
 </div>
+
+<!-- Javascript -->
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".delete-row").viaAjaxDeleteRow();
+    });
+</script>
 

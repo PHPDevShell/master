@@ -32,6 +32,8 @@ class PHPDS_readRoleNameQuery extends PHPDS_query
 			_db_core_user_roles
 		WHERE
 			user_role_name = '%s'
+		AND
+			user_role_id != %u
 		";
     protected $singleRow = true;
 }
