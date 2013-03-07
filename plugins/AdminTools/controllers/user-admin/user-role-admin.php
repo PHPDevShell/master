@@ -137,7 +137,7 @@ class UserRoleAdmin extends PHPDS_controller
         }
         if ($this->P('save')) {
             $this->saveAction();
-            return 'true';
+            return ($this->crud->f->user_role_id) ? $this->crud->f->user_role_id : 'false';
         }
     }
 }

@@ -4,12 +4,10 @@
         <div class="span4">
 			<fieldset>
 				<legend>{{#i}}Role Detail{{/i}}</legend>
-				{{#user_role_id}}
                 <p>
 				    <label for="user_role_id">{{#i}}ID{{/i}}</label>
 				    <input id="user_role_id" type="text" name="user_role_id" value="{{user_role_id}}" readonly>
                 </p>
-                {{/user_role_id}}
                 <p>
 				    <label for="user_role_name">{{#i}}Name{{/i}}</label>
 				    <input id="user_role_name" type="text" name="user_role_name" value="{{user_role_name}}" required="required">
@@ -57,6 +55,9 @@
         $("#confirm-delete").confirmDeleteURL();
         $("#bg").on('focus', 'textarea', function () { $(this).autosize(); });
         $("#user_role_name").singleValidate();
+        if (!$("#user_role_id").val()) {
+            $("#user_role_id").parent("p").hide();
+        }
         $('button[type="submit"]').on('click', function () {
             var item = this;
             if ($(item).hasClass('disabled')) return false;
@@ -70,6 +71,9 @@
                     $("i", this).addClass("icon-ok");
                     refresh();
                 })
+                if (data && data !== 'false') {
+                    $("#user_role_id").val(data).parent("p").fadeIn('slow');
+                }
             });
             return false;
         });

@@ -251,10 +251,9 @@ class PHPDS_controller extends PHPDS_dependant
 				throw new PHPDS_exception('Ajax call for an unknown method "'.$f.'"');
 			}
 		} else {
-			$raw_data = $this->viaAJAX();
+            $raw_data = $this->viaAJAX();
 		}
-
-		return $this->handleResult($raw_data);
+        return $this->handleResult($raw_data);
 	}
 
 	/**
@@ -275,15 +274,14 @@ class PHPDS_controller extends PHPDS_dependant
 
 		$encoded_data = PU_isJSON($raw_data);
 		if (false !== $encoded_data) {
-			$core->themeFile = '';
+            $core->themeFile = '';
 			$core->data = $encoded_data;
 			return true;
 		} else {
-			if (is_null($raw_data)) { // deal with it the usual way (normal template)
+			if (is_null($raw_data)) { // deal with it the usual way
 				return true;
 			} else {
 				$core->themeFile = '';
-
 				if (false === $raw_data) { //  we consider it's an error
 					return false;
 				} elseif (true === $raw_data) { // controller handled output
@@ -291,6 +289,9 @@ class PHPDS_controller extends PHPDS_dependant
 				} elseif (is_string($raw_data)) { // bare data, using empty template
 					$core->data = $raw_data;
 					return true;
+                } elseif (is_int($raw_data)) {
+                    $core->data = $raw_data;
+                    return true;
 				} else {
 					throw new PHPDS_exception(sprintf('The return value of controller %d is invalid.', $this->configuration['m']));
 				}

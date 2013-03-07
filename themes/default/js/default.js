@@ -169,6 +169,7 @@ function ajaxInputError (request) {
                 }
             }
         });
+        return true;
     }
 }
 
@@ -278,12 +279,12 @@ function ajaxMessage (request, delaytime, fadeout) {
     }
 })(jQuery);
 
-
 (function (jQuery) {
     jQuery.fn.singleValidate = function () {
+        var root = this;
         return this.each(function () {
             var $this       = jQuery(this);
-            var url         = jQuery(location).attr('href');
+            var url         = root.parents("form").attr('action');
             var fieldname   = $this.attr('name');
             var fieldvalue  = $this.attr('value');
             var identifier  = fieldname + '_watch';
@@ -294,7 +295,7 @@ function ajaxMessage (request, delaytime, fadeout) {
             $this.typeWatch({
                 callback: function(value) {
                     fieldwatch[identifier] = value;
-                    jQuery.post(url, fieldwatch, function (data, textStatus, request) {
+                    jQuery.post(null, fieldwatch, function (data, textStatus, request) {
                         jQuery("i." + tmp_tag).remove();
                         $this.removeClass('error success');
                         var parent_form = $this.parents("form");
@@ -309,7 +310,7 @@ function ajaxMessage (request, delaytime, fadeout) {
                             jQuery('button[type="submit"]', parent_form).removeClass("disabled");
                             jQuery('span.' + label_tag).remove();
                         }
-                        jQuery($this).focus();
+                        $this.focus();
                     });
                 },
                 elsedo: function(value) {
