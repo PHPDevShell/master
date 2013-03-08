@@ -127,6 +127,41 @@ function requestPage() {
 })(jQuery);
 
 (function (jQuery) {
+    jQuery.fn.viaAjaxSubmit = function (id) {
+        var $this   = this;
+        var $url    = $this.attr('action');
+        var $id     = jQuery(id);
+        if (!$id.val()) {
+            $id.parent().hide();
+        }
+        return this.each(function () {
+            jQuery('button[type="submit"]', $this).on('click', function () {
+                var item = this;
+                if (jQuery(item).hasClass('disabled')) return false;
+                jQuery(item).removeClass("btn-primary").addClass("btn-warning disabled");
+                jQuery("i", item).removeClass("icon-ok").append(spinner());
+                jQuery.post($url, $this.serializeObject(item), function (data, textStatus, request) {
+                    jQuery(item).stop().queue(function (refresh) {
+                        jQuery(this).removeClass("disabled btn-warning").addClass("btn-primary");
+                        jQuery(".ajax-spinner-image").remove();
+                        jQuery("i", this).addClass("icon-ok");
+                        if (jQuery(item).attr("name") === 'copy') {
+                            $id.val("").parent().fadeOut('slow');
+                            data = 'false';
+                        }
+                        refresh();
+                    });
+                    if (data && data !== 'false') {
+                        $id.val(data).parent().fadeIn('slow');
+                    }
+                });
+                return false;
+            });
+        });
+    }
+})(jQuery);
+
+(function (jQuery) {
     jQuery.fn.confirmDeleteURL = function () {
         var $this = this;
         return this.each(function () {
@@ -165,12 +200,13 @@ function ajaxInputError (request) {
                 }
                 jQuery('[name="' + field + '"]').addClass(notify_type);
                 if (this.message != '' && !jQuery('.' + label_tag).hasClass(label_tag)) {
-                    jQuery('[for="' + field + '"]').append('<span class="'+ label_tag +' text-error">: ' + this.message + '</span>');
+                    jQuery('[for="' + field + '"]').append('<span class="'+ label_tag +' text-error"> &#10077;' + this.message + '&#10078;</span>');
                 }
             }
         });
         return true;
     }
+    return false;
 }
 
 function ajaxMessage (request, delaytime, fadeout) {
@@ -280,14 +316,16 @@ function ajaxMessage (request, delaytime, fadeout) {
 })(jQuery);
 
 (function (jQuery) {
-    jQuery.fn.singleValidate = function () {
-        var root = this;
+    jQuery.fn.singleValidate = function (activeid) {
+        var root  = this;
+        if (typeof(activeid) === "undefined" || activeid === null) activeid = null;
         return this.each(function () {
             var $this       = jQuery(this);
             var url         = root.parents("form").attr('action');
             var fieldname   = $this.attr('name');
             var fieldvalue  = $this.attr('value');
             var identifier  = fieldname + '_watch';
+            var againstid   = fieldname + '_id';
             var tmp_tag     = identifier + '_ajaxtag';
             var label_tag   = fieldname + '_ajaxlabel';
             jQuery('span.' + label_tag).remove();
@@ -295,6 +333,9 @@ function ajaxMessage (request, delaytime, fadeout) {
             $this.typeWatch({
                 callback: function(value) {
                     fieldwatch[identifier] = value;
+                    if (activeid) {
+                        fieldwatch[againstid] = jQuery(activeid).val();
+                    }
                     jQuery.post(null, fieldwatch, function (data, textStatus, request) {
                         jQuery("i." + tmp_tag).remove();
                         $this.removeClass('error success');
@@ -302,7 +343,7 @@ function ajaxMessage (request, delaytime, fadeout) {
                         if (data == 'true' && fieldvalue != value) {
                             $this.addClass('error');
                             $this.after('<i class="' + tmp_tag + ' icon-remove pull-right"></i>');
-                            jQuery('button[type="submit"]', parent_form).addClass("disabled");
+                            //jQuery('button[type="submit"]', parent_form).addClass("disabled");
                             jQuery('span.' + label_tag).remove();
                         } else {
                             $this.addClass('success');
@@ -454,7 +495,7 @@ function ajaxMessage (request, delaytime, fadeout) {
                     timer.timer = setTimeout(timerCallbackFx, timerWait);
                 };
 
-                jQuery(elem).keydown(startWatch);
+                jQuery(elem).on('keydown input', startWatch);
             }
         }
 

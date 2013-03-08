@@ -39,7 +39,7 @@ class UserRoleAdmin extends PHPDS_controller
             $permission = $this->saveAction();
         }
 
-		if ($this->P('new')) {
+		if ($this->P('copy')) {
 			$this->crud->f->user_role_id = 0;
 			$this->crud->f->user_role_name = '';
 			$this->crud->f->user_role_note = '';
@@ -96,7 +96,7 @@ class UserRoleAdmin extends PHPDS_controller
         }
 
         if ($this->db->doesRecordExist('_db_core_user_roles', 'user_role_name', "{$crud->f->user_role_name}", 'user_role_id', "{$crud->f->user_role_id}") == true)
-            $crud->errorElse(sprintf(__('%s exists already.'), $crud->f->user_role_name), 'user_role_name');
+            $crud->errorElse(sprintf(__('%s already exists.'), $crud->f->user_role_name), 'user_role_name');
 
         if ($crud->ok()) {
             $crud->f->user_role_id = $this->db->invokeQuery('PHPDS_writeRoleQuery', $crud->f->user_role_id, $crud->f->user_role_name, $crud->f->user_role_note);
@@ -109,7 +109,7 @@ class UserRoleAdmin extends PHPDS_controller
                 $this->P('tagger_id'));
             $this->template->ok(sprintf(__('Saved %s.'), $crud->f->user_role_name));
         } else {
-            $this->template->warning(__("Cannot save, check errors!"));
+            $this->template->warning(__("Form contains errors."));
             $crud->errorShow();
         }
 
@@ -127,15 +127,15 @@ class UserRoleAdmin extends PHPDS_controller
             }
         }
         if ($this->P('user_role_name_watch')) {
-            if ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'), $this->G('edit-role'))) {
-                $this->crud->error("Role already exist", 'user_role_name');
+            if ($this->db->invokeQuery('PHPDS_readRoleNameQuery', $this->P('user_role_name_watch'), $this->P('user_role_name_id'))) {
+                $this->crud->error(sprintf(__('%s already exists.'), $this->P('user_role_name_watch')), 'user_role_name');
                 $this->crud->errorShow();
                 return 'true';
             } else {
                 return 'false';
             }
         }
-        if ($this->P('save')) {
+        if ($this->P('save') || $this->P('copy')) {
             $this->saveAction();
             return ($this->crud->f->user_role_id) ? $this->crud->f->user_role_id : 'false';
         }

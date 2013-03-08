@@ -1,5 +1,5 @@
 <!-- HTML -->
-<form action="{{self_url}}" method="post" class="validate ajax-form">
+<form action="{{self_url}}" method="post">
     <div class="row">
         <div class="span4">
 			<fieldset>
@@ -36,8 +36,9 @@
                 <legend>&nbsp;</legend>
                 <p>
                     <button type="submit" name="save" value="save" class="btn btn-primary"><i class="icon-ok icon-white"></i></button>
-                    <button type="submit" name="new" value="new" class="btn btn-success"><i class="icon-plus icon-white"></i></button>
-                    <button type="reset" name="reset" value="reset" class="btn"><i class="icon-refresh"></i></button>
+                    <button type="submit" name="copy" value="copy" class="btn btn-primary"><i class="icon-repeat icon-white"></i></button>
+                    <a href="{{self_url}}" class="btn btn-success" data-via-ajax="page"><i class="icon-plus icon-white"></i></a>
+                    <button type="reset" class="btn"><i class="icon-refresh"></i></button>
                     {{#delete_url}}
                     <a id="confirm-delete" href="{{delete_url}}" class="btn btn-warning" data-via-ajax="page"><i class="icon-trash icon-white"></i></a>
                     {{/delete_url}}
@@ -54,29 +55,8 @@
         $(".checkall").checkAllCheckbox();
         $("#confirm-delete").confirmDeleteURL();
         $("#bg").on('focus', 'textarea', function () { $(this).autosize(); });
-        $("#user_role_name").singleValidate();
-        if (!$("#user_role_id").val()) {
-            $("#user_role_id").parent("p").hide();
-        }
-        $('button[type="submit"]').on('click', function () {
-            var item = this;
-            if ($(item).hasClass('disabled')) return false;
-            $(item).removeClass("btn-primary").addClass("btn-warning disabled");
-            $("i", item).removeClass("icon-ok").append(spinner());
-            $.post("{{self_url}}", $(".ajax-form").serializeObject(item), function (data, textStatus, request) {
-                ajaxInputError(request);
-                $(item).delay(100).queue(function (refresh) {
-                    $(this).removeClass("disabled btn-warning").addClass("btn-primary");
-                    $(".ajax-spinner-image").remove();
-                    $("i", this).addClass("icon-ok");
-                    refresh();
-                })
-                if (data && data !== 'false') {
-                    $("#user_role_id").val(data).parent("p").fadeIn('slow');
-                }
-            });
-            return false;
-        });
+        $("#user_role_name").singleValidate("#user_role_id");
+        $("form").viaAjaxSubmit("#user_role_id");
     });
 </script>
 
