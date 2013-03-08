@@ -19,6 +19,7 @@
             </div>
         </div>
         <!-- FOOTER AREA -->
+        <hr>
         <?php $template->outputDebugInfo() ?>
         <?php $template->outputFooterJS() ?>
     </body>

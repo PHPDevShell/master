@@ -1,3 +1,6 @@
+body, input, button, select, textarea {
+    font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
 
 /* Code basics */
 .tl { text-align: left !important;}
@@ -169,4 +172,20 @@ input.info, textarea.info {
     color: #fff;
     background-color: #3a87ad;
     border-color: #3a87ad;
+}
+
+@media (max-width: 767px) {
+    .add-button {
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+}
+
+@media (min-width: 767px) {
+    .add-button {
+        position: absolute;
+        right: 0;
+        top: 20px;
+    }
 }

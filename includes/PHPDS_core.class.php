@@ -80,9 +80,9 @@ class PHPDS_core extends PHPDS_dependant
         }
 
         // Option 2 : Switch via get request
-		if (! empty($_GET['via-ajax'])) {
+		if (! empty($_REQUEST['via-ajax'])) {
 			// Determine correct node theme.
-			switch ($_GET['via-ajax']) {
+			switch ($_REQUEST['via-ajax']) {
 				// Widget Ajax.
 				case 'widget':
 					$this->themeFile = '';

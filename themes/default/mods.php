@@ -364,11 +364,11 @@ HTML;
 		$HTML = <<<HTML
 
             <div id="search-field-outer">
-                <form action="{$action}" method="post">
+                <form id="search-form-phpds" action="{$action}" method="post">
                     <div id="searchForm">
                         <div class="input-append">
                             <input id="search_field" type="text" name="search_field" value="{$value}" class="{$class}">
-                            <button class="btn" type="submit"><i class="icon-search"></i></button>
+                            <button class="btn" type="submit" disabled><i class="icon-search"></i></button>
                         </div>
                         <input type="hidden" value="Filter" name="search">
                         {$validate}
