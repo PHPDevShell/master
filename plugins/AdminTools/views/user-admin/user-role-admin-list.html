@@ -1,5 +1,5 @@
 <!-- HTML -->
-<div class="row-fluid">
+<div class="results-row row-fluid">
     <div class="span12 action-table">
         {{{searchForm}}}
         <div class="add-button">
@@ -45,34 +45,13 @@
         </div>
     </div>
 </div>
-
 <!-- Javascript -->
 <script type="text/javascript">
     $(document).ready(function () {
-        $(".delete-row").viaAjaxDeleteRow();
-        $("#search_field").typeWatch({
-            captureLength: 0,
-            callback: function (value) {
-                var url = $(this).parents("form").attr("action");
-                jQuery.post(url, {"search_field" : value, "search" : "Filter", "via-ajax" : "page"}, function (data, textStatus, request) {
-                    var allhtml     = $(data);
-                    var tbody       = allhtml.find("tbody");
-                    var pagination  = allhtml.find("div#pagination-links");
-                    var noresults   = allhtml.find("div#no-results");
-                    if (noresults.find("div").length) {
-                        $("thead").hide();
-                    } else {
-                        $("thead").fadeIn('slow');
-                    }
-                    $("tbody").replaceWith(tbody);
-                    $("div#pagination-links").replaceWith(pagination);
-                    $("div#no-results").replaceWith(noresults);
-                });
-            },
-            elsedo:function (value) {
-
-            }
+        $(".results-row").on('rowsUpdated', function (event) {
+            $(".delete-row").viaAjaxDeleteRow();
         });
+        $(".action-table").viaAjaxSearch();
     });
 </script>
 

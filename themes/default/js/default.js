@@ -99,8 +99,9 @@ function initPage() {
 }
 
 function requestPage() {
-    jQuery("#bg").fadeTo('slow', 0.2);
-    jQuery("#ajax-loader-art").fadeIn('slow');
+    jQuery("#bg").stop().fadeTo('slow', 0.2, function() {
+        jQuery("#ajax-loader-art").fadeIn('slow');
+    });
 }
 
 (function (jQuery) {
@@ -163,10 +164,10 @@ function requestPage() {
 
 (function (jQuery) {
     jQuery.fn.confirmDeleteURL = function () {
-        var $this = this;
+        var $this       = this;
+        var $parent     = $this.parent();
+        var $selector   = $this.selector;
         return this.each(function () {
-            var $parent = $this.parent();
-            var $selector = $this.selector;
             $parent.one('click', $selector, function () {
                 var first = this;
                 jQuery(first).removeClass("btn-warning").addClass("btn-danger confirm-delete-ready");
@@ -178,6 +179,60 @@ function requestPage() {
                 jQuery(item).addClass("disabled");
             });
         });
+    }
+})(jQuery);
+
+(function (jQuery) {
+    jQuery.fn.viaAjaxSearch = function (searchfield, searchbutton) {
+
+        searchfield  = typeof searchfield !== 'undefined' ? searchfield : '#search_field';
+        searchbutton = typeof searchbutton !== 'undefined' ? searchbutton : '#search_button';
+
+        var $this        = this;
+        var $selector    = $this.selector;
+        var $url         = jQuery(this).parents("form").attr("action");
+        $this.trigger('rowsUpdated');
+
+        return this.each(function () {
+            jQuery(searchfield).click(function () {
+                jQuery(this).removeClass('active');
+            });
+            jQuery(searchbutton).on('click', function() {
+                var value_ = jQuery(searchfield).val();
+                sendForm($url, value_);
+                return false;
+            });
+            jQuery(searchfield).typeWatch({
+                captureLength:0,
+                callback:function (value) {
+                    sendForm($url, value);
+                },
+                elsedo:function (value) {
+
+                }
+            });
+        });
+
+        function sendForm(url, value) {
+            requestPage();
+            jQuery.post(url, {"search_field":value, "search":"Filter", "via-ajax":"page"}, function (data, textStatus, request) {
+                var root = jQuery(data);
+                var parent = jQuery($selector, root);
+                var tbody = parent.find("tbody");
+                var pagination = parent.find("#pagination-links");
+                var noresults = parent.find("#no-results");
+                if (noresults.find("div").length) {
+                    jQuery("thead", $this).hide();
+                } else {
+                    jQuery("thead", $this).fadeIn('slow');
+                }
+                jQuery("tbody", $this).replaceWith(tbody);
+                jQuery("#pagination-links", $this).replaceWith(pagination);
+                jQuery("#no-results", $this).replaceWith(noresults);
+                $this.trigger('rowsUpdated');
+                destroyPage();
+            });
+        }
     }
 })(jQuery);
 

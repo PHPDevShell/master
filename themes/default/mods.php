@@ -348,7 +348,7 @@ HTML;
 					{$first_page}
 					{$rw}
 					{$previous_page}
-					<li><a href="#" class="muted">[{$currentPage_}/{$total_pages_}] - [{$current_records_}/{$totalRows_}]</a></li>
+					<li><a class="muted">[{$currentPage_}/{$total_pages_}] - [{$current_records_}/{$totalRows_}]</a></li>
 					{$next_page}
 					{$ff}
 					{$last_page}
@@ -368,7 +368,7 @@ HTML;
                     <div id="searchForm">
                         <div class="input-append">
                             <input id="search_field" type="text" name="search_field" value="{$value}" class="{$class}">
-                            <button class="btn" type="submit" disabled><i class="icon-search"></i></button>
+                            <button id="search_button" class="btn" type="submit"><i class="icon-search"></i></button>
                         </div>
                         <input type="hidden" value="Filter" name="search">
                         {$validate}
@@ -936,6 +936,7 @@ HTML;
         }
 
         $HTML = <<<HTML
+
             <p id="moretags" class="pull-right">
                 <button id="addtag" type="button" class="btn btn-info"><i class="icon-chevron-down icon-white"></i></button>
             </p>
@@ -943,11 +944,10 @@ HTML;
                 <input type="text" name="tagger_name[]" value="" placeholder="{$tagnametext}"><br>
                 <textarea id="tagger" name="tagger_value[]" placeholder="{$tagvaluetext}"></textarea>
             </p>
-
             <hr>
             {$existingtags}
 			<script type="text/javascript">
-                $(function() {
+                $(document).ready(function() {
                     $("#addtag").click(function () {
                         $("#moretags").after('<p><input type="text" name="tagger_name[]" value="" placeholder="{$tagnametext}"><br><textarea id="tagger" name="tagger_value[]" placeholder="{$tagvaluetext}"></textarea></p>');
                     });
@@ -968,6 +968,7 @@ HTML;
                     });
                 });
             </script>
+
 HTML;
         return $HTML;
     }
