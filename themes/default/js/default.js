@@ -197,9 +197,10 @@ function requestPage() {
             jQuery(searchfield).click(function () {
                 jQuery(this).removeClass('active');
             });
-            jQuery(searchbutton).on('click', function() {
+            jQuery(searchbutton).on('click', function(event) {
                 var value_ = jQuery(searchfield).val();
                 sendForm($url, value_);
+                event.stopImmediatePropagation();
                 return false;
             });
             jQuery(searchfield).typeWatch({
@@ -499,8 +500,7 @@ function ajaxMessage (request, delaytime, fadeout) {
         function checkElement(timer, override) {
             var value = jQuery(timer.el).val();
             // Fire if text >= options.captureLength AND text != saved text OR if override AND text >= options.captureLength
-            if ((value.length >= options.captureLength && value.toUpperCase() != timer.text)
-                || (override && value.length >= options.captureLength))
+            if ((value.length >= options.captureLength && value.toUpperCase() != timer.text) || (!override && value.length >= options.captureLength))
             {
                 timer.text = value.toUpperCase();
                 timer.cb.call(timer.el, value);
