@@ -1,5 +1,9 @@
-body, input, button, select, textarea {
+body, button, label {
     font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+textarea, input, select {
+    font-family: "Ubuntu Mono", "Lucida Console", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* Code basics */
