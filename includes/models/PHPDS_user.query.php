@@ -144,4 +144,17 @@ class USER_belongsToRoleQuery extends PHPDS_query
 	}
 }
 
+class USER_updateUserRoleQuery extends PHPDS_query
+{
+    protected $sql = "
+		UPDATE
+			_db_core_users
+		SET
+			user_role = false
+		WHERE
+			user_role = %u
+    ";
+    protected $returnId = true;
+}
+
 

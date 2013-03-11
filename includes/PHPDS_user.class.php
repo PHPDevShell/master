@@ -27,18 +27,6 @@ class PHPDS_user extends PHPDS_dependant
 		return $this->db->invokeQuery('USER_getRolesQuery', $user_id);
 	}
 
-    /**
-     * Return groups id for a given user id,
-     *
-     * @param integer $user_id
-     * @return integer
-     * @author Jason Schoeman <titan@phpdevshell.org>
-     */
-    public function getGroups($user_id = null)
-    {
-        return $this->db->invokeQuery('USER_getGroupsQuery', $user_id);
-    }
-
 	/**
 	 * Check to see if a certain role exists.
 	 *
@@ -51,17 +39,6 @@ class PHPDS_user extends PHPDS_dependant
 	}
 
 	/**
-	 * Check to see if a certain group exists.
-	 *
-	 * @param integer $group_id
-	 * @return boolean
-	 */
-	public function groupExist($group_id)
-	{
-		return $this->db->invokeQuery('USER_groupExistQuery', $group_id);
-	}
-
-	/**
 	 * Check if user belongs to given role.
 	 *
 	 * @param integer $user_id
@@ -69,7 +46,7 @@ class PHPDS_user extends PHPDS_dependant
 	 * @return boolean
 	 * @author Jason Schoeman <titan@phpdevshell.org>
 	 */
-	public function belongsToRole($user_id = false, $user_role=null)
+	public function belongsToRole($user_id = null, $user_role = null)
 	{
 		return $this->db->invokeQuery('USER_belongsToRoleQuery', $user_id, $user_role);
 	}
@@ -96,25 +73,18 @@ class PHPDS_user extends PHPDS_dependant
 	}
 
     /**
-     * Creates a query to extend a group query, it will return false if user is root so everything can get listed.
-     * This is meant to be used inside an existing group query.
+     * Deletes a specific role by given ID.
      *
-     * @param string $query_request Normal query to be returned if user is not a root user.
-     * @param string $query_root_request If you want a query to be processed for a root user seperately.
-     * @return mixed
+     * @param $id
+     * @return string
      */
-	public function setGroupQuery($query_request, $query_root_request = null)
-	{
-		if ($this->user->isRoot()) {
-			if (!empty($query_root_request)) {
-				return " $query_root_request ";
-			} else {
-				return false;
-			}
-		} else {
-			return " $query_request ";
-		}
-	}
+    public function deleteRole($id)
+    {
+        $deleted_role = $this->db->deleteQuick('_db_core_user_roles', 'user_role_id',  $id, 'user_role_name');
+        $this->db->deleteQuick('_db_core_user_role_permissions', 'user_role_id',  $id);
+        $this->db->invokeQuery('USER_updateUserRoleQuery',  $id);
+        return $deleted_role;
+    }
 
 	/**
 	 * Check if user is a root user.
@@ -159,22 +129,6 @@ class PHPDS_user extends PHPDS_dependant
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Check if the currently logged in user is the same group as the given user.
-	 * This can be used to check if the current user is allowed access to the given user's data
-	 *
-	 * @date 20100222
-	 * @version	1.0
-	 * @author greg
-	 * @param integer $user_id The ID of the other user
-	 * @return boolean
-	 */
-	public function isSameGroup($user_id)
-	{
-		$edit = $this->db->invokeQuery('USER_isSameGroupQuery', $user_id);
-		return (! empty($edit['user_id']));
 	}
 
 	/**

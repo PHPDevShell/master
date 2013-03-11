@@ -1,10 +1,5 @@
 <?php
 
-/**
- * Controller Class: User Role Administration
- * @author Jason Schoeman
- * @return string
- */
 class UserRoleAdmin extends PHPDS_controller
 {
     public $crud;
@@ -17,10 +12,6 @@ class UserRoleAdmin extends PHPDS_controller
         $this->crud = $crud;
     }
 
-	/**
-	 * Execute Controller
-	 * @author Jason Schoeman
-	 */
 	public function execute()
 	{
         $permission = array();

@@ -1,28 +1,5 @@
 <?php
 
-/**
- * User Role Admin List - Update User
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- *
- */
-class PHPDS_updateUserQuery extends PHPDS_query
-{
-	protected $sql = "
-		UPDATE
-			_db_core_users
-		SET
-			user_role = false
-		WHERE
-			user_role = %u
-    ";
-	protected $returnId = true;
-}
-
-/**
- * User Role Admin List - Read Roles
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- *
- */
 class PHPDS_readRoleQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -32,16 +9,9 @@ class PHPDS_readRoleQuery extends PHPDS_query
 			_db_core_user_roles
     ";
 
-	/**
-	 * Initiate query invoke command.
-	 * @param int
-	 * @return array
-	 */
 	public function invoke($parameters = null)
 	{
 		$navigation = $this->navigation;
-		$template = $this->template;
-		$core = $this->core;
 
 		// Initiate pagination plugin.
 		$pagination = $this->factory('pagination');
