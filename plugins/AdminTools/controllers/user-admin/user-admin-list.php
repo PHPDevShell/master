@@ -27,10 +27,7 @@ class UserAdminList extends PHPDS_controller
     private function deleteUser ()
     {
         $iddelete = $this->G('delete-user');
-        // Delete user.
-        $deleted_user = $this->db->deleteQuick('_db_core_user_users', 'user_user_id',  $iddelete, 'user_user_name');
-        $this->db->deleteQuick('_db_core_user_user_permissions', 'user_user_id',  $iddelete);
-        $this->db->invokeQuery('PHPDS_updateUserQuery',  $iddelete);
+        $deleted_user = $this->user->deleteUser($iddelete);
         if ($deleted_user) {
             $this->template->ok(sprintf(__("User %s deleted."), $deleted_user));
             return true;

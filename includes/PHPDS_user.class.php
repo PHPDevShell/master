@@ -86,6 +86,17 @@ class PHPDS_user extends PHPDS_dependant
         return $deleted_role;
     }
 
+    /**
+     * Deletes a specific user by given ID.
+     *
+     * @param $id
+     * @return string
+     */
+    public function deleteUser($id)
+    {
+        return $this->db->deleteQuick('_db_core_users', 'user_id',  $id, 'user_display_name');
+    }
+
 	/**
 	 * Check if user is a root user.
 	 *
