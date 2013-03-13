@@ -172,13 +172,15 @@ class PHPDS_legacyConnector extends PHPDS_dependant implements iPHPDS_dbConnecto
 	{
 		if (empty($this->link)) $this->connect();
 		// Replace the DB prefix.
-		$real_sql = preg_replace('/_db_/', $this->dbPrefix, $sql);
+        if ($this->dbPrefix != '_db_')
+		    $sql = preg_replace('/_db_/', $this->dbPrefix, $sql);
+
 		// Run query.
-		if (!empty($real_sql)) {
+		if (!empty($sql)) {
 			// Count Queries Used...
 			$this->db->countQueries ++;
-			$this->_log($real_sql);
-			$this->result = mysql_query($real_sql, $this->link);
+			$this->_log($sql);
+			$this->result = mysql_query($sql, $this->link);
 			if (!$this->result) {
 				throw $this->factory('PHPDS_databaseException', mysql_error($this->link), mysql_errno($this->link));
 			}

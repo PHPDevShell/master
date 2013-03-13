@@ -1,5 +1,5 @@
 -- Create filters for search.;
-CREATE TABLE `pds_core_filter` (
+CREATE TABLE `_db_core_filter` (
 	`search_id` int(255) unsigned NOT NULL AUTO_INCREMENT,
 	`user_id` int(20) DEFAULT NULL,
 	`node_id` varchar(64) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE `pds_core_filter` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- Create logs table for watchdog.;
-CREATE TABLE `pds_core_logs` (
+CREATE TABLE `_db_core_logs` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`log_type` int(2) DEFAULT NULL,
 	`log_description` text,
@@ -26,7 +26,7 @@ CREATE TABLE `pds_core_logs` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- Create table for default node items.;
-CREATE TABLE `pds_core_node_items` (
+CREATE TABLE `_db_core_node_items` (
 	`node_id` varchar(64) NOT NULL,
 	`parent_node_id` varchar(64) DEFAULT NULL,
 	`node_name` varchar(255) DEFAULT NULL,
@@ -47,33 +47,11 @@ CREATE TABLE `pds_core_node_items` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert default node items.;
-INSERT INTO `pds_core_node_items` VALUES ('readme', '0', 'Readme', 'readme.php', 'About', '1', null, '0', '1', '0', 'default', 'readme', null, null);
-
-INSERT INTO `pds_core_node_items` VALUES ('admin', '0', 'Admin', 'user/admin.system-admin', 'AdminTools', '2', 'system-settings', '0', '2', '0', 'default', 'admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('system-settings', 'admin', 'System Settings', 'system-admin/general-settings.php', 'AdminTools', '1', null, '0', '1', '0', 'default', 'system-settings', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('config-manager', 'admin', 'Global Config', 'system-admin/config-manager.php', 'AdminTools', '1', null, '0', '2', '0', 'default', 'config-manager', null, null);
-
-INSERT INTO `pds_core_node_items` VALUES ('user-admin-list', 'admin', 'Users', 'user-admin/user-admin-list.php', 'AdminTools', '1', null, '0', '3', '0', 'default', 'user-admin-list', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('user-admin', 'admin', 'User', 'user-admin/user-admin.php', 'AdminTools', '1', null, '0', '4', '3', 'default', 'user-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('role-admin-list', 'admin', 'Roles', 'user-admin/user-role-admin-list.php', 'AdminTools', '1', null, '0', '7', '0', 'default', 'role-admin-list', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('role-admin', 'admin', 'Role', 'user-admin/user-role-admin.php', 'AdminTools', '1', null, '0', '8', '3', 'default', 'role-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('node-admin-list', 'admin', 'Nodes', 'node-admin/node-item-admin-list.php', 'AdminTools', '1', null, '0', '9', '0', 'default', 'node-admin-list', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('node-admin', 'admin', 'Node', 'node-admin/node-item-admin.php', 'AdminTools', '1', null, '0', '10', '3', 'default', 'node-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('tag-admin', 'admin', 'Tags', 'tagger-admin/tagger-admin.php', 'AdminTools', '1', null, '0', '11', '0', 'default', 'tag-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('theme-admin', 'admin', 'Themes', 'template-admin/theme-admin-list.php', 'AdminTools', '1', null, '0', '12', '0', 'default', 'theme-admin', null, null);
-
-INSERT INTO `pds_core_node_items` VALUES ('sys-logs', 'admin', 'System Logs', 'logs-admin/system-logs.php', 'AdminTools', '1', null, '0', '13', '0', 'default', 'sys-logs', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('file-logs', 'admin', 'File Logs', 'logs-admin/file-log-viewer.php', 'AdminTools', '1', null, '0', '14', '3', 'default', 'file-logs', null, null);
--- Test tree data
-INSERT INTO `pds_core_node_items` VALUES ('file-logs-1', 'sys-logs', 'File Logs1', 'logs-admin/file-log-viewer1.link', 'AdminTools', '2', null, '0', '15', '0', 'default', 'file-logs-1', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('file-logs-2', 'sys-logs', 'File Logs2', 'logs-admin/file-log-viewer2.link', 'AdminTools', '2', null, '0', '15', '0', 'default', 'file-logs-2', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('file-logs-3', 'sys-logs', 'File Logs3', 'logs-admin/file-log-viewer3.link', 'AdminTools', '2', null, '0', '15', '0', 'default', 'file-logs-3', null, null);
-
-INSERT INTO `pds_core_node_items` VALUES ('plugin-admin', 'admin', 'Plugins', 'plugin-activation.php', 'PluginManager', '1', null, '0', '15', '0', 'default', 'plugins-admin', null, null);
-INSERT INTO `pds_core_node_items` VALUES ('class-registry', 'admin', 'Registry', 'class-registry.php', 'PluginManager', '1', null, '0', '16', '0', 'default', 'class-registry', null, null);
+INSERT INTO `_db_core_node_items` VALUES ('readme', '0', 'Readme', 'readme.php', 'About', '1', null, '0', '1', '0', 'default', 'readme', null, null);
+INSERT INTO `_db_core_node_items` VALUES ('plugin-admin', '0', 'Plugins', 'plugin-activation.php', 'PluginManager', '1', null, '0', '15', '0', 'default', 'plugins-admin', null, null);
 
 -- Create node tree structure.;
-CREATE TABLE `pds_core_node_structure` (
+CREATE TABLE `_db_core_node_structure` (
 	`id` int(50) unsigned NOT NULL AUTO_INCREMENT,
 	`node_id` varchar(64) NOT NULL,
 	`is_parent` int(1) DEFAULT NULL,
@@ -83,33 +61,11 @@ CREATE TABLE `pds_core_node_structure` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert node tree structure.;
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('readme', '0', '2');
-
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('admin', '1', '1');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('system-settings', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('config-manager', '0', '4');
-
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('user-admin-list', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('user-admin', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('role-admin-list', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('role-admin', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('node-admin-list', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('node-admin', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('tag-admin', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('theme-admin', '0', '4');
-
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('file-logs', '0', '4');
--- Test tree
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('sys-logs', '1', '3');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('file-logs-1', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('file-logs-2', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('file-logs-3', '0', '4');
-
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('plugin-admin', '0', '4');
-INSERT INTO `pds_core_node_structure` (node_id, is_parent, type) VALUES ('class-registry', '0', '4');
+INSERT INTO `_db_core_node_structure` (node_id, is_parent, type) VALUES ('readme', '0', '2');
+INSERT INTO `_db_core_node_structure` (node_id, is_parent, type) VALUES ('plugin-admin', '0', '2');
 
 -- Create plugins table.;
-CREATE TABLE `pds_core_plugin_activation` (
+CREATE TABLE `_db_core_plugin_activation` (
 	`plugin_folder` varchar(255) NOT NULL DEFAULT '0',
 	`status` varchar(255) DEFAULT NULL,
 	`version` int(16) NOT NULL,
@@ -118,14 +74,12 @@ CREATE TABLE `pds_core_plugin_activation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert available default plugins.;
-INSERT INTO `pds_core_plugin_activation` VALUES ('Pagination', 'install', '1000', '0');
-INSERT INTO `pds_core_plugin_activation` VALUES ('Mustache', 'install', '1000', '0');
-INSERT INTO `pds_core_plugin_activation` VALUES ('UserActions', 'install', '1000', '0');
-INSERT INTO `pds_core_plugin_activation` VALUES ('StandardLogin', 'install', '1000', '0');
-INSERT INTO `pds_core_plugin_activation` VALUES ('CRUD', 'install', '1000', '0');
+INSERT INTO `_db_core_plugin_activation` VALUES ('Pagination', 'install', '1000', '0');
+INSERT INTO `_db_core_plugin_activation` VALUES ('Mustache', 'install', '1000', '0');
+INSERT INTO `_db_core_plugin_activation` VALUES ('StandardLogin', 'install', '1000', '0');
 
 -- Create classes available from default plugins.;
-CREATE TABLE `pds_core_plugin_classes` (
+CREATE TABLE `_db_core_plugin_classes` (
 	`class_id` int(10) NOT NULL AUTO_INCREMENT,
 	`class_name` varchar(155) DEFAULT NULL,
 	`alias` varchar(155) DEFAULT NULL,
@@ -137,19 +91,12 @@ CREATE TABLE `pds_core_plugin_classes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert classes available from default plugins.;
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('pagination', 'PHPDS_pagination', 'Pagination', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('views', 'PHPDS_views', 'Mustache', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('iana', 'PHPDS_iana', 'AdminTools', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('nodeArray', 'PHPDS_node_array', 'AdminTools', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('nodeStructure', 'PHPDS_node_structure', 'AdminTools', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('pluginManager', 'PHPDS_pluginmanager', 'PluginManager', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('timeZone', 'PHPDS_timezone', 'AdminTools', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('userActions', 'PHPDS_userAction', 'UserActions', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('StandardLogin', 'PHPDS_login', 'StandardLogin', '1', '1');
-INSERT INTO `pds_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('crud', 'PHPDS_crud', 'CRUD', '1', '1');
+INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('views', 'PHPDS_views', 'Mustache', '1', '1');
+INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('pluginManager', 'PHPDS_pluginmanager', 'PluginManager', '1', '1');
+INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('StandardLogin', 'PHPDS_login', 'StandardLogin', '1', '1');
 
 -- Create session table.;
-CREATE TABLE `pds_core_session` (
+CREATE TABLE `_db_core_session` (
 	`cookie_id` int(20) unsigned NOT NULL AUTO_INCREMENT,
 	`user_id` int(20) unsigned NOT NULL,
 	`id_crypt` char(6) NOT NULL,
@@ -160,7 +107,7 @@ CREATE TABLE `pds_core_session` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- Create settings table.;
-CREATE TABLE `pds_core_settings` (
+CREATE TABLE `_db_core_settings` (
 	`setting_description` varchar(100) NOT NULL DEFAULT '',
 	`setting_value` text,
 	`note` text,
@@ -168,57 +115,57 @@ CREATE TABLE `pds_core_settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert default settings to make system work.;
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_allow_remember', '1', 'Should users be allowed to login with remember.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_banned_role', '6', 'The banned role. No access allowed.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_charset', 'UTF-8', 'Site wide charset.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_charset_format', '.{charset}', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_cmod', '0777', 'Writable folder permissions');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_crypt_key', 'eDucDjodz8ZiMqFe8zeJ', 'General crypt key to protect system.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_custom_logo', '', 'Default system logo.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_date_format', 'F j, Y, g:i a O', 'Date format according to DateTime function of PHP.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_date_format_short', 'Y-m-d', 'Shorter date format.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_date_format_show', 'September 17, 2010, 12:59 pm +0000', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_date_format_show_short', '2010-09-17', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_debug_language', '', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_default_template', 'default', 'Default theme for all nodes.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_default_template_id', 'default', 'Default template id.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_default_upload_directory', 'write/upload/', 'Writable upload directory.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_demo_mode', '0', 'Should system be set into demo mode, no transactions will occur.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_from_email', 'no-reply@phphdevshell.org', 'From Email address.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_front_page_id', 'readme', 'The page to show when site is access.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_guest_role', '4', 'The systems guest role.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_language', 'en', 'Default language.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_languages_available', 'en', 'List of language codes available');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_locale_format', '{lang}_{region}{charset}', 'Complete locale format.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_loginandout', 'login', 'The page to use to log-in and log-out.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_login_message', '', 'a Default message to welcome users loging in.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_meta_description', 'Administrative user interface based on AdminTools and other modern technologies.', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_meta_keywords', 'administrative, administrator, AdminTools, interface, ui, user', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_printable_template', 'default', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_queries_count', '1', 'Should queries be counted and info show.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_redirect_login', 'readme', 'When a user logs in, where should he be redirected to?');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_region', 'US', 'Region settings.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_regions_available', 'US', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_root_id', '1', 'Root User.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_root_role', '1', 'Root Role.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_save', 'save', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_scripts_name_version', 'Powered by PHPDevShell', 'Footer message.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_sef_url', '0', 'Should SEF urls be enabled, not rename to .htaccess in root.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_sendmail_path', '/usr/sbin/sendmail', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_setting_admin_email', 'admin@phpdevshell.org', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_setting_support_email', 'default:System Support Query,default:General Query', 'Allows you to have multiple option for a email query.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_split_results', '30', 'When viewing paged results, how many results should be shown.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_system_down', '0', 'Is system currently down for development.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_system_down_message', '%s is currently down for maintenance. Some important features are being updated. Please return soon.', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_system_logging', '1', 'Should logs be written to database.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_system_timezone', 'UTC', 'Timezone.');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_trim_logs', '1000000', '');
-INSERT INTO `pds_core_settings` VALUES ('AdminTools_url_append', '.html', 'The url extension in the end.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_allow_remember', '1', 'Should users be allowed to login with remember.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_banned_role', '6', 'The banned role. No access allowed.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_charset', 'UTF-8', 'Site wide charset.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_charset_format', '.{charset}', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_cmod', '0777', 'Writable folder permissions');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_crypt_key', 'eDucDjodz8ZiMqFe8zeJ', 'General crypt key to protect system.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_custom_logo', '', 'Default system logo.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format', 'F j, Y, g:i a O', 'Date format according to DateTime function of PHP.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_short', 'Y-m-d', 'Shorter date format.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_show', 'September 17, 2010, 12:59 pm +0000', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_show_short', '2010-09-17', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_debug_language', '', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_template', 'default', 'Default theme for all nodes.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_template_id', 'default', 'Default template id.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_upload_directory', 'write/upload/', 'Writable upload directory.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_demo_mode', '0', 'Should system be set into demo mode, no transactions will occur.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_from_email', 'no-reply@phphdevshell.org', 'From Email address.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_front_page_id', 'readme', 'The page to show when site is access.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_guest_role', '4', 'The systems guest role.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_language', 'en', 'Default language.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_languages_available', 'en', 'List of language codes available');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_locale_format', '{lang}_{region}{charset}', 'Complete locale format.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_loginandout', 'login', 'The page to use to log-in and log-out.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_login_message', '', 'a Default message to welcome users loging in.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_meta_description', 'Administrative user interface based on AdminTools and other modern technologies.', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_meta_keywords', 'administrative, administrator, AdminTools, interface, ui, user', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_printable_template', 'default', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_queries_count', '1', 'Should queries be counted and info show.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_redirect_login', 'readme', 'When a user logs in, where should he be redirected to?');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_region', 'US', 'Region settings.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_regions_available', 'US', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_root_id', '1', 'Root User.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_root_role', '1', 'Root Role.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_save', 'save', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_scripts_name_version', 'Powered by PHPDevShell', 'Footer message.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_sef_url', '0', 'Should SEF urls be enabled, not rename to .htaccess in root.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_sendmail_path', '/usr/sbin/sendmail', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_setting_admin_email', 'admin@phpdevshell.org', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_setting_support_email', 'default:System Support Query,default:General Query', 'Allows you to have multiple option for a email query.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_split_results', '30', 'When viewing paged results, how many results should be shown.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_system_down', '0', 'Is system currently down for development.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_system_down_message', '%s is currently down for maintenance. Some important features are being updated. Please return soon.', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_system_logging', '1', 'Should logs be written to database.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_system_timezone', 'UTC', 'Timezone.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_trim_logs', '1000000', '');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_url_append', '.html', 'The url extension in the end.');
 
 -- Create tags table for tagging data.;
-CREATE TABLE `pds_core_tags` (
+CREATE TABLE `_db_core_tags` (
 	`tag_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`tag_object` varchar(45) DEFAULT NULL,
 	`tag_name` varchar(45) DEFAULT NULL,
@@ -229,17 +176,17 @@ CREATE TABLE `pds_core_tags` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Create themes table to store installed themes.;
-CREATE TABLE `pds_core_templates` (
+CREATE TABLE `_db_core_templates` (
 	`template_id` varchar(64) NOT NULL,
 	`template_folder` varchar(255) DEFAULT NULL,
 	PRIMARY KEY (`template_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert default themes.;
-INSERT INTO `pds_core_templates` VALUES ('default', 'default');
+INSERT INTO `_db_core_templates` VALUES ('default', 'default');
 
 -- Create important user table to store all users.;
-CREATE TABLE `pds_core_users` (
+CREATE TABLE `_db_core_users` (
 	`user_id` int(20) unsigned NOT NULL AUTO_INCREMENT,
 	`user_display_name` varchar(255) DEFAULT NULL,
 	`user_name` varchar(255) DEFAULT NULL,
@@ -256,7 +203,7 @@ CREATE TABLE `pds_core_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Create primary roles table a user can belong to.;
-CREATE TABLE `pds_core_user_roles` (
+CREATE TABLE `_db_core_user_roles` (
 	`user_role_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`user_role_name` varchar(255) DEFAULT NULL,
 	`user_role_note` tinytext,
@@ -264,47 +211,23 @@ CREATE TABLE `pds_core_user_roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert primary roles table a user can belong to.;
-INSERT INTO `pds_core_user_roles` VALUES ('1', 'Super Admin', null);
-INSERT INTO `pds_core_user_roles` VALUES ('2', 'Registered User', null);
-INSERT INTO `pds_core_user_roles` VALUES ('3', 'Awaiting Confirmation', null);
-INSERT INTO `pds_core_user_roles` VALUES ('4', 'Guest User', null);
-INSERT INTO `pds_core_user_roles` VALUES ('5', 'Disabled', null);
-INSERT INTO `pds_core_user_roles` VALUES ('6', 'Limited Admin', null);
-INSERT INTO `pds_core_user_roles` VALUES ('7', 'Branch Admin', null);
+INSERT INTO `_db_core_user_roles` VALUES ('1', 'Super Admin', null);
+INSERT INTO `_db_core_user_roles` VALUES ('2', 'Registered User', null);
+INSERT INTO `_db_core_user_roles` VALUES ('3', 'Awaiting Confirmation', null);
+INSERT INTO `_db_core_user_roles` VALUES ('4', 'Guest User', null);
+INSERT INTO `_db_core_user_roles` VALUES ('5', 'Disabled', null);
 
 -- Create security role permissions table.;
-CREATE TABLE `pds_core_user_role_permissions` (
+CREATE TABLE `_db_core_user_role_permissions` (
   `user_role_id` int(10) NOT NULL DEFAULT '0',
   `node_id` varchar(64) NOT NULL,
   PRIMARY KEY (`user_role_id`,`node_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Insert default user permissions.;
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'readme');
-INSERT INTO pds_core_user_role_permissions VALUES ('2', 'readme');
-INSERT INTO pds_core_user_role_permissions VALUES ('4', 'readme');
+INSERT INTO _db_core_user_role_permissions VALUES ('1', 'readme');
+INSERT INTO _db_core_user_role_permissions VALUES ('2', 'readme');
+INSERT INTO _db_core_user_role_permissions VALUES ('4', 'readme');
 
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'admin');
-
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'system-settings');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'config-manager');
-
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'user-admin-list');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'user-admin');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'role-admin-list');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'role-admin');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'node-admin-list');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'node-admin');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'tag-admin');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'theme-admin');
-
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'file-logs');
--- Test tree
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'file-logs-1');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'file-logs-2');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'file-logs-3');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'sys-logs');
-
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'plugin-admin');
-INSERT INTO pds_core_user_role_permissions VALUES ('1', 'class-registry');
+INSERT INTO _db_core_user_role_permissions VALUES ('1', 'plugin-admin');
 

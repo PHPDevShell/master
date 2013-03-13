@@ -10,7 +10,7 @@ class PHPDS_readMaxNodesRankQuery extends PHPDS_query
 		SELECT
 			MAX(t1.rank)
 		FROM
-			_db_core_node_items t1
+			_db_core_node_items as t1
     ";
 
 	protected $singleValue = true;
@@ -26,7 +26,7 @@ class PHPDS_readMinNodesRankQuery extends PHPDS_query
 		SELECT
 			MIN(t1.rank)
 		FROM
-			_db_core_node_items t1
+			_db_core_node_items as t1
     ";
 
 	protected $singleValue = true;
@@ -271,7 +271,7 @@ class PHPDS_doesNodeExist extends PHPDS_query
 		SELECT
 			t1.node_id
 		FROM
-			_db_core_node_items t1
+			_db_core_node_items as t1
 		WHERE
 			t1.node_id = '%s'
 	";

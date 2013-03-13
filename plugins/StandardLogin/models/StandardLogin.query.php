@@ -12,9 +12,9 @@ class LOGIN_selectUserQuery extends PHPDS_query
 			t1.user_id, t1.user_display_name, t1.user_password, t1.user_name, t1.user_email, t1.user_role, t1.language, t1.timezone as user_timezone, t1.region,
 			t2.user_role_name
 		FROM
-			_db_core_users t1
+			_db_core_users as t1
 		LEFT JOIN
-			_db_core_user_roles t2
+			_db_core_user_roles as t2
 		ON
 			t1.user_role = t2.user_role_id
 		WHERE
@@ -51,7 +51,7 @@ class LOGIN_selectUserNameQuery extends PHPDS_query
 		SELECT
 			t1.user_id
 		FROM
-			_db_core_users t1
+			_db_core_users as t1
 		WHERE
 			(t1.user_name = '%(username)s' OR t1.user_email = '%(username)s')
 	";

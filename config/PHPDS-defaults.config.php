@@ -46,7 +46,7 @@ $master_database = array(
 	 * Default prefix to use in front of table names.
 	 * @global string
 	 */
-	'prefix' => 'pds_',
+	'prefix' => '_db_',
 
 	/**
 	 * Whether the database connection should be persistent or not.

@@ -6,7 +6,7 @@ class NAVIGATION_findNodeQuery extends PHPDS_query
 		SELECT
 			t1.node_id
 		FROM
-			_db_core_node_items t1
+			_db_core_node_items as t1
 		WHERE
 			t1.alias = '%s'
 		OR
@@ -22,7 +22,7 @@ class NAVIGATION_findAliasQuery extends PHPDS_query
 		SELECT
 			t1.alias
 		FROM
-			_db_core_node_items t1
+			_db_core_node_items as t1
 		WHERE
 			t1.node_id = '%s'
 	";
@@ -38,17 +38,17 @@ class NAVIGATION_extractNodeQuery extends PHPDS_query
 			t3.is_parent, t3.type,
 			t6.template_folder
 		FROM
-			_db_core_node_items t1
+			_db_core_node_items as t1
 		LEFT JOIN
-			_db_core_user_role_permissions t2
+			_db_core_user_role_permissions as t2
 		ON
 			t1.node_id = t2.node_id
 		LEFT JOIN
-			_db_core_node_structure t3
+			_db_core_node_structure as t3
 		ON
 			t1.node_id = t3.node_id
 		LEFT JOIN
-			_db_core_templates t6
+			_db_core_templates as t6
 		ON
 			t1.template_id = t6.template_id
 		WHERE

@@ -32,7 +32,7 @@ class PHPDS_tagger extends PHPDS_dependant
 	}
 
 	/**
-	 * Lookup tags based on criterias ; returns an array
+	 * Lookup tags based on criteria; returns an array
 	 *
 	 * @param string $object (optional)
 	 * @param string $name (optional)
@@ -174,17 +174,17 @@ class PHPDS_tagger extends PHPDS_dependant
     /**
      * Will store tags when needed.
      *
-     * @param string $object
-     * @param string $target
-     * @param array $taggernames Array of names posted by the tagger form.
-     * @param array $taggervalues Array of values posted by the tagger form.
-     * @param array $taggerids Array of updated ids posted by the tagger form.
-     * @param array $taggerdeletes Array of deleted tags posted by the tagger form.
-     * @return string
+     * @param   string    $object
+     * @param   string    $target
+     * @param   array     $taggernames Array of names posted by the tagger form.
+     * @param   array     $taggervalues Array of values posted by the tagger form.
+     * @param   array     $taggerids Array of updated ids posted by the tagger form.
+     * @param   array     $taggerdeletes Array of deleted tags posted by the tagger form.
+     * @return  string
      *
      * @version 1.0
-     * @author jason <titan@phpdevshell.org>
-     * @date 20130301
+     * @author  jason <titan@phpdevshell.org>
+     * @date    20130301
      */
     public function tagUpdate($object, $target, $taggernames, $taggervalues, $taggerids)
     {

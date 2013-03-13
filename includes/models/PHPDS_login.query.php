@@ -6,7 +6,7 @@ class LOGIN_selectUserPersistentQuery extends PHPDS_query
 		SELECT
 			t1.user_id, t1.user_display_name, t1.user_password, t1.user_name, t1.user_email, t1.user_role, t1.language, t1.timezone as user_timezone, t1.region
 		FROM
-			_db_core_users t1
+			_db_core_users as t1
 		WHERE
 			t1.user_id = '%s'
 	";

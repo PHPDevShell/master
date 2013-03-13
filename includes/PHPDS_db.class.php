@@ -206,12 +206,12 @@ class PHPDS_db extends PHPDS_dependant
 	 * @version	1.0
 	 * @author jason
 	 * @return mixed
+     * @throws PHPDS_databaseException
 	 */
 	public function newQuery($query)
 	{
 		try {
-			if (empty($this->defaultQuery))
-					$this->defaultQuery = $this->makeQuery('PHPDS_query');
+			if (empty($this->defaultQuery)) $this->defaultQuery = $this->makeQuery('PHPDS_query');
 			$this->defaultQuery->sql($query);
 			return $this->defaultQuery->query();
 		} catch (Exception $e) {
@@ -562,7 +562,7 @@ class PHPDS_db extends PHPDS_dependant
 			if (!empty($active_plugin)) {
 				$prefix = $active_plugin . '_';
 			} else {
-				$prefix = 'PHPDevShell_';
+				$prefix = '_db_';
 			}
 		} else {
 			$prefix = $custom_prefix . '_';

@@ -135,7 +135,7 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
 			try {
 				// Apply database config settings to this instance of the connector
 				$this->applyConfig($db_config);
-				
+
 				// Set the PDO driver options
 				$driver_options = null;
 				if ($this->dbPersistent) {
@@ -147,7 +147,7 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
 
 				// Set the error reporting attribute so that SQL errors also generates exceptions
 				$this->link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-				
+
 			} catch(PDOException $e) {
 				// TODO: For now throw an unknown error database exception since the driver will be returning with the
 				// error code and we don't know how to deal with all of them yet. We have to deal with this properly
@@ -171,21 +171,21 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
 		try {
 			if (empty($this->link)) $this->connect();
 			// Replace the DB prefix.
-			$real_sql = preg_replace('/_db_/', $this->dbPrefix, $sql);
+            if ($this->dbPrefix != '_db_') $sql = preg_replace('/_db_/', $this->dbPrefix, $sql);
 			// Run query.
-			if (!empty($real_sql)) {
+			if (!empty($sql)) {
 				// Count Queries Used...
 				$this->db->countQueries ++;
-				$this->_log($real_sql);
+				$this->_log($sql);
 
 				// Since we don't know whether modifier query is passed we don't know wether to use exec() or query().
 				// The alternative option is to prepare the statement and then call execute.
-				$statement = $this->link->prepare($real_sql);
+				$statement = $this->link->prepare($sql);
 				$statement->execute();
 
 				if ($statement->columnCount () == 0) {
 					return true;  // This was an INSERT/UPDATE/DELETE query
-				} else {					
+				} else {
 					$this->result = $statement;
 					return $this->result; // This was a SELECT query, we need to return the result set
 				}

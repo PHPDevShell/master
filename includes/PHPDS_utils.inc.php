@@ -52,8 +52,9 @@ function PU_BuildGETString(array $myGET, $glue = '&amp;')
 /**
  * Build GET part of a url
  *
- * @param $includeInGet	(optional) array of pairs: parameters to add as GET in the url
- * @param $excludeFromGet (optional) array of strings: parameters to remove from GET in the url
+ * @param string $includeInGet (optional) array of pairs: parameters to add as GET in the url
+ * @param string $excludeFromGet (optional) array of strings: parameters to remove from GET in the url
+ * @param string The character connector in between.
  * @return string the whole parameter part of the url (including '?') ; maybe empty if there are no parameters
  */
 function PU_BuildGET($includeInGet = null, $excludeFromGet = null, $glue = '&amp;')
@@ -66,7 +67,7 @@ function PU_BuildGET($includeInGet = null, $excludeFromGet = null, $glue = '&amp
  *
  * @version 1.1
  * @date 20091203
- *  @date 20110203 (v1.1) (greg) added the glue parameter
+ * @date 20110203 (v1.1) (greg) added the glue parameter
  * @param $attributes array, the attribute array to compile
  * @param $glue string, a piece of string to insert between the values
  * @return string
@@ -131,15 +132,17 @@ function PU_buildParsedURL($p)
 /**
  * Build a url with GET parameters
  *
- * @param string|array $target (optional) string: the target script url (current script if missing)
- * @param array $includeInGet	(optional) array of pairs: parameters to add as GET in the url
- * @param array $excludeFromGet (optional) array of strings: parameters to remove from GET in the url
- * @return string the built url
- *
  * @version 1.1
  * @author greg
  *
  * @date 20100930 (v1.1) (greg) $target parameter can now be an array resulting from php's parse_url function
+ *
+ * @param string|array $target (optional) string: the target script url (current script if missing)
+ * @param array $includeInGet	(optional) array of pairs: parameters to add as GET in the url
+ * @param array $excludeFromGet (optional) array of strings: parameters to remove from GET in the url
+ * @param string Connector between strings of url.
+ * @return string the built url
+ *
  */
 function PU_BuildURL($target = null, $includeInGet = null, $excludeFromGet = null, $glue = '&amp;')
 {

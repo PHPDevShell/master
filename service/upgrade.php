@@ -97,7 +97,7 @@ function checkFields()
 	checkField('db_username', _('Please supply the Database Username.'), 'root');
 	checkField('db_password', _('Please supply the Database Password.'), 'root');
 	checkField('db_server', _('Please supply the Database Server Address.'), 'localhost');
-	checkField('db_prefix', _('Please supply theDatabase Prefix.'), 'pds_');
+	checkField('db_prefix', _('Please supply theDatabase Prefix.'), '_db_');
 	checkField('config_file', _('Please supply the Config File.'), 'single-site.config.php');
 
 	return (count($errors) == 0);

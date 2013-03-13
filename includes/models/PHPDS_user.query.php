@@ -116,7 +116,7 @@ class USER_belongsToRoleQuery extends PHPDS_query
 		SELECT
 			t1.user_id
 		FROM
-			_db_core_users t1
+			_db_core_users as t1
 		WHERE
 			(t1.user_role = %u)
 		AND

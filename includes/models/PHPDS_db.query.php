@@ -357,7 +357,7 @@ class DB_readPluginClassRegistryQuery extends PHPDS_query
 		SELECT SQL_CACHE
 			t1.class_id, t1.class_name, t1.alias, t1.plugin_folder, t1.enable, t1.rank
 		FROM
-			_db_core_plugin_classes t1
+			_db_core_plugin_classes as t1
 		WHERE
 			(t1.enable = 1)
 		ORDER BY

@@ -104,7 +104,7 @@ class PHPDS_deleteTagsByIdQuery extends PHPDS_query
 		DELETE FROM
 			_db_core_tags
 		WHERE
-			tag_id = %u
+			tag_id = '%u'
 		";
     protected $autoProtect = true;
 }
@@ -113,7 +113,7 @@ class PHPDS_updateTagsQuery extends PHPDS_query
 {
     protected $sql = "
 		REPLACE INTO
-			_db_core_tags (tag_id, tag_object, tag_name, tag_target, tag_value)
+		  _db_core_tags (tag_id, tag_object, tag_name, tag_target, tag_value)
 		VALUES
 	      %s
 	";
