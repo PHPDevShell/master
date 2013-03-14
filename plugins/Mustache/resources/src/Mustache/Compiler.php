@@ -113,7 +113,7 @@ class Mustache_Compiler
                     break;
 
                 default:
-                    throw new InvalidArgumentException('Unknown node type: '.json_encode($node));
+                    throw new InvalidArgumentException('Unknown node type: ' . json_encode($node));
             }
         }
 
@@ -201,12 +201,12 @@ class Mustache_Compiler
         $source = var_export(substr($this->source, $start, $end - $start), true);
 
         if ($otag !== '{{' || $ctag !== '}}') {
-            $delims = ', '.var_export(sprintf('{{= %s %s =}}', $otag, $ctag), true);
+            $delims = ', ' . var_export(sprintf('{{= %s %s =}}', $otag, $ctag), true);
         } else {
             $delims = '';
         }
 
-        $key    = ucfirst(md5($delims."\n".$source));
+        $key = ucfirst(md5($delims . "\n" . $source));
 
         if (!isset($this->sections[$key])) {
             $this->sections[$key] = sprintf($this->prepare(self::SECTION), $key, $source, $delims, $this->walk($nodes, 2));
@@ -376,12 +376,12 @@ class Mustache_Compiler
      */
     private function prepare($text, $bonus = 0, $prependNewline = true)
     {
-        $text = ($prependNewline ? "\n" : '').trim($text);
+        $text = ($prependNewline ? "\n" : '') . trim($text);
         if ($prependNewline) {
             $bonus++;
         }
 
-        return preg_replace("/\n( {8})?/", "\n".str_repeat(" ", $bonus * 4), $text);
+        return preg_replace("/\n( {8})?/", "\n" . str_repeat(" ", $bonus * 4), $text);
     }
 
     const DEFAULT_ESCAPE = 'htmlspecialchars(%s, ENT_COMPAT, %s)';

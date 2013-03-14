@@ -52,7 +52,7 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
         $this->baseDir = rtrim(realpath($baseDir), '/');
 
         if (!is_dir($this->baseDir)) {
-            throw new RuntimeException('FilesystemLoader baseDir must be a directory: '.$baseDir);
+            throw new RuntimeException('FilesystemLoader baseDir must be a directory: ' . $baseDir);
         }
 
         if (array_key_exists('extension', $options)) {
@@ -97,7 +97,7 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
         $fileName = $this->getFileName($name);
 
         if (!file_exists($fileName)) {
-            throw new InvalidArgumentException('Template '.$name.' not found.');
+            throw new InvalidArgumentException('Template ' . $name . ' not found.');
         }
 
         return file_get_contents($fileName);

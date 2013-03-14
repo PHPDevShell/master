@@ -58,7 +58,7 @@ class Mustache_Parser
 
                     case Mustache_Tokenizer::T_END_SECTION:
                         if (!isset($parent)) {
-                            throw new LogicException('Unexpected closing tag: /'. $token[Mustache_Tokenizer::NAME]);
+                            throw new LogicException('Unexpected closing tag: /' . $token[Mustache_Tokenizer::NAME]);
                         }
 
                         if ($token[Mustache_Tokenizer::NAME] !== $parent[Mustache_Tokenizer::NAME]) {

@@ -12,53 +12,53 @@
 
 
 $master_database = array(
-	/**
-	 * Database DSN (Data Source Name) string. Used for PDO based connections.
-	 * @global string
-	 */
-	'dsn' => 'mysql:host=localhost;dbname=phpdev',
+    /**
+     * Database DSN (Data Source Name) string. Used for PDO based connections.
+     * @global string
+     */
+    'dsn'        => 'mysql:host=localhost;dbname=phpdev',
 
-	/**
-	 * Database Server Hostname. Not required if using PDO.
-	 * @global string
-	 */
-	'host' => 'localhost',
+    /**
+     * Database Server Hostname. Not required if using PDO.
+     * @global string
+     */
+    'host'       => 'localhost',
 
-	/**
-	 * Database Name. Not required if using PDO.
-	 * @global string
-	 */
-	'database' => 'phpdev',
+    /**
+     * Database Name. Not required if using PDO.
+     * @global string
+     */
+    'database'   => 'phpdev',
 
-	/**
-	 * Database Server Username.
-	 * @global string
-	 */
-	'username' => 'root',
+    /**
+     * Database Server Username.
+     * @global string
+     */
+    'username'   => 'root',
 
-	/**
-	 * Database Server Password.
-	 * @global string
-	 */
-	'password' => 'root',
+    /**
+     * Database Server Password.
+     * @global string
+     */
+    'password'   => 'root',
 
-	/**
-	 * Default prefix to use in front of table names.
-	 * @global string
-	 */
-	'prefix' => '_db_',
+    /**
+     * Default prefix to use in front of table names.
+     * @global string
+     */
+    'prefix'     => '_db_',
 
-	/**
-	 * Whether the database connection should be persistent or not.
-	 * @global string
-	 */
-	'persistent' => false,
+    /**
+     * Whether the database connection should be persistent or not.
+     * @global string
+     */
+    'persistent' => false,
 
-	/**
-	 * Database connection character set
-	 * @global string
-	 */
-	'charset' => 'utf8'
+    /**
+     * Database connection character set
+     * @global string
+     */
+    'charset'    => 'utf8'
 );
 
 $master = 'master_db';
@@ -70,7 +70,7 @@ $master = 'master_db';
 $configuration['master_database'] = $master;
 
 $configuration['databases'] = array(
-	$master => $master_database
+    $master => $master_database
 );
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,14 +116,14 @@ $configuration['cache_refresh_intervals'] = 120;
  * Copy and paste cache server block to create more then one server.
  * @global mixed
  */
-$cache_server = 1;
-$configuration['cache_host'] = array($cache_server => 'localhost');
-$configuration['cache_port'] = array($cache_server => 11211);
-$configuration['cache_persistent'] = array($cache_server => true);
-$configuration['cache_weight'] = array($cache_server => 1);
-$configuration['cache_timeout'] = array($cache_server => 1);
+$cache_server                          = 1;
+$configuration['cache_host']           = array($cache_server => 'localhost');
+$configuration['cache_port']           = array($cache_server => 11211);
+$configuration['cache_persistent']     = array($cache_server => true);
+$configuration['cache_weight']         = array($cache_server => 1);
+$configuration['cache_timeout']        = array($cache_server => 1);
 $configuration['cache_retry_interval'] = array($cache_server => 15);
-$configuration['cache_status'] = array($cache_server => true);
+$configuration['cache_status']         = array($cache_server => true);
 /**
  * If you are running a very large site, you might want to consider running a dedicated light http server (httpdlight, nginx) that
  * only serves static content like images and static files, call it a CDN if you like.
@@ -350,51 +350,51 @@ $configuration['development'] = false;
  * In general this would never be changed, however a developer might need to add their own variables they would need on every page.
  */
 $configuration['preloaded_settings'] = array(
-	'scripts_name_version',
-	'redirect_login',
-	'footer_notes',
-	'front_page_id',
-	'front_page_id_out',
-	'front_page_id_in',
-	'loginandout',
-	'custom_logo',
-	'custom_css',
-	'system_down',
-	'demo_mode',
-	'charset_format',
-	'locale_format',
-	'charset',
-	'language',
-	'debug_language',
-	'region',
-	'root_id',
-	'root_role',
-	'root_group',
-	'force_core_changes',
-	'system_logging',
-	'access_logging',
-	'crypt_key',
-	'date_format',
-	'date_format_short',
-	'default_template',
-	'default_template_id',
-	'printable_template',
-	'split_results',
-	'guest_role',
-	'guest_group',
-	'system_timezone',
-	'setting_admin_email',
-	'email_critical',
-	'sef_url',
-	'queries_count',
-	'allow_registration',
-	'registration_page',
-	'allow_remember',
-	'url_append',
-	'skin',
-	'meta_keywords',
-	'meta_description',
-	'node_behaviour',
-	'spam_assassin',
-	'custom_css'
+    'scripts_name_version',
+    'redirect_login',
+    'footer_notes',
+    'front_page_id',
+    'front_page_id_out',
+    'front_page_id_in',
+    'loginandout',
+    'custom_logo',
+    'custom_css',
+    'system_down',
+    'demo_mode',
+    'charset_format',
+    'locale_format',
+    'charset',
+    'language',
+    'debug_language',
+    'region',
+    'root_id',
+    'root_role',
+    'root_group',
+    'force_core_changes',
+    'system_logging',
+    'access_logging',
+    'crypt_key',
+    'date_format',
+    'date_format_short',
+    'default_template',
+    'default_template_id',
+    'printable_template',
+    'split_results',
+    'guest_role',
+    'guest_group',
+    'system_timezone',
+    'setting_admin_email',
+    'email_critical',
+    'sef_url',
+    'queries_count',
+    'allow_registration',
+    'registration_page',
+    'allow_remember',
+    'url_append',
+    'skin',
+    'meta_keywords',
+    'meta_description',
+    'node_behaviour',
+    'spam_assassin',
+    'custom_css'
 );

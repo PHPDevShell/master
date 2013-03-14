@@ -7,9 +7,17 @@ textarea, input, select {
 }
 
 /* Code basics */
-.tl { text-align: left !important;}
-.tr { text-align: right !important; }
-.tc { text-align: center !important;}
+.tl {
+    text-align: left !important;
+}
+
+.tr {
+    text-align: right !important;
+}
+
+.tc {
+    text-align: center !important;
+}
 
 /* Code in headings */
 h3 code {
@@ -83,8 +91,13 @@ table.table-striped tbody tr:hover {
 }
 
 /* Login style */
-#logged-in-info a.options   { width: 180px; }
-#logged-in-info legend      { font-size: 18px; }
+#logged-in-info a.options {
+    width: 180px;
+}
+
+#logged-in-info legend {
+    font-size: 18px;
+}
 
 li .login-actions {
     padding: 19px 20px 20px;
@@ -132,6 +145,7 @@ li .login-actions:after {
     left: 50%;
     z-index: 9999;
 }
+
 #wrap-loader {
 
 }

@@ -53,9 +53,9 @@ class Mustache_Tokenizer
 
     // Interpolated tags
     private static $interpolatedTags = array(
-        self::T_ESCAPED      => true,
-        self::T_UNESCAPED    => true,
-        self::T_UNESCAPED_2  => true,
+        self::T_ESCAPED     => true,
+        self::T_UNESCAPED   => true,
+        self::T_UNESCAPED_2 => true,
     );
 
     // Token properties
@@ -119,18 +119,18 @@ class Mustache_Tokenizer
 
                     $i += strlen($this->otag) - 1;
                     if (isset(self::$tagTypes[$text[$i + 1]])) {
-                        $tag = $text[$i + 1];
+                        $tag           = $text[$i + 1];
                         $this->tagType = $tag;
                     } else {
-                        $tag = null;
+                        $tag           = null;
                         $this->tagType = self::T_ESCAPED;
                     }
 
                     if ($this->tagType === self::T_DELIM_CHANGE) {
-                        $i = $this->changeDelimiters($text, $i);
+                        $i           = $this->changeDelimiters($text, $i);
                         $this->state = self::IN_TEXT;
                     } elseif ($this->tagType === self::T_PRAGMA) {
-                        $i = $this->addPragma($text, $i);
+                        $i           = $this->addPragma($text, $i);
                         $this->state = self::IN_TEXT;
                     } else {
                         if ($tag !== null) {
@@ -207,7 +207,7 @@ class Mustache_Tokenizer
     private function flushBuffer()
     {
         if (!empty($this->buffer)) {
-            $this->tokens[] = array(self::TYPE  => self::T_TEXT, self::VALUE => $this->buffer);
+            $this->tokens[] = array(self::TYPE => self::T_TEXT, self::VALUE => $this->buffer);
             $this->buffer   = '';
         }
     }
@@ -248,8 +248,8 @@ class Mustache_Tokenizer
             $tokensCount = count($this->tokens);
             for ($j = $this->lineStart; $j < $tokensCount; $j++) {
                 if ($this->tokens[$j][self::TYPE] == self::T_TEXT) {
-                    if (isset($this->tokens[$j+1]) && $this->tokens[$j+1][self::TYPE] == self::T_PARTIAL) {
-                        $this->tokens[$j+1][self::INDENT] = $this->tokens[$j][self::VALUE];
+                    if (isset($this->tokens[$j + 1]) && $this->tokens[$j + 1][self::TYPE] == self::T_PARTIAL) {
+                        $this->tokens[$j + 1][self::INDENT] = $this->tokens[$j][self::VALUE];
                     }
 
                     $this->tokens[$j] = null;
@@ -274,7 +274,7 @@ class Mustache_Tokenizer
     private function changeDelimiters($text, $index)
     {
         $startIndex = strpos($text, '=', $index) + 1;
-        $close      = '='.$this->ctag;
+        $close      = '=' . $this->ctag;
         $closeIndex = strpos($text, $close, $index);
 
         list($otag, $ctag) = explode(' ', trim(substr($text, $startIndex, $closeIndex - $startIndex)));
@@ -286,7 +286,7 @@ class Mustache_Tokenizer
 
     private function addPragma($text, $index)
     {
-        $end = strpos($text, $this->ctag, $index);
+        $end             = strpos($text, $this->ctag, $index);
         $this->pragmas[] = trim(substr($text, $index + 2, $end - $index - 2));
 
         return $end + strlen($this->ctag) - 1;

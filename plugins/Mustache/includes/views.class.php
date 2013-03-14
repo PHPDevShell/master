@@ -11,12 +11,12 @@ class views extends PHPDS_dependant
      * @var string
      */
     public $extension = '.html';
-	/**
-	 * Contains mustache object.
-	 *
-	 * @var object
-	 */
-	public $view;
+    /**
+     * Contains mustache object.
+     *
+     * @var object
+     */
+    public $view;
     /**
      * Collects an array of assignments for mustache template.
      *
@@ -29,51 +29,56 @@ class views extends PHPDS_dependant
      */
     public $nodeLink;
 
-	public function construct($plugin_override = '')
-	{
+    public function construct($plugin_override = '')
+    {
         $configuration = $this->configuration;
         $view_dir      = $this->tplBaseDir($plugin_override);
         $domain        = $this->core->activePlugin();
 
-        if (! is_object($this->template->view)) {
+        if (!is_object($this->template->view)) {
             require BASEPATH . 'plugins/Mustache/resources/src/Mustache/Autoloader.php';
             Mustache_Autoloader::register();
-            $loader         = new Mustache_Loader_FilesystemLoader($view_dir, array('extension' => $this->extension));
-            $this->view     = new Mustache_Engine(array(
+            $loader     = new Mustache_Loader_FilesystemLoader($view_dir, array('extension' => $this->extension));
+            $this->view = new Mustache_Engine(array(
                 'template_class_prefix' => '__view_',
                 'cache'                 => BASEPATH . $configuration['compile_path'],
                 'loader'                => $loader,
-                'helpers'               => array('i' => function ($text) { global $domain; return dgettext($domain, $text); }),
-                'escape'                => function ($value) { return htmlspecialchars($value, ENT_COMPAT); },
+                'helpers'               => array('i' => function ($text) {
+                    global $domain;
+                    return dgettext($domain, $text);
+                }),
+                'escape'                => function ($value) {
+                    return htmlspecialchars($value, ENT_COMPAT);
+                },
                 'charset'               => $configuration['charset']));
         } else {
             $this->view = $this->template->view;
         }
-	}
+    }
 
-	/**
-	 * Sets mustache variables to be passed to it.
-	 *
-	 * @param mixed $var
-	 * @param mixed $value
-	 */
-	public function set($var, $value)
-	{
-		$this->set[$var] = $value;
-	}
+    /**
+     * Sets mustache variables to be passed to it.
+     *
+     * @param mixed $var
+     * @param mixed $value
+     */
+    public function set($var, $value)
+    {
+        $this->set[$var] = $value;
+    }
 
-	/**
-	 * Loads the default or custom template (tpl) file and prints it out.
-	 * Enter the template file for appropriate script here.
+    /**
+     * Loads the default or custom template (tpl) file and prints it out.
+     * Enter the template file for appropriate script here.
      *
      * @param string $load_view Load an alternative view directly.
      * @return string
-	 */
-	public function show($load_view = '')
-	{
+     */
+    public function show($load_view = '')
+    {
         $tpl = $this->getTpl($load_view);
-		echo $this->view->render($tpl, $this->set);
-	}
+        echo $this->view->render($tpl, $this->set);
+    }
 
     public function tplBaseDir($load_view = '', $plugin_override = '')
     {
@@ -85,7 +90,7 @@ class views extends PHPDS_dependant
         if (empty($navigation->navigation[$configuration['m']]['extend'])) {
             $node_link = $navigation->navigation[$configuration['m']]['node_link'];
         } else {
-            $node_link = $navigation->navigation[$navigation->navigation[$configuration['m']]['extend']]['node_link'];
+            $node_link     = $navigation->navigation[$navigation->navigation[$configuration['m']]['extend']]['node_link'];
             $plugin_extend = $navigation->navigation[$navigation->navigation[$configuration['m']]['extend']]['plugin'];
         }
 
@@ -103,33 +108,33 @@ class views extends PHPDS_dependant
         }
 
         $node_link = $this->reverseStrrchr($node_link, "/", 0);
-        $tpl_dir = empty($node_link) ? $plugin_folder . '/views' : $plugin_folder . '/views/' . $node_link;
+        $tpl_dir   = empty($node_link) ? $plugin_folder . '/views' : $plugin_folder . '/views/' . $node_link;
 
         return $tpl_dir;
     }
 
-	/**
-	 * Gets the correct tpl file.
-	 *
+    /**
+     * Gets the correct tpl file.
+     *
      * @author jason <titan@phpdevshell.org>
      *
-	 * @param string $load_view
+     * @param string $load_view
      * @throws PHPDS_exception
      * @return string
-	 */
-	public function getTpl($load_view='')
-	{
+     */
+    public function getTpl($load_view = '')
+    {
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
 
         // Do we have a custom template file?
-        if (empty($load_view) && ! empty($navigation->navigation[$configuration['m']]['layout'])) {
+        if (empty($load_view) && !empty($navigation->navigation[$configuration['m']]['layout'])) {
             $load_view = $navigation->navigation[$configuration['m']]['layout'];
         }
 
         // Check if we have a custom layout otherwise use default.
-        if (! empty($load_view)) {
-           return $load_view;
+        if (!empty($load_view)) {
+            return $load_view;
         } else {
             $tpl = substr(strrchr($this->nodeLink, "/"), 1);
             if (empty($tpl)) {

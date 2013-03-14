@@ -1,4 +1,3 @@
-
 /**
  * Call a PHP function
  *
@@ -27,16 +26,16 @@ function PHPDS_remoteCall(functionName, params, extParams) {
         url = URI(url).addQuery(extParams).href();
     }
     return jQuery.when(jQuery.ajax({
-        url:url,
-        dataType:'json',
-        data:params,
-        type:'POST',
-        headers:{'X-Requested-Type':'json', 'X-Remote-Call':functionName},
-        beforeSend:function (xhr) {
-            xhr.setRequestHeader('X-Requested-Type', 'json');
-            xhr.setRequestHeader('X-Remote-Call', functionName);
-        }
-    })).done(function (data_received, status, deferred) {
+            url: url,
+            dataType: 'json',
+            data: params,
+            type: 'POST',
+            headers: {'X-Requested-Type': 'json', 'X-Remote-Call': functionName},
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-Requested-Type', 'json');
+                xhr.setRequestHeader('X-Remote-Call', functionName);
+            }
+        })).done(function (data_received, status, deferred) {
             if (deferred.status !== 200) {
                 /*deferred.reject();
                  alert('Error ' + deferred.status);*/
@@ -54,32 +53,32 @@ function PHPDS_remoteCall(functionName, params, extParams) {
  * Apply default formatting to the objects inside the given root element (root element is optional, defaults to BODY)
  * @param root DOM object to assign.
  */
-function PHPDS_documentReady (root) {
+function PHPDS_documentReady(root) {
     if (!root) root = jQuery(document);
-    root.ajaxError(function(e, jqXHR, settings, exception) {
+    root.ajaxError(function (e, jqXHR, settings, exception) {
         var url = jQuery(location).attr('href');
-        if(jqXHR.status == 401) {
+        if (jqXHR.status == 401) {
             location.href = url;
             throw new Error('Unauthorized');
         }
-        if(jqXHR.status == 403) {
+        if (jqXHR.status == 403) {
             location.href = url;
             throw new Error('Login Required');
         }
-        if(jqXHR.status == 404) {
+        if (jqXHR.status == 404) {
             location.href = url;
             throw new Error('Page not found');
         }
-        if(jqXHR.status == 418) {
+        if (jqXHR.status == 418) {
             location.href = url;
             throw new Error('Spam detected');
         }
     });
-    root.ajaxComplete(function(event, XMLHttpRequest, ajaxOptions) {
+    root.ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
         ajaxMessage(XMLHttpRequest);
         ajaxInputError(XMLHttpRequest);
     });
-    root.ready(function() {
+    root.ready(function () {
         jQuery.pronto();
         jQuery(window)
             .on("pronto.render", initPage)
@@ -99,21 +98,20 @@ function initPage() {
 }
 
 function requestPage() {
-    jQuery("#bg").stop().fadeTo('slow', 0.2, function() {
+    jQuery("#bg").stop().fadeTo('slow', 0.2, function () {
         jQuery("#ajax-loader-art").fadeIn('slow');
     });
 }
 
 (function (jQuery) {
-    jQuery.fn.serializeObject = function(extendArray)
-    {
+    jQuery.fn.serializeObject = function (extendArray) {
         var o = {};
         if (extendArray !== undefined) {
             var name = jQuery(extendArray).attr('name');
             o[name] = jQuery(extendArray).val();
         }
         var a = this.serializeArray();
-        jQuery.each(a, function() {
+        jQuery.each(a, function () {
             if (o[this.name] !== undefined) {
                 if (!o[this.name].push) {
                     o[this.name] = [o[this.name]];
@@ -129,9 +127,9 @@ function requestPage() {
 
 (function (jQuery) {
     jQuery.fn.viaAjaxSubmit = function (id) {
-        var $this   = this;
-        var $url    = $this.attr('action');
-        var $id     = jQuery(id);
+        var $this = this;
+        var $url = $this.attr('action');
+        var $id = jQuery(id);
         if (!$id.val()) {
             $id.parent().hide();
         }
@@ -164,9 +162,9 @@ function requestPage() {
 
 (function (jQuery) {
     jQuery.fn.confirmDeleteURL = function () {
-        var $this       = this;
-        var $parent     = $this.parent();
-        var $selector   = $this.selector;
+        var $this = this;
+        var $parent = $this.parent();
+        var $selector = $this.selector;
         return this.each(function () {
             $parent.one('click', $selector, function () {
                 var first = this;
@@ -185,30 +183,30 @@ function requestPage() {
 (function (jQuery) {
     jQuery.fn.viaAjaxSearch = function (searchfield, searchbutton) {
 
-        searchfield  = typeof searchfield !== 'undefined' ? searchfield : '#search_field';
+        searchfield = typeof searchfield !== 'undefined' ? searchfield : '#search_field';
         searchbutton = typeof searchbutton !== 'undefined' ? searchbutton : '#search_button';
 
-        var $this        = this;
-        var $selector    = $this.selector;
-        var $url         = jQuery(this).parents("form").attr("action");
+        var $this = this;
+        var $selector = $this.selector;
+        var $url = jQuery(this).parents("form").attr("action");
         $this.trigger('rowsUpdated');
 
         return this.each(function () {
             jQuery(searchfield).click(function () {
                 jQuery(this).removeClass('active');
             });
-            jQuery(searchbutton).on('click', function(event) {
+            jQuery(searchbutton).on('click', function (event) {
                 var value_ = jQuery(searchfield).val();
                 sendForm($url, value_);
                 event.stopImmediatePropagation();
                 return false;
             });
             jQuery(searchfield).typeWatch({
-                captureLength:0,
-                callback:function (value) {
+                captureLength: 0,
+                callback: function (value) {
                     sendForm($url, value);
                 },
-                elsedo:function (value) {
+                elsedo: function (value) {
 
                 }
             });
@@ -216,7 +214,7 @@ function requestPage() {
 
         function sendForm(url, value) {
             requestPage();
-            jQuery.post(url, {"search_field":value, "search":"Filter", "via-ajax":"page"}, function (data, textStatus, request) {
+            jQuery.post(url, {"search_field": value, "search": "Filter", "via-ajax": "page"}, function (data, textStatus, request) {
                 var root = jQuery(data);
                 var parent = jQuery($selector, root);
                 var tbody = parent.find("tbody");
@@ -237,11 +235,11 @@ function requestPage() {
     }
 })(jQuery);
 
-function ajaxInputError (request) {
+function ajaxInputError(request) {
     var json = request.getResponseHeader('ajaxInputErrorMessage');
     if (json) {
         var mobj = jQuery.parseJSON(json);
-        jQuery.each(mobj, function() {
+        jQuery.each(mobj, function () {
             var field = this.field;
             var label_tag = field + '_ajaxlabel';
             jQuery('span.' + label_tag).remove();
@@ -256,7 +254,7 @@ function ajaxInputError (request) {
                 }
                 jQuery('[name="' + field + '"]').addClass(notify_type);
                 if (this.message != '' && !jQuery('.' + label_tag).hasClass(label_tag)) {
-                    jQuery('[for="' + field + '"]').append('<span class="'+ label_tag +' text-error"> &#10077;' + this.message + '&#10078;</span>');
+                    jQuery('[for="' + field + '"]').append('<span class="' + label_tag + ' text-error"> &#10077;' + this.message + '&#10078;</span>');
                 }
             }
         });
@@ -265,7 +263,7 @@ function ajaxInputError (request) {
     return false;
 }
 
-function ajaxMessage (request, delaytime, fadeout) {
+function ajaxMessage(request, delaytime, fadeout) {
     delaytime = typeof delaytime !== 'undefined' ? delaytime : 500;
     fadeout = typeof fadeout !== 'undefined' ? fadeout : 1000;
     var json = request.getResponseHeader('ajaxResponseMessage');
@@ -347,7 +345,7 @@ function ajaxMessage (request, delaytime, fadeout) {
         return this.each(function () {
             checkall.click(function () {
                 var checkedStatus = this.checked;
-                checkall.parents("form").find(':checkbox').each(function() {
+                checkall.parents("form").find(':checkbox').each(function () {
                     jQuery(this).prop('checked', checkedStatus);
                 });
             });
@@ -360,11 +358,11 @@ function ajaxMessage (request, delaytime, fadeout) {
  */
 (function (jQuery) {
     jQuery.fn.enableButtonWhenChecked = function (buttonwrapper) {
-        if( typeof(buttonwrapper) === "undefined" || buttonwrapper === null ) buttonwrapper = ".toggle-disabled-buttons";
+        if (typeof(buttonwrapper) === "undefined" || buttonwrapper === null) buttonwrapper = ".toggle-disabled-buttons";
         return this.each(function () {
             var checkboxes = jQuery("input[type='checkbox']", this);
             var submitButt = jQuery(buttonwrapper + " button[type='submit']");
-            checkboxes.click(function() {
+            checkboxes.click(function () {
                 submitButt.attr("disabled", !checkboxes.is(":checked"));
             });
         });
@@ -373,21 +371,21 @@ function ajaxMessage (request, delaytime, fadeout) {
 
 (function (jQuery) {
     jQuery.fn.singleValidate = function (activeid) {
-        var root  = this;
+        var root = this;
         if (typeof(activeid) === "undefined" || activeid === null) activeid = null;
         return this.each(function () {
-            var $this       = jQuery(this);
-            var url         = root.parents("form").attr('action');
-            var fieldname   = $this.attr('name');
-            var fieldvalue  = $this.attr('value');
-            var identifier  = fieldname + '_watch';
-            var againstid   = fieldname + '_id';
-            var tmp_tag     = identifier + '_ajaxtag';
-            var label_tag   = fieldname + '_ajaxlabel';
+            var $this = jQuery(this);
+            var url = root.parents("form").attr('action');
+            var fieldname = $this.attr('name');
+            var fieldvalue = $this.attr('value');
+            var identifier = fieldname + '_watch';
+            var againstid = fieldname + '_id';
+            var tmp_tag = identifier + '_ajaxtag';
+            var label_tag = fieldname + '_ajaxlabel';
             jQuery('span.' + label_tag).remove();
             var fieldwatch = {};
             $this.typeWatch({
-                callback: function(value) {
+                callback: function (value) {
                     fieldwatch[identifier] = value;
                     if (activeid) {
                         fieldwatch[againstid] = jQuery(activeid).val();
@@ -410,7 +408,7 @@ function ajaxMessage (request, delaytime, fadeout) {
                         $this.focus();
                     });
                 },
-                elsedo: function(value) {
+                elsedo: function (value) {
                     jQuery("i." + tmp_tag).remove();
                     jQuery('span.' + label_tag).remove();
                     $this.removeClass('error success');
@@ -433,7 +431,7 @@ function ajaxMessage (request, delaytime, fadeout) {
                 query = jQuery.trim(query); //trim white space
                 query = query.replace(/ /gi, '|'); //add OR for regex query
 
-                jQuery(selector).each(function() {
+                jQuery(selector).each(function () {
                     (jQuery(this).text().search(new RegExp(query, "i")) < 0) ? jQuery(this).hide().removeClass('tr-visible') : jQuery(this).show().addClass('tr-visible');
                 });
 
@@ -450,7 +448,7 @@ function ajaxMessage (request, delaytime, fadeout) {
             }
 
             jQuery('tbody tr').addClass('visible');
-            jQuery(filterelement).keyup(function(event) {
+            jQuery(filterelement).keyup(function (event) {
                 //if esc is pressed or nothing is entered
                 if (event.keyCode == 27 || jQuery(this).val() == '') {
                     //if esc is pressed we want to clear the value of search box
@@ -469,20 +467,20 @@ function ajaxMessage (request, delaytime, fadeout) {
 })(jQuery);
 
 /**
- *	TypeWatch 2.1
+ *    TypeWatch 2.1
  *
- *	Examples/Docs: github.com/dennyferra/TypeWatch
+ *    Examples/Docs: github.com/dennyferra/TypeWatch
  *
  *  Copyright(c) 2013
- *	Denny Ferrassoli - dennyferra.com
+ *    Denny Ferrassoli - dennyferra.com
  *   Charles Christolini
  *
  *  Dual licensed under the MIT and GPL licenses:
  *  http://www.opensource.org/licenses/mit-license.php
  *  http://www.gnu.org/licenses/gpl.html
  */
-(function(jQuery) {
-    jQuery.fn.typeWatch = function(o) {
+(function (jQuery) {
+    jQuery.fn.typeWatch = function (o) {
         // The default input types that are supported
         var _supportedInputTypes =
             ['TEXT', 'TEXTAREA', 'PASSWORD', 'TEL', 'SEARCH', 'URL', 'EMAIL', 'DATETIME', 'DATE', 'MONTH', 'WEEK', 'TIME', 'DATETIME-LOCAL', 'NUMBER', 'RANGE'];
@@ -490,8 +488,10 @@ function ajaxMessage (request, delaytime, fadeout) {
         // Options
         var options = jQuery.extend({
             wait: 500,
-            callback: function() { },
-            elsedo: function() { },
+            callback: function () {
+            },
+            elsedo: function () {
+            },
             highlight: false,
             captureLength: 3,
             inputTypes: _supportedInputTypes
@@ -500,8 +500,7 @@ function ajaxMessage (request, delaytime, fadeout) {
         function checkElement(timer, override) {
             var value = jQuery(timer.el).val();
             // Fire if text >= options.captureLength AND text != saved text OR if override AND text >= options.captureLength
-            if ((value.length >= options.captureLength && value.toUpperCase() != timer.text) || (!override && value.length >= options.captureLength))
-            {
+            if ((value.length >= options.captureLength && value.toUpperCase() != timer.text) || (!override && value.length >= options.captureLength)) {
                 timer.text = value.toUpperCase();
                 timer.cb.call(timer.el, value);
             } else {
@@ -530,7 +529,7 @@ function ajaxMessage (request, delaytime, fadeout) {
                 }
 
                 // Key watcher / clear and reset the timer
-                var startWatch = function(evt) {
+                var startWatch = function (evt) {
                     var timerWait = timer.wait;
                     var overrideBool = false;
                     var evtElementType = this.type.toUpperCase();
@@ -541,7 +540,7 @@ function ajaxMessage (request, delaytime, fadeout) {
                         overrideBool = true;
                     }
 
-                    var timerCallbackFx = function() {
+                    var timerCallbackFx = function () {
                         checkElement(timer, overrideBool)
                     };
 
@@ -555,7 +554,7 @@ function ajaxMessage (request, delaytime, fadeout) {
         }
 
         // Watch Each Element
-        return this.each(function() {
+        return this.each(function () {
             watchElement(this);
         });
     };
@@ -570,7 +569,7 @@ function ajaxMessage (request, delaytime, fadeout) {
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
  */
-(function(jQuery) {
+(function (jQuery) {
 
     var supported = window.history && window.history.pushState && window.history.replaceState;
     var $window = jQuery(window);
@@ -584,7 +583,7 @@ function ajaxMessage (request, delaytime, fadeout) {
 
     // Public Methods
     var pub = {
-        supported: function() {
+        supported: function () {
             return supported;
         }
     };
@@ -639,19 +638,19 @@ function ajaxMessage (request, delaytime, fadeout) {
         // Call new content
         jQuery.ajax({
             url: url + ((url.indexOf("?") > -1) ? "&via-ajax=page" : "?via-ajax=page"),
-            success: function(response) {
+            success: function (response) {
                 _render(url, response, true);
             },
-            error: function(response) {
+            error: function (response) {
                 window.location.href = url;
             },
-            complete: function(jqXHR) {
+            complete: function (jqXHR) {
                 var response_ = jqXHR.getResponseHeader("ajaxAboutNode");
                 if (response_) {
                     var repj = jQuery.parseJSON(response_);
                     document.title = repj.title;
                     jQuery("#nav li").removeClass("active");
-                    jQuery("#nav li#menu_" +  repj.node_id).addClass("active");
+                    jQuery("#nav li#menu_" + repj.node_id).addClass("active");
                     jQuery(".dropdown").removeClass("open");
                 }
             }
@@ -693,7 +692,7 @@ function ajaxMessage (request, delaytime, fadeout) {
     }
 
     // Define Plugin
-    jQuery.pronto = function(method) {
+    jQuery.pronto = function (method) {
         if (pub[method]) {
             return pub[method].apply(this, Array.prototype.slice.call(arguments, 1));
         } else if (typeof method === 'object' || !method) {
@@ -703,7 +702,7 @@ function ajaxMessage (request, delaytime, fadeout) {
     };
 })(jQuery);
 
-function spinner (size) {
+function spinner(size) {
     size = typeof size !== 'undefined' ? size : 15;
     return '<img class="ajax-spinner-image" src="themes/default/images/loader.gif" width="' + size + '" height="' + size + '" />';
 }
@@ -777,7 +776,7 @@ function spinner (size) {
                 return;
             }
 
-            if ($ta.css('box-sizing') === borderBox || $ta.css('-moz-box-sizing') === borderBox || $ta.css('-webkit-box-sizing') === borderBox){
+            if ($ta.css('box-sizing') === borderBox || $ta.css('-moz-box-sizing') === borderBox || $ta.css('-webkit-box-sizing') === borderBox) {
                 boxOffset = $ta.outerHeight() - $ta.height();
             }
 
@@ -801,7 +800,7 @@ function spinner (size) {
                 // original textarea.  mirror always has a height of 0.
                 // This gives a cross-browser supported way getting the actual
                 // height of the text, through the scrollTop property.
-                $.each(copyStyle, function(i, val){
+                $.each(copyStyle, function (i, val) {
                     mirror.style[val] = $ta.css(val);
                 });
             }
@@ -821,7 +820,7 @@ function spinner (size) {
                     active = true;
                     mirror.value = ta.value + options.append;
                     mirror.style.overflowY = ta.style.overflowY;
-                    original = parseInt(ta.style.height,10);
+                    original = parseInt(ta.style.height, 10);
 
                     // Update the width in case the original textarea width has changed
                     // A floor of 0 is needed because IE8 returns a negative value for hidden textareas, raising an error.
@@ -874,13 +873,13 @@ function spinner (size) {
                 ta[oninput] = adjust;
             }
 
-            $(window).resize(function(){
+            $(window).resize(function () {
                 active = false;
                 adjust();
             });
 
             // Allow for manual triggering if needed.
-            $ta.bind('autosize', function(){
+            $ta.bind('autosize', function () {
                 active = false;
                 adjust();
             });

@@ -30,7 +30,7 @@ class Mustache_Test_FiveThree_Functional_MustacheSpecTest extends PHPUnit_Framew
      */
     public function testSpecInitialized()
     {
-        if (!file_exists(dirname(__FILE__).'/../../../../../vendor/spec/specs/')) {
+        if (!file_exists(dirname(__FILE__) . '/../../../../../vendor/spec/specs/')) {
             $this->markTestSkipped('Mustache spec submodule not initialized: run "git submodule update --init"');
         }
     }
@@ -61,8 +61,8 @@ class Mustache_Test_FiveThree_Functional_MustacheSpecTest extends PHPUnit_Framew
                     $this->markTestSkipped(sprintf('PHP lambda test not implemented for this test.'));
                 }
 
-                $func = $val['php'];
-                $data[$key] = function($text = null) use ($func) {
+                $func       = $val['php'];
+                $data[$key] = function ($text = null) use ($func) {
                     return eval($func);
                 };
             } elseif (is_array($val)) {

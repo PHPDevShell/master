@@ -4,110 +4,110 @@ class themeMods extends PHPDS_dependant
 {
 
     public function loader()
-	{
-		return <<<HTML
+    {
+        return <<<HTML
 
         <script type="text/javascript">
             PHPDS_documentReady();
         </script>
 
 HTML;
-	}
+    }
 
-	public function logo($url, $src, $alt, $title)
-	{
-		return <<<HTML
+    public function logo($url, $src, $alt, $title)
+    {
+        return <<<HTML
 
 			<a href="{$url}" class="brand">
 				<img src="{$src}" class="logo" alt="{$alt}" title="{$title}" />
 			</a>
 
 HTML;
-	}
+    }
 
-	public function logoText($title)
-	{
-		return <<<HTML
+    public function logoText($title)
+    {
+        return <<<HTML
 
             <h1>{$title}</h1>
 
 HTML;
-	}
+    }
 
-	public function title($title, $appname)
-	{
-		return "{$title} - {$appname}";
-	}
+    public function title($title, $appname)
+    {
+        return "{$title} - {$appname}";
+    }
 
-	public function role($name)
-	{
-		return "{$name}";
-	}
+    public function role($name)
+    {
+        return "{$name}";
+    }
 
-	public function cssFileToHead($href, $media)
-	{
+    public function cssFileToHead($href, $media)
+    {
         if (empty($href)) return '';
-		return <<<HTML
+        return <<<HTML
 
             <link rel="stylesheet" href="{$href}" media="{$media}">
 
 HTML;
-	}
+    }
 
-	public function jsFileToHead($src)
-	{
+    public function jsFileToHead($src)
+    {
         if (empty($src)) return '';
-		return <<<HTML
+        return <<<HTML
 
             <script type="text/javascript" src="{$src}"></script>
 
 HTML;
-	}
+    }
 
-	public function addToHead($head)
-	{
+    public function addToHead($head)
+    {
         if (empty($head)) return '';
-		return <<<HTML
+        return <<<HTML
 
 			<!-- Dynamically Added to Head -->
 			$head
 
 HTML;
-	}
+    }
 
-	public function addJsToHead($js)
-	{
+    public function addJsToHead($js)
+    {
         if (empty($js)) return '';
-		return <<<HTML
+        return <<<HTML
 
             <script type="text/javascript">{$js}</script>
 
 HTML;
-	}
+    }
 
-	public function addCssToHead($css)
-	{
+    public function addCssToHead($css)
+    {
         if (empty($css)) return '';
-		return <<<HTML
+        return <<<HTML
 
             <style>{$css}</style>
 
 HTML;
-	}
+    }
 
-	public function iFrame($src, $height, $width)
-	{
-		$HTML = <<<HTML
+    public function iFrame($src, $height, $width)
+    {
+        $HTML = <<<HTML
 
 			<iframe src="{$src}" name="iframe" height="{$height}" frameborder="0" scrolling="auto" width="{$width}" seamless></iframe>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function result($colspan, $td_content)
-	{
-		$HTML = <<<HTML
+    public function result($colspan, $td_content)
+    {
+        $HTML = <<<HTML
 
 			<tr class="highlight">
 				<td class="no_results" colspan="{$colspan}">
@@ -116,30 +116,30 @@ HTML;
 			</tr>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function loginForm($action, $username_label, $password_label, $redirect_page, $lost_password, $lost_password_text, $not_registered_yet, $not_registered_yet_text, $remember, $security, $login_label, $user_name, $button_name='Submit')
-	{
-		if (!empty($remember)) {
-			$remember = <<<HTML
+    public function loginForm($action, $username_label, $password_label, $redirect_page, $lost_password, $lost_password_text, $not_registered_yet, $not_registered_yet_text, $remember, $security, $login_label, $user_name, $button_name = 'Submit')
+    {
+        if (!empty($remember)) {
+            $remember = <<<HTML
 				<label class="checkbox">
 					<input tabindex="3" type="checkbox" name="user_remember" value="remember" title="{$lost_password_text}">
 					{$remember}
 				</label>
 
 HTML;
-		} else {
-			$remember = '';
-		}
+        } else {
+            $remember = '';
+        }
 
-		if (!empty($not_registered_yet)) {
-			$not_registered_yet = '<a href="' . $not_registered_yet . '" data-via-ajax="page">' . $not_registered_yet_text . '</a>';
-		} else {
-			$not_registered_yet = '';
-		}
+        if (!empty($not_registered_yet)) {
+            $not_registered_yet = '<a href="' . $not_registered_yet . '" data-via-ajax="page">' . $not_registered_yet_text . '</a>';
+        } else {
+            $not_registered_yet = '';
+        }
 
-		$HTML = <<<HTML
+        $HTML = <<<HTML
 
 			<div class="login-actions">
 				<form id="login" action="{$action}" method="post" class="validate">
@@ -169,16 +169,16 @@ HTML;
 			</div>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-    public function loggedInInfo ($name, $logouturl, $logoutname, $role, $group, $node_data = null)
+    public function loggedInInfo($name, $logouturl, $logoutname, $role, $group, $node_data = null)
     {
 
-        if (! empty($node_data['user-preferences'])) {
+        if (!empty($node_data['user-preferences'])) {
             $p = $node_data['user-preferences'];
 
-            if (! empty($p['href'])) {
+            if (!empty($p['href'])) {
                 $prefs = <<<HTML
                     <a href="{$p['href']}" class="btn btn-primary options">{$p['node_name']}</a>
 HTML;
@@ -187,13 +187,13 @@ HTML;
             $prefs = '';
         }
 
-            if (! empty($logouturl)) {
-                $logout = <<<HTML
+        if (!empty($logouturl)) {
+            $logout = <<<HTML
                     <a href="{$logouturl}" class="btn btn-inverse options">{$logoutname}</a>
 HTML;
-            } else {
-                $logout = '';
-            }
+        } else {
+            $logout = '';
+        }
 
         $HTML = <<<HTML
 
@@ -212,15 +212,15 @@ HTML;
         return $HTML;
     }
 
-	public function heading($heading_text)
-	{
-		$HTML = "<h1>$heading_text</h1>";
-		return $HTML;
-	}
+    public function heading($heading_text)
+    {
+        $HTML = "<h1>$heading_text</h1>";
+        return $HTML;
+    }
 
-	public function info($text)
-	{
-		$HTML = <<<HTML
+    public function info($text)
+    {
+        $HTML = <<<HTML
 
 			<div class="alert alert-info fade in">
 				<button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -228,28 +228,28 @@ HTML;
 			</div>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function scriptIcon($src, $title)
-	{
-		$HTML = <<<HTML
+    public function scriptIcon($src, $title)
+    {
+        $HTML = <<<HTML
 
 			<img class="img" src="{$src}" title="{$title}" alt="{$title}" />
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function scriptHead($text)
-	{
-		$HTML = "<h2>{$text}</h2>";
-		return $HTML;
-	}
+    public function scriptHead($text)
+    {
+        $HTML = "<h2>{$text}</h2>";
+        return $HTML;
+    }
 
-	public function error($text)
-	{
-		$HTML = <<<HTML
+    public function error($text)
+    {
+        $HTML = <<<HTML
 
 			<div class="alert alert-error fade in">
 				<button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -257,22 +257,22 @@ HTML;
 			</div>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function warning($text)
-	{
-		return $this->error($text);
-	}
+    public function warning($text)
+    {
+        return $this->error($text);
+    }
 
-	public function critical($text)
-	{
-		return $this->error($text);
-	}
+    public function critical($text)
+    {
+        return $this->error($text);
+    }
 
-	public function notice($text)
-	{
-		$HTML = <<<HTML
+    public function notice($text)
+    {
+        $HTML = <<<HTML
 
 			<div class="alert fade in">
 				<button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -280,27 +280,27 @@ HTML;
 			</div>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function busy($text)
-	{
-		return $this->notice($text);
-	}
+    public function busy($text)
+    {
+        return $this->notice($text);
+    }
 
-	public function message($text)
-	{
-		return $this->notice($text);
-	}
+    public function message($text)
+    {
+        return $this->notice($text);
+    }
 
-	public function note($text)
-	{
-		return $this->notice($text);
-	}
+    public function note($text)
+    {
+        return $this->notice($text);
+    }
 
-	public function ok($text)
-	{
-		$HTML = <<<HTML
+    public function ok($text)
+    {
+        $HTML = <<<HTML
 
 			<div class="alert alert-success fade in">
 				<button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -308,40 +308,40 @@ HTML;
 			</div>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function icon($src, $class, $title)
-	{
-		$HTML = <<<HTML
+    public function icon($src, $class, $title)
+    {
+        $HTML = <<<HTML
 			<img src="{$src}" class="{$class}" title="{$title}" alt="{$title}" />
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function toolTip($text)
-	{
-		$HTML = <<<HTML
+    public function toolTip($text)
+    {
+        $HTML = <<<HTML
             <a href="#" rel="tooltip" title="{$text}"><i class="icon-question-sign"></i></a>
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function noResults($text)
-	{
-		$HTML = <<<HTML
+    public function noResults($text)
+    {
+        $HTML = <<<HTML
 
 			<div id="norecords">
 				{$text}
 			</div>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function results($first_page, $rw, $previous_page, $currentPage_, $total_pages_, $current_records_, $totalRows_, $next_page, $ff, $last_page)
-	{
-		$HTML = <<<HTML
+    public function results($first_page, $rw, $previous_page, $currentPage_, $total_pages_, $current_records_, $totalRows_, $next_page, $ff, $last_page)
+    {
+        $HTML = <<<HTML
 
 			<div id="pagination" class="pagination">
 				<ul id="results">
@@ -356,12 +356,12 @@ HTML;
 			</div>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function search($action, $value, $class, $validate)
-	{
-		$HTML = <<<HTML
+    public function search($action, $value, $class, $validate)
+    {
+        $HTML = <<<HTML
 
             <div id="search-field-outer">
                 <form id="search-form-phpds" action="{$action}" method="post">
@@ -377,12 +377,12 @@ HTML;
 			</div>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function infoMark($icon, $text)
-	{
-		$HTML = <<<HTML
+    public function infoMark($icon, $text)
+    {
+        $HTML = <<<HTML
 
 			<a href="#" class="toolpopup">
 				{$icon}
@@ -390,12 +390,12 @@ HTML;
 			</a>
 
 HTML;
-		return $HTML;
-	}
+        return $HTML;
+    }
 
-	public function logOutInfo($href, $text)
-	{
-		return <<<HTML
+    public function logOutInfo($href, $text)
+    {
+        return <<<HTML
 
 			<a href="{$href}">
 				<div id="logged-in" class="loginlink">
@@ -403,11 +403,11 @@ HTML;
 				</div>
 			</a>
 HTML;
-	}
+    }
 
-	public function logInInfo($href, $inoutpage)
-	{
-		return <<<HTML
+    public function logInInfo($href, $inoutpage)
+    {
+        return <<<HTML
 
 			<a href="{$href}">
 				<div id="logged-out" class="loginlink">
@@ -415,24 +415,24 @@ HTML;
 				</div>
 			</a>
 HTML;
-	}
+    }
 
-	public function paginationTh($th_, $order_url=null, $asc=null, $desc=null)
-	{
-        if (! empty($order_url)) {
-            if (! empty($asc)) {
-                $asc_ = '&darr;';
+    public function paginationTh($th_, $order_url = null, $asc = null, $desc = null)
+    {
+        if (!empty($order_url)) {
+            if (!empty($asc)) {
+                $asc_   = '&darr;';
                 $filter = 'desc';
             } else {
-                $asc_ = '';
+                $asc_   = '';
                 $filter = 'asc';
             }
 
-            if (! empty($desc)) {
-                $desc_ = '&uarr;';
+            if (!empty($desc)) {
+                $desc_  = '&uarr;';
                 $filter = 'asc';
             } else {
-                $desc_ = '';
+                $desc_  = '';
                 $filter = 'desc';
             }
 
@@ -444,46 +444,46 @@ HTML;
         } else {
             return "<th>{$th_}</th>";
         }
-	}
+    }
 
-	public function paginationNav($url, $class)
-	{
+    public function paginationNav($url, $class)
+    {
 
         switch ($class) {
             case 'ff':
                 $name = '<i class="icon-forward"></i>';
-            break;
+                break;
 
             case 'rw':
                 $name = '<i class="icon-backward"></i>';
-            break;
+                break;
 
             case 'next':
                 $name = '<i class="icon-chevron-right"></i>';
-            break;
+                break;
 
             case 'last':
                 $name = '<i class="icon-fast-forward"></i>';
-            break;
+                break;
 
             case 'first':
                 $name = '<i class="icon-fast-backward"></i>';
-            break;
+                break;
 
             case 'previous':
                 $name = '<i class="icon-chevron-left"></i>';
-            break;
+                break;
         }
 
-		return <<<HTML
+        return <<<HTML
 
 			<li><a href="{$url}" data-via-ajax="page">{$name}</a></li>
 
 HTML;
-	}
+    }
 
-	public function paginationNavEmpty($class)
-	{
+    public function paginationNavEmpty($class)
+    {
 
         // This allows you to also style buttons that are disabled,
         // however lets leave this to show nothing as default.
@@ -514,64 +514,64 @@ HTML;
         }
 
         return '';
-	}
+    }
 
-	public function activeName ($name)
-	{
-		return '<li class="active-name">' . $name . '</li>';
-	}
+    public function activeName($name)
+    {
+        return '<li class="active-name">' . $name . '</li>';
+    }
 
-	public function menuA($mr, $class='')
-	{
-		// Check if we have a place marker.
-		if ($mr['node_type'] == 6) {
-			$noclick = 'onclick="return false;"';
-			// Create URL.
-			$url = "&#35;";
-		} else {
-			$noclick = '';
-			// Last check if it is a link item that should be jumped to.
-			if ($mr['node_type'] == 5) {
-				$url = $mr['node_link'];
-			} else {
-				$url = $mr['href'];
-			}
-		}
-        $target    = ($mr['new_window'] == 1) ? 'target="_blank"' : '';
-		$extra     = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
-        $via       = ($class == 'first-child' || $class == 'child') ? 'data-via-ajax="page"' : '';
-		return <<<HTML
+    public function menuA($mr, $class = '')
+    {
+        // Check if we have a place marker.
+        if ($mr['node_type'] == 6) {
+            $noclick = 'onclick="return false;"';
+            // Create URL.
+            $url = "&#35;";
+        } else {
+            $noclick = '';
+            // Last check if it is a link item that should be jumped to.
+            if ($mr['node_type'] == 5) {
+                $url = $mr['node_link'];
+            } else {
+                $url = $mr['href'];
+            }
+        }
+        $target = ($mr['new_window'] == 1) ? 'target="_blank"' : '';
+        $extra  = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
+        $via    = ($class == 'first-child' || $class == 'child') ? 'data-via-ajax="page"' : '';
+        return <<<HTML
 				<a tabindex="-1" href="{$url}" class="{$class}" {$target} {$extra} {$noclick} {$via}>{$mr['node_name']}</a>
 HTML;
-	}
+    }
 
-	public function menuUlParent($tree)
-	{
-		return <<<HTML
+    public function menuUlParent($tree)
+    {
+        return <<<HTML
 
 			<ul class="dropdown-menu">
 				{$tree}
 			</ul>
 
 HTML;
-	}
+    }
 
-	public function menuUlChild($tree)
-	{
-		// You could also make a tree type menu, but remember users with touch screens will find it hard to navigate, they can't hover.
-		return <<<HTML
+    public function menuUlChild($tree)
+    {
+        // You could also make a tree type menu, but remember users with touch screens will find it hard to navigate, they can't hover.
+        return <<<HTML
 
 				<ul class="dropdown-menu">
 					{$tree}
 				</ul>
 
 HTML;
-	}
+    }
 
-	public function menuLiParent($tree, $link, $class, $node_data = null)
-	{
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
-		return <<<HTML
+    public function menuLiParent($tree, $link, $class, $node_data = null)
+    {
+        $id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
+        return <<<HTML
 
 			<li class="{$class} dropdown" {$id}>
 				{$link}
@@ -579,73 +579,73 @@ HTML;
 			</li>
 
 HTML;
-	}
+    }
 
-	public function subMenuLiParent($tree, $link, $class, $node_data = null)
-	{
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
+    public function subMenuLiParent($tree, $link, $class, $node_data = null)
+    {
+        $id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
 
-		return <<<HTML
+        return <<<HTML
 				<li class="{$class} dropdown-submenu" {$id}>
 					{$link}
 						{$tree}
 				</li>
 HTML;
-	}
+    }
 
-	public function menuLiChild($link, $class, $node_data = null)
-	{
-        /**
-		 * Class types:
-		 * current
-		 * inactive
-		 */
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
-		return <<<HTML
-
-			<li class="{$class}" {$id}>{$link}</li>
-
-HTML;
-	}
-
-	public function subMenuLiChild($link, $class, $node_data = null)
-	{
-		/**
-		 * Class types:
-		 * current
-		 * inactive
-		 */
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
-		return <<<HTML
-
-			<li class="{$class}" {$id}>{$link}</li>
-
-HTML;
-	}
-
-	public function menuASubNav($mr)
-	{
-		return '<a href="' . $mr['href'] . '">' . $mr['node_name'] . '</a>';
-	}
-
-	public function subNavMenuLi($link, $class, $node_data = null)
-	{
-		/**
-		 * Class types:
-		 * active
-		 * inactive
-		 */
-		$id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
-		return <<<HTML
-
-			<li class="{$class}" {$id}>{$link}</li>
-
-HTML;
-	}
-
-    public function altHome ($home)
+    public function menuLiChild($link, $class, $node_data = null)
     {
-        if (! empty($home['href'])) {
+        /**
+         * Class types:
+         * current
+         * inactive
+         */
+        $id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
+        return <<<HTML
+
+			<li class="{$class}" {$id}>{$link}</li>
+
+HTML;
+    }
+
+    public function subMenuLiChild($link, $class, $node_data = null)
+    {
+        /**
+         * Class types:
+         * current
+         * inactive
+         */
+        $id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
+        return <<<HTML
+
+			<li class="{$class}" {$id}>{$link}</li>
+
+HTML;
+    }
+
+    public function menuASubNav($mr)
+    {
+        return '<a href="' . $mr['href'] . '">' . $mr['node_name'] . '</a>';
+    }
+
+    public function subNavMenuLi($link, $class, $node_data = null)
+    {
+        /**
+         * Class types:
+         * active
+         * inactive
+         */
+        $id = empty($node_data['node_id']) ? '' : ' id="menu_' . $node_data['node_id'] . '"';
+        return <<<HTML
+
+			<li class="{$class}" {$id}>{$link}</li>
+
+HTML;
+    }
+
+    public function altHome($home)
+    {
+        if (!empty($home['href'])) {
             return <<<HTML
                 <li class="backhome"><a href="{$home['href']}"><i class="icon-home icon-white"></i></a></li>
 HTML;
@@ -654,9 +654,9 @@ HTML;
         }
     }
 
-    public function altNav ($nav)
+    public function altNav($nav)
     {
-        if (! empty($nav['contact-admin'])) {
+        if (!empty($nav['contact-admin'])) {
             return <<<HTML
                 <li><a href="{$nav['contact-admin']['href']}"><i class="icon-envelope icon-white"></i></a></li>
 HTML;
@@ -665,18 +665,18 @@ HTML;
         }
     }
 
-	public function menuRedirect($url, $time)
-	{
-		return <<<HTML
+    public function menuRedirect($url, $time)
+    {
+        return <<<HTML
 
 			<META HTTP-EQUIV="refresh" CONTENT="{$time}; URL={$url}" >
 
 HTML;
-	}
+    }
 
-	public function debug($queries, $memory, $other='')
-	{
-		return <<<HTML
+    public function debug($queries, $memory, $other = '')
+    {
+        return <<<HTML
 
                 <div id="debug">
                     <div class="container">
@@ -685,12 +685,12 @@ HTML;
 				</div>
 
 HTML;
-	}
+    }
 
-	public function widget($widget_url, $element_id, $text='', $options = '')
-	{
+    public function widget($widget_url, $element_id, $text = '', $options = '')
+    {
 
-		$JS = <<<JS
+        $JS = <<<JS
 
 					$(document).ready(function() {
 						$.ajax({
@@ -711,13 +711,13 @@ HTML;
 					});
 
 JS;
-		return $JS;
-	}
+        return $JS;
+    }
 
-	public function ajax($ajax_url, $element_id, $text='', $options = '')
-	{
+    public function ajax($ajax_url, $element_id, $text = '', $options = '')
+    {
 
-		$JS = <<<JS
+        $JS = <<<JS
 
 					$(document).ready(function() {
 						$.ajax({
@@ -738,23 +738,23 @@ JS;
 					});
 
 JS;
-		return $JS;
-	}
+        return $JS;
+    }
 
-	public function lightBoxScript()
-	{
-		return "themes/cloud/js/fancybox/jquery.fancybox.pack.js";
-	}
+    public function lightBoxScript()
+    {
+        return "themes/cloud/js/fancybox/jquery.fancybox.pack.js";
+    }
 
-	public function lightBoxCss()
-	{
-		return "themes/cloud/js/fancybox/jquery.fancybox.css";
-	}
+    public function lightBoxCss()
+    {
+        return "themes/cloud/js/fancybox/jquery.fancybox.css";
+    }
 
-	public function lightBox($element_id, $options = '')
-	{
+    public function lightBox($element_id, $options = '')
+    {
 
-		$JS = <<<JS
+        $JS = <<<JS
 
 				$(document).ready(function() {
 					$("#{$element_id}").fancybox({
@@ -764,56 +764,56 @@ JS;
 				});
 
 JS;
-		return $JS;
-	}
+        return $JS;
+    }
 
-	public function errorField($errorExist)
-	{
-		$forError = '';
-		$forOk = '';
-		$message = '';
-		$okClass = '';
-		$errorClass = '';
+    public function errorField($errorExist)
+    {
+        $forError   = '';
+        $forOk      = '';
+        $message    = '';
+        $okClass    = '';
+        $errorClass = '';
 
-		foreach ($errorExist as $error) {
-			if (! empty($error['field'])) {
-				$field = $error['field'];
-			} else {
-				$field = 'FORM';
-				$error['type'] = 'errorElse';
-			}
-			if (empty($error['type'])) {
-				$forOk .= "[name=\'{$field}\'],";
-			} else if ($error['type'] == 'error') {
-				$forError .= "[name=\'{$field}\'],";
-				$forType = "[name=\'{$field}\']";
-			} else if ($error['type'] == 'errorElse') {
-				if ($field == 'FORM') {
-					$forType = "form";
+        foreach ($errorExist as $error) {
+            if (!empty($error['field'])) {
+                $field = $error['field'];
+            } else {
+                $field         = 'FORM';
+                $error['type'] = 'errorElse';
+            }
+            if (empty($error['type'])) {
+                $forOk .= "[name=\'{$field}\'],";
+            } else if ($error['type'] == 'error') {
+                $forError .= "[name=\'{$field}\'],";
+                $forType = "[name=\'{$field}\']";
+            } else if ($error['type'] == 'errorElse') {
+                if ($field == 'FORM') {
+                    $forType = "form";
                 } else {
                     $error['type'] = 'error';
                     $forError .= "[name=\'{$field}\'],";
                     $forType = "[name=\'{$field}\']";
                 }
-			}
+            }
 
-			if ($error['type'] == 'error') {
-				$errorStyling = '<div class="control-group error"><label class="control-label error-label">' . $error['message'] . '</label></div>';
-				$message .= "$('$errorStyling').insertBefore('{$forType}');";
-			}
-		}
+            if ($error['type'] == 'error') {
+                $errorStyling = '<div class="control-group error"><label class="control-label error-label">' . $error['message'] . '</label></div>';
+                $message .= "$('$errorStyling').insertBefore('{$forType}');";
+            }
+        }
 
-		if (! empty($forOk)) {
-			$forOk = rtrim($forOk,",");
-			$okClass = '$("' . $forOk . '").addClass("ok-field");';
-		}
+        if (!empty($forOk)) {
+            $forOk   = rtrim($forOk, ",");
+            $okClass = '$("' . $forOk . '").addClass("ok-field");';
+        }
 
-		if (! empty($forError)) {
-			$forError = rtrim($forError,",");
-			$errorClass = '$("' . $forError . '").addClass("error-field");';
-		}
+        if (!empty($forError)) {
+            $forError   = rtrim($forError, ",");
+            $errorClass = '$("' . $forError . '").addClass("error-field");';
+        }
 
-		$JS = <<<JS
+        $JS = <<<JS
 
 				$(document).ready(function() {
 					{$okClass}
@@ -822,40 +822,40 @@ JS;
 				});
 
 JS;
-		return $JS;
-	}
+        return $JS;
+    }
 
-	public function formSelect($value, $name, $selected='')
-	{
-		if ($selected)
-			$selected = 'selected';
-		else
-			$selected = '';
+    public function formSelect($value, $name, $selected = '')
+    {
+        if ($selected)
+            $selected = 'selected';
+        else
+            $selected = '';
 
-		$option = <<<HTML
+        $option = <<<HTML
 
 			<option value="{$value}" {$selected}>{$name}</option>
 
 HTML;
-		return $option;
-	}
+        return $option;
+    }
 
-	public function formCheckbox($name, $value, $label, $checked='')
-	{
-		if ($checked)
-			$checked = 'checked';
-		else
-			$checked = '';
+    public function formCheckbox($name, $value, $label, $checked = '')
+    {
+        if ($checked)
+            $checked = 'checked';
+        else
+            $checked = '';
 
-		$checkbox = <<<HTML
+        $checkbox = <<<HTML
 
 			<label class="checkbox">
 				<input type="checkbox" name="{$name}" value="{$value}" {$checked} title="{$label}"> {$label}
 			</label>
 
 HTML;
-		return $checkbox;
-	}
+        return $checkbox;
+    }
 
 
     public function ulCheckbox($tree)
@@ -884,35 +884,35 @@ HTML;
         return $checkbox;
     }
 
-	public function formRadio($name, $value, $label, $checked='')
-	{
-		if ($checked)
-			$checked = 'checked';
-		else
-			$checked = '';
+    public function formRadio($name, $value, $label, $checked = '')
+    {
+        if ($checked)
+            $checked = 'checked';
+        else
+            $checked = '';
 
-		$checkbox = <<<HTML
+        $checkbox = <<<HTML
 
 			<label class="radio">
 				<input type="radio" name="{$name}" value="{$value}" {$checked} title="{$label}"> {$label}
 			</label>
 
 HTML;
-		return $checkbox;
-	}
+        return $checkbox;
+    }
 
     public function taggerArea($taglist, $tagnametext, $tagvaluetext)
     {
-        $nav = $this->navigation;
-        $existingtags   = (string) '';
-        $delete_url = '';
+        $nav          = $this->navigation;
+        $existingtags = (string)'';
+        $delete_url   = '';
 
-        if (! empty($taglist)) {
+        if (!empty($taglist)) {
             asort($taglist);
             foreach ($taglist as $tag) {
-                $tagname    = trim($tag['tag_name']);
-                $tagvalue   = trim($tag['tag_value']);
-                $tagid      = $tag['tag_id'];
+                $tagname  = trim($tag['tag_name']);
+                $tagvalue = trim($tag['tag_value']);
+                $tagid    = $tag['tag_id'];
                 if ((empty($tagname) && empty($tagvalue)) || empty($tagid)) continue;
                 $delete_url = $nav->buildURL(null, 'delete-tag=' . $tagid);
                 $existingtags .= <<<HTML
@@ -974,28 +974,28 @@ HTML;
     }
 
     public function securityToken($token)
-	{
-		return '<input type="hidden" name="token_validation" value="' . $token . '">';
-	}
+    {
+        return '<input type="hidden" name="token_validation" value="' . $token . '">';
+    }
 
-	public function searchToken($search_token)
-	{
-		return '<input type="hidden" name="search_token_validation" value="' . $search_token . '">';
+    public function searchToken($search_token)
+    {
+        return '<input type="hidden" name="search_token_validation" value="' . $search_token . '">';
 
-	}
+    }
 
-	public function botBlockFields($fakefieldname)
-	{
+    public function botBlockFields($fakefieldname)
+    {
         // This string CANT be nicely formatted as it will give an error with jqeury appen in botBlockSectret.
-		$fakefields = '<div style="display: none;"><input type="text" name="text_' . $fakefieldname . '" value="" title="' . $fakefieldname . '"><input type="checkbox" name="check_' . $fakefieldname . '" title="' . $fakefieldname . '"></div>';
+        $fakefields = '<div style="display: none;"><input type="text" name="text_' . $fakefieldname . '" value="" title="' . $fakefieldname . '"><input type="checkbox" name="check_' . $fakefieldname . '" title="' . $fakefieldname . '"></div>';
 
-		return $fakefields;
-	}
+        return $fakefields;
+    }
 
-	public function botBlockSecret($secret_field, $dom='form')
-	{
+    public function botBlockSecret($secret_field, $dom = 'form')
+    {
 
-		$fakefields = <<<HTML
+        $fakefields = <<<HTML
 
 			$(document).ready(function() {
 				$("{$dom}").append('{$secret_field}');
@@ -1003,121 +1003,121 @@ HTML;
 
 HTML;
 
-		return $fakefields;
-	}
+        return $fakefields;
+    }
 
-	public function stylePagination()
-	{
-		$H = <<<HTML
-
-HTML;
-		return $H;
-	}
-
-	public function styleTables()
-	{
-		$H = <<<HTML
+    public function stylePagination()
+    {
+        $H = <<<HTML
 
 HTML;
-		return $H;
-	}
+        return $H;
+    }
 
-	public function styleFloatHeadersScript()
-	{
-		return "themes/cloud/js/floatheader/jquery.floatheader.js";
-	}
+    public function styleTables()
+    {
+        $H = <<<HTML
 
-	public function styleFloatHeaders()
-	{
-		$H = <<<HTML
+HTML;
+        return $H;
+    }
+
+    public function styleFloatHeadersScript()
+    {
+        return "themes/cloud/js/floatheader/jquery.floatheader.js";
+    }
+
+    public function styleFloatHeaders()
+    {
+        $H = <<<HTML
 
 			$(document).ready(function() {
 				$("table.floatHeader").floatHeader();
 			});
 
 HTML;
-		return $H;
-	}
+        return $H;
+    }
 
-	public function formsValidateJs()
-	{
-		return '';
-	}
+    public function formsValidateJs()
+    {
+        return '';
+    }
 
-	public function formsValidate()
-	{
-		return '';
-	}
+    public function formsValidate()
+    {
+        return '';
+    }
 
-	public function styleForms()
-	{
-		return '';
-	}
+    public function styleForms()
+    {
+        return '';
+    }
 
-	public function styleButtons()
-	{
-		return '';
-	}
+    public function styleButtons()
+    {
+        return '';
+    }
 
-	public function jqueryEffect($plugin)
-	{
-		return "themes/default/jquery/js/jquery.effects.$plugin.min.js";
-	}
+    public function jqueryEffect($plugin)
+    {
+        return "themes/default/jquery/js/jquery.effects.$plugin.min.js";
+    }
 
-	public function jqueryUI($plugin)
-	{
-		return "themes/default/jquery/js/jquery.ui.$plugin.min.js";
-	}
+    public function jqueryUI($plugin)
+    {
+        return "themes/default/jquery/js/jquery.ui.$plugin.min.js";
+    }
 
-	public function notificationsJs()
-	{
-		return '';
-	}
+    public function notificationsJs()
+    {
+        return '';
+    }
 
-	public function notifications($title, $message, $type='info')
-	{
+    public function notifications($title, $message, $type = 'info')
+    {
 
-		$notify_type = 'info';
-        $fadeout = '';
+        $notify_type = 'info';
+        $fadeout     = '';
 
-		switch ($type) {
-			// notice
-			case 'ok':
+        switch ($type) {
+            // notice
+            case 'ok':
                 $notify_type = 'alert-success';
-                $fadeout = 0;
-			break;
+                $fadeout     = 0;
+                break;
 
-			// info
-			case 'info':
+            // info
+            case 'info':
                 $notify_type = 'alert-info';
-                $fadeout = 0;
-            break;
+                $fadeout     = 0;
+                break;
 
-			// error
-			case 'warning':
-			case 'critical':
-			case 'error':
-				$notify_type = 'alert-error';
-                $fadeout = 0;
-			break;
+            // error
+            case 'warning':
+            case 'critical':
+            case 'error':
+                $notify_type = 'alert-error';
+                $fadeout     = 0;
+                break;
 
-        	default:
-				$notify_type = 'alert-notice';
-                $fadeout = 8000;
-			break;
-		}
+            default:
+                $notify_type = 'alert-notice';
+                $fadeout     = 8000;
+                break;
+        }
 
-        if (! empty($fadeout)) {
+        if (!empty($fadeout)) {
             $fadeout = "$('.{$notify_type}').delay({$fadeout}).fadeOut('slow')";
         } else {
             $fadeout = "";
         }
 
-		// to prevent js errors we need to remove line breaks.
-		$message = str_replace(array("\r", "\n"), '', $message);
+        // to prevent js errors we need to remove line breaks.
+        $message = str_replace(array("\r", "\n"), '', $message);
 
 
-		$H = <<<HTML
+        $H = <<<HTML
 
             $(document).ready(function() {
                 $('#notify').append('<div class="alert {$notify_type} fade in"><button type="button" class="close" data-dismiss="alert">&times;</button><h4 class="alert-heading">{$title}</h4>{$message}</div>');
@@ -1126,26 +1126,26 @@ HTML;
 
 HTML;
 
-		return $H;
-	}
+        return $H;
+    }
 
-	public function formatTimeDate($time_stamp, $format_type_or_custom = 'default', $custom_timezone = false)
-	{
-		return $this->core->formatTimeDate($time_stamp, $format_type_or_custom, $custom_timezone);
-	}
-
-	public function styleSelectJs()
+    public function formatTimeDate($time_stamp, $format_type_or_custom = 'default', $custom_timezone = false)
     {
-		return '';
+        return $this->core->formatTimeDate($time_stamp, $format_type_or_custom, $custom_timezone);
+    }
+
+    public function styleSelectJs()
+    {
+        return '';
     }
 
     public function styleSelectHeader()
     {
-		$H = <<<HTML
+        $H = <<<HTML
 
 HTML;
-		return $H;
+        return $H;
     }
 
-	// end of mod class
+    // end of mod class
 }

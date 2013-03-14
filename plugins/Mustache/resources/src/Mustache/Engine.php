@@ -23,8 +23,8 @@
  */
 class Mustache_Engine
 {
-    const VERSION        = '2.1.0';
-    const SPEC_VERSION   = '1.1.2';
+    const VERSION      = '2.1.0';
+    const SPEC_VERSION = '1.1.2';
 
     const PRAGMA_FILTERS = 'FILTERS';
 
@@ -552,7 +552,7 @@ class Mustache_Engine
                         array('className' => $className)
                     );
 
-                    eval('?>'.$this->compile($source));
+                    eval('?>' . $this->compile($source));
                 }
             }
 

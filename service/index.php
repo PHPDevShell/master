@@ -1,2 +1,2 @@
 <?php
-	header("location:service.php");
+header("location:service.php");

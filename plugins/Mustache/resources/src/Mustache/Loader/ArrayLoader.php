@@ -50,7 +50,7 @@ class Mustache_Loader_ArrayLoader implements Mustache_Loader, Mustache_Loader_Mu
     public function load($name)
     {
         if (!isset($this->templates[$name])) {
-            throw new InvalidArgumentException('Template '.$name.' not found.');
+            throw new InvalidArgumentException('Template ' . $name . ' not found.');
         }
 
         return $this->templates[$name];

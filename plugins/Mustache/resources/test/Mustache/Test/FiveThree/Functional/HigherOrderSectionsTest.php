@@ -26,9 +26,9 @@ class Mustache_Test_FiveThree_Functional_HigherOrderSectionsTest extends PHPUnit
     {
         $tpl = $this->mustache->loadTemplate('{{#wrapper}}{{name}}{{/wrapper}}');
 
-        $foo = new Mustache_Test_FiveThree_Functional_Foo;
-        $foo->name = 'Mario';
-        $foo->wrapper = function($text) {
+        $foo          = new Mustache_Test_FiveThree_Functional_Foo;
+        $foo->name    = 'Mario';
+        $foo->wrapper = function ($text) {
             return sprintf('<div class="anonymous">%s</div>', $text);
         };
 
@@ -40,7 +40,7 @@ class Mustache_Test_FiveThree_Functional_HigherOrderSectionsTest extends PHPUnit
         $one = $this->mustache->loadTemplate('{{name}}');
         $two = $this->mustache->loadTemplate('{{#wrap}}{{name}}{{/wrap}}');
 
-        $foo = new Mustache_Test_FiveThree_Functional_Foo;
+        $foo       = new Mustache_Test_FiveThree_Functional_Foo;
         $foo->name = 'Luigi';
 
         $this->assertEquals($foo->name, $one->render($foo));
@@ -53,7 +53,7 @@ class Mustache_Test_FiveThree_Functional_HigherOrderSectionsTest extends PHPUnit
 
         $data = array(
             'name' => 'Bob',
-            'wrap' => function($text) {
+            'wrap' => function ($text) {
                 return sprintf('[[%s]]', $text);
             }
         );
@@ -64,13 +64,13 @@ class Mustache_Test_FiveThree_Functional_HigherOrderSectionsTest extends PHPUnit
 
 class Mustache_Test_FiveThree_Functional_Foo
 {
-    public $name  = 'Justin';
+    public $name = 'Justin';
     public $lorem = 'Lorem ipsum dolor sit amet,';
     public $wrap;
 
     public function __construct()
     {
-        $this->wrap = function($text) {
+        $this->wrap = function ($text) {
             return sprintf('<em>%s</em>', $text);
         };
     }

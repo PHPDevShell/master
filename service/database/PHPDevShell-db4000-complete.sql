@@ -1,50 +1,56 @@
 -- Create filters for search.;
 CREATE TABLE `_db_core_filter` (
-	`search_id` int(255) unsigned NOT NULL AUTO_INCREMENT,
-	`user_id` int(20) DEFAULT NULL,
-	`node_id` varchar(64) NOT NULL,
-	`filter_search` varchar(255) DEFAULT NULL,
-	`filter_order` varchar(5) DEFAULT NULL,
-	`filter_by` varchar(255) DEFAULT NULL,
-	`exact_match` varchar(2) DEFAULT NULL,
-	PRIMARY KEY (`search_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `search_id`     INT(255) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id`       INT(20) DEFAULT NULL,
+  `node_id`       VARCHAR(64)       NOT NULL,
+  `filter_search` VARCHAR(255) DEFAULT NULL,
+  `filter_order`  VARCHAR(5) DEFAULT NULL,
+  `filter_by`     VARCHAR(255) DEFAULT NULL,
+  `exact_match`   VARCHAR(2) DEFAULT NULL,
+  PRIMARY KEY (`search_id`)
+)
+  ENGINE = MyISAM
+  DEFAULT CHARSET = utf8;
 
 -- Create logs table for watchdog.;
 CREATE TABLE `_db_core_logs` (
-	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`log_type` int(2) DEFAULT NULL,
-	`log_description` text,
-	`log_time` int(10) DEFAULT NULL,
-	`user_id` int(30) DEFAULT NULL,
-	`user_display_name` varchar(255) DEFAULT NULL,
-	`node_id` varchar(64) NOT NULL,
-	`file_name` varchar(255) DEFAULT NULL,
-	`node_name` varchar(255) DEFAULT NULL,
-	`user_ip` varchar(30) DEFAULT NULL,
-	PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+  `id`                INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `log_type`          INT(2) DEFAULT NULL,
+  `log_description`   TEXT,
+  `log_time`          INT(10) DEFAULT NULL,
+  `user_id`           INT(30) DEFAULT NULL,
+  `user_display_name` VARCHAR(255) DEFAULT NULL,
+  `node_id`           VARCHAR(64)      NOT NULL,
+  `file_name`         VARCHAR(255) DEFAULT NULL,
+  `node_name`         VARCHAR(255) DEFAULT NULL,
+  `user_ip`           VARCHAR(30) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+)
+  ENGINE = MyISAM
+  DEFAULT CHARSET = utf8;
 
 -- Create table for default node items.;
 CREATE TABLE `_db_core_node_items` (
-	`node_id` varchar(64) NOT NULL,
-	`parent_node_id` varchar(64) DEFAULT NULL,
-	`node_name` varchar(255) DEFAULT NULL,
-	`node_link` varchar(255) DEFAULT NULL,
-	`plugin` varchar(255) DEFAULT NULL,
-	`node_type` int(1) DEFAULT NULL,
-	`extend` varchar(255) DEFAULT NULL,
-	`new_window` int(1) DEFAULT NULL,
-	`rank` int(100) DEFAULT NULL,
-	`hide` int(1) DEFAULT NULL,
-	`template_id` varchar(64) DEFAULT NULL,
-	`alias` varchar(255) DEFAULT NULL,
-	`layout` varchar(255) DEFAULT NULL,
-	`params` varchar(1024) DEFAULT NULL,
-	PRIMARY KEY (`node_id`),
-	KEY `index` (`parent_node_id`,`node_link`,`plugin`,`alias`),
-	KEY `params` (`params`(255)) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `node_id`        VARCHAR(64) NOT NULL,
+  `parent_node_id` VARCHAR(64) DEFAULT NULL,
+  `node_name`      VARCHAR(255) DEFAULT NULL,
+  `node_link`      VARCHAR(255) DEFAULT NULL,
+  `plugin`         VARCHAR(255) DEFAULT NULL,
+  `node_type`      INT(1) DEFAULT NULL,
+  `extend`         VARCHAR(255) DEFAULT NULL,
+  `new_window`     INT(1) DEFAULT NULL,
+  `rank`           INT(100) DEFAULT NULL,
+  `hide`           INT(1) DEFAULT NULL,
+  `template_id`    VARCHAR(64) DEFAULT NULL,
+  `alias`          VARCHAR(255) DEFAULT NULL,
+  `layout`         VARCHAR(255) DEFAULT NULL,
+  `params`         VARCHAR(1024) DEFAULT NULL,
+  PRIMARY KEY (`node_id`),
+  KEY `index` (`parent_node_id`, `node_link`, `plugin`, `alias`),
+  KEY `params` (`params`(255)) USING BTREE
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Insert default node items.;
 INSERT INTO `_db_core_node_items` VALUES ('readme', '0', 'Readme', 'readme.php', 'About', '1', null, '0', '1', '0', 'default', 'readme', null, null);
@@ -52,13 +58,15 @@ INSERT INTO `_db_core_node_items` VALUES ('plugin-admin', '0', 'Plugins', 'plugi
 
 -- Create node tree structure.;
 CREATE TABLE `_db_core_node_structure` (
-	`id` int(50) unsigned NOT NULL AUTO_INCREMENT,
-	`node_id` varchar(64) NOT NULL,
-	`is_parent` int(1) DEFAULT NULL,
-	`type` int(1) DEFAULT NULL,
-	PRIMARY KEY (`id`),
-	KEY `index` (`node_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `id`        INT(50) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `node_id`   VARCHAR(64)      NOT NULL,
+  `is_parent` INT(1) DEFAULT NULL,
+  `type`      INT(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `index` (`node_id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Insert node tree structure.;
 INSERT INTO `_db_core_node_structure` (node_id, is_parent, type) VALUES ('readme', '0', '2');
@@ -66,12 +74,14 @@ INSERT INTO `_db_core_node_structure` (node_id, is_parent, type) VALUES ('plugin
 
 -- Create plugins table.;
 CREATE TABLE `_db_core_plugin_activation` (
-	`plugin_folder` varchar(255) NOT NULL DEFAULT '0',
-	`status` varchar(255) DEFAULT NULL,
-	`version` int(16) NOT NULL,
-	`use_logo` int(2) DEFAULT NULL,
-	PRIMARY KEY (`plugin_folder`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `plugin_folder` VARCHAR(255) NOT NULL DEFAULT '0',
+  `status`        VARCHAR(255) DEFAULT NULL,
+  `version`       INT(16)      NOT NULL,
+  `use_logo`      INT(2) DEFAULT NULL,
+  PRIMARY KEY (`plugin_folder`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Insert available default plugins.;
 INSERT INTO `_db_core_plugin_activation` VALUES ('Pagination', 'install', '1000', '0');
@@ -80,15 +90,17 @@ INSERT INTO `_db_core_plugin_activation` VALUES ('StandardLogin', 'install', '10
 
 -- Create classes available from default plugins.;
 CREATE TABLE `_db_core_plugin_classes` (
-	`class_id` int(10) NOT NULL AUTO_INCREMENT,
-	`class_name` varchar(155) DEFAULT NULL,
-	`alias` varchar(155) DEFAULT NULL,
-	`plugin_folder` varchar(255) DEFAULT NULL,
-	`enable` int(1) DEFAULT NULL,
-	`rank` int(4) DEFAULT NULL,
-	PRIMARY KEY (`class_id`),
-	KEY `index` (`class_name`,`alias`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `class_id`      INT(10) NOT NULL AUTO_INCREMENT,
+  `class_name`    VARCHAR(155) DEFAULT NULL,
+  `alias`         VARCHAR(155) DEFAULT NULL,
+  `plugin_folder` VARCHAR(255) DEFAULT NULL,
+  `enable`        INT(1) DEFAULT NULL,
+  `rank`          INT(4) DEFAULT NULL,
+  PRIMARY KEY (`class_id`),
+  KEY `index` (`class_name`, `alias`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Insert classes available from default plugins.;
 INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('views', 'PHPDS_views', 'Mustache', '1', '1');
@@ -97,22 +109,26 @@ INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable,
 
 -- Create session table.;
 CREATE TABLE `_db_core_session` (
-	`cookie_id` int(20) unsigned NOT NULL AUTO_INCREMENT,
-	`user_id` int(20) unsigned NOT NULL,
-	`id_crypt` char(6) NOT NULL,
-	`pass_crypt` char(32) NOT NULL,
-	`timestamp` int(10) NOT NULL,
-	PRIMARY KEY (`cookie_id`),
-	KEY `index` (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `cookie_id`  INT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id`    INT(20) UNSIGNED NOT NULL,
+  `id_crypt`   CHAR(6)          NOT NULL,
+  `pass_crypt` CHAR(32)         NOT NULL,
+  `timestamp`  INT(10)          NOT NULL,
+  PRIMARY KEY (`cookie_id`),
+  KEY `index` (`user_id`)
+)
+  ENGINE = MyISAM
+  DEFAULT CHARSET = utf8;
 
 -- Create settings table.;
 CREATE TABLE `_db_core_settings` (
-	`setting_description` varchar(100) NOT NULL DEFAULT '',
-	`setting_value` text,
-	`note` text,
-	PRIMARY KEY (`setting_description`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `setting_description` VARCHAR(100) NOT NULL DEFAULT '',
+  `setting_value`       TEXT,
+  `note`                TEXT,
+  PRIMARY KEY (`setting_description`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Insert default settings to make system work.;
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_allow_remember', '1', 'Should users be allowed to login with remember.');
@@ -166,49 +182,57 @@ INSERT INTO `_db_core_settings` VALUES ('AdminTools_url_append', '.html', 'The u
 
 -- Create tags table for tagging data.;
 CREATE TABLE `_db_core_tags` (
-	`tag_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`tag_object` varchar(45) DEFAULT NULL,
-	`tag_name` varchar(45) DEFAULT NULL,
-	`tag_target` varchar(45) DEFAULT NULL,
-	`tag_value` text,
-	PRIMARY KEY (`tag_id`),
-	UNIQUE KEY `UNIQUE` (`tag_object`,`tag_name`,`tag_target`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `tag_id`     INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tag_object` VARCHAR(45) DEFAULT NULL,
+  `tag_name`   VARCHAR(45) DEFAULT NULL,
+  `tag_target` VARCHAR(45) DEFAULT NULL,
+  `tag_value`  TEXT,
+  PRIMARY KEY (`tag_id`),
+  UNIQUE KEY `UNIQUE` (`tag_object`, `tag_name`, `tag_target`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Create themes table to store installed themes.;
 CREATE TABLE `_db_core_templates` (
-	`template_id` varchar(64) NOT NULL,
-	`template_folder` varchar(255) DEFAULT NULL,
-	PRIMARY KEY (`template_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `template_id`     VARCHAR(64) NOT NULL,
+  `template_folder` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`template_id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Insert default themes.;
 INSERT INTO `_db_core_templates` VALUES ('default', 'default');
 
 -- Create important user table to store all users.;
 CREATE TABLE `_db_core_users` (
-	`user_id` int(20) unsigned NOT NULL AUTO_INCREMENT,
-	`user_display_name` varchar(255) DEFAULT NULL,
-	`user_name` varchar(255) DEFAULT NULL,
-	`user_password` varchar(100) DEFAULT NULL,
-	`user_email` varchar(100) DEFAULT NULL,
-	`user_role` int(10) DEFAULT NULL,
-	`date_registered` int(10) DEFAULT NULL,
-	`language` varchar(10) DEFAULT NULL,
-	`timezone` varchar(255) DEFAULT NULL,
-	`region` varchar(10) DEFAULT NULL,
-	PRIMARY KEY (`user_id`),
-	UNIQUE KEY `index_user` (`user_name`,`user_email`),
-	KEY `index_general` (`user_display_name`,`user_role`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `user_id`           INT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_display_name` VARCHAR(255) DEFAULT NULL,
+  `user_name`         VARCHAR(255) DEFAULT NULL,
+  `user_password`     VARCHAR(100) DEFAULT NULL,
+  `user_email`        VARCHAR(100) DEFAULT NULL,
+  `user_role`         INT(10) DEFAULT NULL,
+  `date_registered`   INT(10) DEFAULT NULL,
+  `language`          VARCHAR(10) DEFAULT NULL,
+  `timezone`          VARCHAR(255) DEFAULT NULL,
+  `region`            VARCHAR(10) DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `index_user` (`user_name`, `user_email`),
+  KEY `index_general` (`user_display_name`, `user_role`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Create primary roles table a user can belong to.;
 CREATE TABLE `_db_core_user_roles` (
-	`user_role_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`user_role_name` varchar(255) DEFAULT NULL,
-	`user_role_note` tinytext,
-	PRIMARY KEY (`user_role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `user_role_id`   INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_role_name` VARCHAR(255) DEFAULT NULL,
+  `user_role_note` TINYTEXT,
+  PRIMARY KEY (`user_role_id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Insert primary roles table a user can belong to.;
 INSERT INTO `_db_core_user_roles` VALUES ('1', 'Super Admin', null);
@@ -219,10 +243,12 @@ INSERT INTO `_db_core_user_roles` VALUES ('5', 'Disabled', null);
 
 -- Create security role permissions table.;
 CREATE TABLE `_db_core_user_role_permissions` (
-  `user_role_id` int(10) NOT NULL DEFAULT '0',
-  `node_id` varchar(64) NOT NULL,
-  PRIMARY KEY (`user_role_id`,`node_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `user_role_id` INT(10)     NOT NULL DEFAULT '0',
+  `node_id`      VARCHAR(64) NOT NULL,
+  PRIMARY KEY (`user_role_id`, `node_id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
 
 -- Insert default user permissions.;
 INSERT INTO _db_core_user_role_permissions VALUES ('1', 'readme');

@@ -6,14 +6,14 @@
  */
 class PHPDS_readMaxNodesRankQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			MAX(t1.rank)
 		FROM
-			_db_core_node_items as t1
+			_db_core_node_items AS t1
     ";
 
-	protected $singleValue = true;
+    protected $singleValue = true;
 }
 
 /**
@@ -22,14 +22,14 @@ class PHPDS_readMaxNodesRankQuery extends PHPDS_query
  */
 class PHPDS_readMinNodesRankQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			MIN(t1.rank)
 		FROM
-			_db_core_node_items as t1
+			_db_core_node_items AS t1
     ";
 
-	protected $singleValue = true;
+    protected $singleValue = true;
 }
 
 /**
@@ -38,7 +38,7 @@ class PHPDS_readMinNodesRankQuery extends PHPDS_query
  */
 class PHPDS_createTemplateQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		REPLACE INTO
 			_db_core_templates (template_id, template_folder)
 		VALUES
@@ -52,7 +52,7 @@ class PHPDS_createTemplateQuery extends PHPDS_query
  */
 class PHPDS_deleteRolePermissionsPluginQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		DELETE FROM
 			_db_core_user_role_permissions
 		WHERE
@@ -68,7 +68,7 @@ class PHPDS_deleteRolePermissionsPluginQuery extends PHPDS_query
  */
 class PHPDS_writeRolePermissionsPluginQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		REPLACE INTO
 			_db_core_user_role_permissions (user_role_id, node_id)
 		VALUES
@@ -82,7 +82,7 @@ class PHPDS_writeRolePermissionsPluginQuery extends PHPDS_query
  */
 class PHPDS_writeNodePluginQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		REPLACE INTO
 			_db_core_node_items (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window, rank, hide, template_id, alias, layout, params)
 		VALUES
@@ -97,7 +97,7 @@ class PHPDS_writeNodePluginQuery extends PHPDS_query
  */
 class PHPDS_rankClassesQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			MAX(rank)
 		FROM
@@ -106,7 +106,7 @@ class PHPDS_rankClassesQuery extends PHPDS_query
 			class_name = '%s'
     ";
 
-	protected $singleValue = true;
+    protected $singleValue = true;
 }
 
 /**
@@ -115,53 +115,53 @@ class PHPDS_rankClassesQuery extends PHPDS_query
  */
 class PHPDS_writeClassesQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		REPLACE INTO
 			_db_core_plugin_classes (class_id, class_name, alias, plugin_folder, enable, rank)
 		VALUES
 			%s
     ";
 
-	/**
-	 * Initiate invoke query.
-	 */
-	public function invoke($parameters = null)
-	{
-		list($classes_array, $plugin_folder) = $parameters;
+    /**
+     * Initiate invoke query.
+     */
+    public function invoke($parameters = null)
+    {
+        list($classes_array, $plugin_folder) = $parameters;
 
-		// Check if settings exists.
-		$class_db = '';
-		// Loop through all settings.
-		if (empty($classes_array)) $classes_array = array();
-		foreach ($classes_array as $class_array) {
-			// Assign setting as string.
-			if (! empty($class_array['name']))
-				$name = (string) $class_array['name'];
-			if (! empty($class_array['alias']))
-				$alias = (string) $class_array['alias'];
-			if (! empty($class_array['plugin']))
-				$plugin = (string) $class_array['plugin'];
-			if (! empty($class_array['rank']))
-				$rank = $class_array['rank'];
+        // Check if settings exists.
+        $class_db = '';
+        // Loop through all settings.
+        if (empty($classes_array)) $classes_array = array();
+        foreach ($classes_array as $class_array) {
+            // Assign setting as string.
+            if (!empty($class_array['name']))
+                $name = (string)$class_array['name'];
+            if (!empty($class_array['alias']))
+                $alias = (string)$class_array['alias'];
+            if (!empty($class_array['plugin']))
+                $plugin = (string)$class_array['plugin'];
+            if (!empty($class_array['rank']))
+                $rank = $class_array['rank'];
 
-			if (empty($name)) $name = $plugin_folder;
-			if (empty($plugin)) $plugin = $plugin_folder;
-			if (empty($alias)) $alias = '';
-			if (empty($rank) || $rank == 'last') {
-				$max_rank = $this->db->invokeQuery('PHPDS_rankClassesQuery', $name);
-				(empty($max_rank)) ? $rank = 1 : $rank = $max_rank + 1;
-			}
-			// Assign settings array.
-			$class_db .= "('', '$name', '$alias', '$plugin', 1, '$rank'),";
-		}
-		// Remove last comma.
-		$class_db = rtrim($class_db, ',');
-		// We can now insert the classes.
-		if (! empty($class_db)) {
-			// Write new classes to database.
-			parent::invoke(array($class_db));
-		}
-	}
+            if (empty($name)) $name = $plugin_folder;
+            if (empty($plugin)) $plugin = $plugin_folder;
+            if (empty($alias)) $alias = '';
+            if (empty($rank) || $rank == 'last') {
+                $max_rank = $this->db->invokeQuery('PHPDS_rankClassesQuery', $name);
+                (empty($max_rank)) ? $rank = 1 : $rank = $max_rank + 1;
+            }
+            // Assign settings array.
+            $class_db .= "('', '$name', '$alias', '$plugin', 1, '$rank'),";
+        }
+        // Remove last comma.
+        $class_db = rtrim($class_db, ',');
+        // We can now insert the classes.
+        if (!empty($class_db)) {
+            // Write new classes to database.
+            parent::invoke(array($class_db));
+        }
+    }
 }
 
 /**
@@ -170,7 +170,7 @@ class PHPDS_writeClassesQuery extends PHPDS_query
  */
 class PHPDS_doQuery extends PHPDS_query
 {
-	protected $sql = "%s";
+    protected $sql = "%s";
 }
 
 /**
@@ -179,7 +179,7 @@ class PHPDS_doQuery extends PHPDS_query
  */
 class PHPDS_writePluginVersionQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		INSERT INTO
 			_db_core_plugin_activation (plugin_folder, status, version, use_logo)
 		VALUES
@@ -193,7 +193,7 @@ class PHPDS_writePluginVersionQuery extends PHPDS_query
  */
 class PHPDS_deleteClassesQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		DELETE FROM
 			_db_core_plugin_classes
 		WHERE
@@ -207,7 +207,7 @@ class PHPDS_deleteClassesQuery extends PHPDS_query
  */
 class PHPDS_deleteVersionQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		DELETE FROM
 			_db_core_plugin_activation
 		WHERE
@@ -221,7 +221,7 @@ class PHPDS_deleteVersionQuery extends PHPDS_query
  */
 class PHPDS_upgradeVersionQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		UPDATE
 			_db_core_plugin_activation
 		SET
@@ -238,7 +238,7 @@ class PHPDS_upgradeVersionQuery extends PHPDS_query
  */
 class PHPDS_unsetLogoQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		UPDATE
 			_db_core_plugin_activation
 		SET
@@ -252,7 +252,7 @@ class PHPDS_unsetLogoQuery extends PHPDS_query
  */
 class PHPDS_setDefaultLogoQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		UPDATE
 			_db_core_plugin_activation
 		SET
@@ -267,16 +267,16 @@ class PHPDS_setDefaultLogoQuery extends PHPDS_query
  */
 class PHPDS_doesNodeExist extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			t1.node_id
 		FROM
-			_db_core_node_items as t1
+			_db_core_node_items AS t1
 		WHERE
 			t1.node_id = '%s'
 	";
 
-	protected $singleValue = true;
+    protected $singleValue = true;
 }
 
 /**
@@ -284,7 +284,7 @@ class PHPDS_doesNodeExist extends PHPDS_query
  */
 class PHPDS_updateNodeLink extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		UPDATE
 			_db_core_node_items
 		SET

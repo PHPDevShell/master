@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-require dirname(__FILE__).'/../src/Mustache/Autoloader.php';
+require dirname(__FILE__) . '/../src/Mustache/Autoloader.php';
 Mustache_Autoloader::register();
 
-require dirname(__FILE__).'/../vendor/yaml/lib/sfYamlParser.php';
+require dirname(__FILE__) . '/../vendor/yaml/lib/sfYamlParser.php';

@@ -2,63 +2,63 @@
 
 class PHPDS_taggerListQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			tag_id, tag_object, tag_name, tag_target, tag_value
 		FROM
 			_db_core_tags";
 
-	protected $where = '1';
-	protected $autoProtect = true;
+    protected $where = '1';
+    protected $autoProtect = true;
 
-	public function extraBuild($parameters = null)
-	{
-		if (!empty($parameters['object'])) $this->addWhere("tag_object = '%(object)s'");
-		if (!empty($parameters['name'])) $this->addWhere("tag_name = '%(name)s'");
-		if (!empty($parameters['target'])) $this->addWhere("tag_target = '%(target)s'");
-		if (!empty($parameters['value'])) $this->addWhere("tag_value = '%(value)s'");
+    public function extraBuild($parameters = null)
+    {
+        if (!empty($parameters['object'])) $this->addWhere("tag_object = '%(object)s'");
+        if (!empty($parameters['name'])) $this->addWhere("tag_name = '%(name)s'");
+        if (!empty($parameters['target'])) $this->addWhere("tag_target = '%(target)s'");
+        if (!empty($parameters['value'])) $this->addWhere("tag_value = '%(value)s'");
 
-		return parent::extraBuild($parameters);
-	}
+        return parent::extraBuild($parameters);
+    }
 
 }
 
-class PHPDS_taggerLookupQuery extends  PHPDS_taggerListQuery
+class PHPDS_taggerLookupQuery extends PHPDS_taggerListQuery
 {
-	protected $singleRow = true;
-	protected $focus = 'tag_value';
+    protected $singleRow = true;
+    protected $focus = 'tag_value';
 
-	public function getResults()
-	{
-		return $this->asOne(0, $this->focus);
-	}
+    public function getResults()
+    {
+        return $this->asOne(0, $this->focus);
+    }
 }
 
 class PHPDS_taggerMarkQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		REPLACE INTO
 			_db_core_tags
 		SET
 			tag_object = '%(object)s', tag_name = '%(name)s', tag_target = '%(target)s'
 	";
-	protected $autoProtect = true;
+    protected $autoProtect = true;
 
-	public function checkParameters(&$parameters = null)
-	{
-		if (!isset($parameters['value']) || is_null($parameters['value'])) {
-			$parameter['value'] = 'NULL';
-			$this->sql .= ', tag_value = NULL';
-		} else {
-			$this->sql .= ", tag_value = '%(value)s'";
-		}
-		return true;
-	}
+    public function checkParameters(&$parameters = null)
+    {
+        if (!isset($parameters['value']) || is_null($parameters['value'])) {
+            $parameter['value'] = 'NULL';
+            $this->sql .= ', tag_value = NULL';
+        } else {
+            $this->sql .= ", tag_value = '%(value)s'";
+        }
+        return true;
+    }
 }
 
 class PHPDS_taggerListTargetQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			tag_id, tag_name, tag_value
 		FROM
@@ -72,7 +72,7 @@ class PHPDS_taggerListTargetQuery extends PHPDS_query
 
 class PHPDS_deleteTagsQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		DELETE FROM
 			_db_core_tags
 		WHERE
@@ -80,7 +80,7 @@ class PHPDS_deleteTagsQuery extends PHPDS_query
 		AND
 			tag_target = '%s'
 		";
-	protected $autoProtect = true;
+    protected $autoProtect = true;
 }
 
 class PHPDS_deleteStrictTagsQuery extends PHPDS_query
@@ -118,25 +118,25 @@ class PHPDS_updateTagsQuery extends PHPDS_query
 	      %s
 	";
 
-	public function invoke($parameters = null)
-	{
-		list($object, $target, $taggernames, $taggervalues, $taggerids) = $parameters;
+    public function invoke($parameters = null)
+    {
+        list($object, $target, $taggernames, $taggervalues, $taggerids) = $parameters;
 
-		if (! empty($target) && ! empty($object)) {
+        if (!empty($target) && !empty($object)) {
             foreach ($taggernames as $key => $name) {
-                if (! empty($name)) {
-                    $id     = (! empty($taggerids[$key])) ? $taggerids[$key] : '';
-                    $value  = (! empty($taggervalues[$key])) ? $taggervalues[$key] : '';
-                    $tag[]  = array($id, $object, $name, $target, $value);
+                if (!empty($name)) {
+                    $id    = (!empty($taggerids[$key])) ? $taggerids[$key] : '';
+                    $value = (!empty($taggervalues[$key])) ? $taggervalues[$key] : '';
+                    $tag[] = array($id, $object, $name, $target, $value);
                 }
             }
 
-            if (! empty($tag)) $datarows = $this->rows($tag);
-            if (! empty($datarows)) {
+            if (!empty($tag)) $datarows = $this->rows($tag);
+            if (!empty($datarows)) {
                 return parent::invoke(array($datarows));
             } else {
                 return array();
             }
         }
-	}
+    }
 }

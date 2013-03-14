@@ -42,7 +42,7 @@ class Mustache_LambdaHelper
     public function render($string)
     {
         return $this->mustache
-            ->loadLambda((string) $string)
+            ->loadLambda((string)$string)
             ->renderInternal($this->context);
     }
 }

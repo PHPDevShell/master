@@ -25,7 +25,7 @@ class Mustache_Autoloader
     public function __construct($baseDir = null)
     {
         if ($baseDir === null) {
-            $this->baseDir = dirname(__FILE__).'/..';
+            $this->baseDir = dirname(__FILE__) . '/..';
         } else {
             $this->baseDir = rtrim($baseDir, '/');
         }

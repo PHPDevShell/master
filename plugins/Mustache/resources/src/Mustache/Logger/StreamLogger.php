@@ -32,7 +32,7 @@ class Mustache_Logger_StreamLogger extends Mustache_Logger_AbstractLogger
     );
 
     protected $stream = null;
-    protected $url    = null;
+    protected $url = null;
 
     /**
      * @throws InvalidArgumentException if the logging level is unknown.
@@ -92,9 +92,9 @@ class Mustache_Logger_StreamLogger extends Mustache_Logger_AbstractLogger
      *
      * @throws InvalidArgumentException if the logging level is unknown.
      *
-     * @param mixed $level
+     * @param mixed  $level
      * @param string $message
-     * @param array $context
+     * @param array  $context
      */
     public function log($level, $message, array $context = array())
     {
@@ -174,7 +174,7 @@ class Mustache_Logger_StreamLogger extends Mustache_Logger_AbstractLogger
      */
     protected static function interpolateMessage($message, array $context = array())
     {
-        $message = (string) $message;
+        $message = (string)$message;
 
         // build a replacement array with braces around the context keys
         $replace = array();

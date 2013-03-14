@@ -66,8 +66,8 @@ class Mustache_Test_ParserTest extends PHPUnit_Framework_TestCase
                         Mustache_Tokenizer::NAME  => 'parent'
                     ),
                     array(
-                        Mustache_Tokenizer::TYPE  => Mustache_Tokenizer::T_ESCAPED,
-                        Mustache_Tokenizer::NAME  => 'name'
+                        Mustache_Tokenizer::TYPE => Mustache_Tokenizer::T_ESCAPED,
+                        Mustache_Tokenizer::NAME => 'name'
                     ),
                     array(
                         Mustache_Tokenizer::TYPE  => Mustache_Tokenizer::T_END_SECTION,

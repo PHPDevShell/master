@@ -31,7 +31,7 @@ class Mustache_Test_Functional_MustacheSpecTest extends PHPUnit_Framework_TestCa
      */
     public function testSpecInitialized()
     {
-        if (!file_exists(dirname(__FILE__).'/../../../../vendor/spec/specs/')) {
+        if (!file_exists(dirname(__FILE__) . '/../../../../vendor/spec/specs/')) {
             $this->markTestSkipped('Mustache spec submodule not initialized: run "git submodule update --init"');
         }
     }

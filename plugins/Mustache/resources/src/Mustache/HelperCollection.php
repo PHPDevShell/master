@@ -86,7 +86,7 @@ class Mustache_HelperCollection
     public function get($name)
     {
         if (!$this->has($name)) {
-            throw new InvalidArgumentException('Unknown helper: '.$name);
+            throw new InvalidArgumentException('Unknown helper: ' . $name);
         }
 
         return $this->helpers[$name];
@@ -140,7 +140,7 @@ class Mustache_HelperCollection
     public function remove($name)
     {
         if (!$this->has($name)) {
-            throw new InvalidArgumentException('Unknown helper: '.$name);
+            throw new InvalidArgumentException('Unknown helper: ' . $name);
         }
 
         unset($this->helpers[$name]);

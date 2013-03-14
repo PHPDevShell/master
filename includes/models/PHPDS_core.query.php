@@ -2,7 +2,7 @@
 
 class TEMPLATE_cronExecutionLogQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		UPDATE
 			_db_core_cron t1
 		SET
@@ -14,6 +14,6 @@ class TEMPLATE_cronExecutionLogQuery extends PHPDS_query
 
 class TEMPLATE_rollbackQuery extends PHPDS_query
 {
-	protected $sql = "ROLLBACK";
+    protected $sql = "ROLLBACK";
 }
 

@@ -25,6 +25,8 @@ class Mustache_Test_FiveThree_Functional_ClosuresQuirksTest extends PHPUnit_Fram
     public function testClosuresDontLikeItWhenYouTouchTheirProperties()
     {
         $tpl = $this->mustache->loadTemplate('{{ foo.bar }}');
-        $this->assertEquals('', $tpl->render(array('foo' => function() { return 'FOO'; })));
+        $this->assertEquals('', $tpl->render(array('foo' => function () {
+            return 'FOO';
+        })));
     }
 }

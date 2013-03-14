@@ -2,7 +2,7 @@
 
 class USER_guestRoleNameQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 			SELECT
 				user_role_name
 			FROM
@@ -11,20 +11,20 @@ class USER_guestRoleNameQuery extends PHPDS_query
 				user_role_id = %u
 		";
 
-	protected $singleValue = true;
-	protected $focus = 'user_role_name';
+    protected $singleValue = true;
+    protected $focus = 'user_role_name';
 
-	public function checkParameters(&$parameters = null)
-	{
-		$settings_array = $this->db->essentialSettings;
-		$parameters = $settings_array['guest_role'];
-		return true;
-	}
+    public function checkParameters(&$parameters = null)
+    {
+        $settings_array = $this->db->essentialSettings;
+        $parameters     = $settings_array['guest_role'];
+        return true;
+    }
 }
 
 class USER_isRootQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 			SELECT
 				user_role
 			FROM
@@ -33,19 +33,19 @@ class USER_isRootQuery extends PHPDS_query
 				user_id = %u
 		";
 
-	protected $singleValue = true;
-	protected $focus = 'user_role';
+    protected $singleValue = true;
+    protected $focus = 'user_role';
 
-	public function checkParameters(&$parameters = null)
-	{
-		list($user_id) = $parameters;
-		return intval($user_id) > 0;
-	}
+    public function checkParameters(&$parameters = null)
+    {
+        list($user_id) = $parameters;
+        return intval($user_id) > 0;
+    }
 }
 
 class USER_getRolesQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			user_role
 		FROM
@@ -54,19 +54,19 @@ class USER_getRolesQuery extends PHPDS_query
 			user_id = %u
 	";
 
-	protected $singleValue = true;
+    protected $singleValue = true;
 
     public function invoke($parameters = null)
     {
         list($user_id) = $parameters;
         $configuration = $this->configuration;
-        $db = $this->db;
+        $db            = $this->db;
 
         if (empty($user_id))
-            $user_id = (! empty($configuration['user_id'])) ? $configuration['user_id'] : 0;
+            $user_id = (!empty($configuration['user_id'])) ? $configuration['user_id'] : 0;
 
         // Check if user is a guest.
-        if (! empty($user_id)) {
+        if (!empty($user_id)) {
             if ($user_id == $configuration['user_id']) {
                 return $configuration['user_role'];
             } else {
@@ -74,9 +74,9 @@ class USER_getRolesQuery extends PHPDS_query
                 return $role;
             }
         } else {
-            $settings = $db->essentialSettings;
+            $settings   = $db->essentialSettings;
             $guest_role = $settings['guest_role'];
-            if (empty($guest_role)) throw new PHPDS_Exception('Unable to get the GUEST ROLE from essential settings.');
+            if (empty($guest_role)) throw new PHPDS_exception('Unable to get the GUEST ROLE from essential settings.');
             return $guest_role;
         }
     }
@@ -84,64 +84,64 @@ class USER_getRolesQuery extends PHPDS_query
 
 class USER_roleExistQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			user_role_id
 		FROM
 			_db_core_user_roles
 	";
 
-	public function invoke($parameters = null)
-	{
-		$role_id = $parameters[0];
-		$user = $this->user;
+    public function invoke($parameters = null)
+    {
+        $role_id = $parameters[0];
+        $user    = $this->user;
 
-		if (empty($user->rolesArray)) {
-			$roles = parent::invoke();
-			foreach ($roles as $results_array) {
-				$user->rolesArray[$results_array['user_role_id']] = true;
-			}
-		}
-		if (! empty($user->rolesArray[$role_id])) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+        if (empty($user->rolesArray)) {
+            $roles = parent::invoke();
+            foreach ($roles as $results_array) {
+                $user->rolesArray[$results_array['user_role_id']] = true;
+            }
+        }
+        if (!empty($user->rolesArray[$role_id])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 class USER_belongsToRoleQuery extends PHPDS_query
 {
-	protected $sql = "
+    protected $sql = "
 		SELECT
 			t1.user_id
 		FROM
-			_db_core_users as t1
+			_db_core_users AS t1
 		WHERE
 			(t1.user_role = %u)
 		AND
 			(t1.user_id = %u)
 	";
 
-	protected $singleRow = true;
+    protected $singleRow = true;
 
-	public function invoke($parameters = null)
-	{
-		list($user_id, $user_role) = $parameters;
-		if ($this->user->isRoot($user_id)) return true;
+    public function invoke($parameters = null)
+    {
+        list($user_id, $user_role) = $parameters;
+        if ($this->user->isRoot($user_id)) return true;
 
-		if (empty($user_id)) {
-			(!empty($this->configuration['user_id'])) ? $user_id = $this->configuration['user_id'] : $user_id = null;
-		}
+        if (empty($user_id)) {
+            (!empty($this->configuration['user_id'])) ? $user_id = $this->configuration['user_id'] : $user_id = null;
+        }
 
-		$check_user_in_role_db = parent::invoke(array($user_role, $user_id));
+        $check_user_in_role_db = parent::invoke(array($user_role, $user_id));
 
-		if ($check_user_in_role_db['user_id'] == $user_id) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+        if ($check_user_in_role_db['user_id'] == $user_id) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 class USER_updateUserRoleQuery extends PHPDS_query
@@ -150,7 +150,7 @@ class USER_updateUserRoleQuery extends PHPDS_query
 		UPDATE
 			_db_core_users
 		SET
-			user_role = false
+			user_role = FALSE
 		WHERE
 			user_role = %u
     ";
