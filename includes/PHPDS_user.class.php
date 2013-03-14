@@ -20,7 +20,6 @@ class PHPDS_user extends PHPDS_dependant
      *
      * @param integer $user_id
      * @return integer
-     * @author Jason Schoeman <titan@phpdevshell.org>
      */
     public function getRoles($user_id = null)
     {
@@ -44,7 +43,6 @@ class PHPDS_user extends PHPDS_dependant
      * @param integer $user_id
      * @param integer $user_role
      * @return boolean
-     * @author Jason Schoeman <titan@phpdevshell.org>
      */
     public function belongsToRole($user_id = null, $user_role = null)
     {
@@ -57,7 +55,7 @@ class PHPDS_user extends PHPDS_dependant
      *
      * @param string $query_request      Normal query to be returned if user is not a root user.
      * @param string $query_root_request If you want a query to be processed for a root user seperately.
-     * @return mixed
+     * @return string|bool
      */
     public function setRoleQuery($query_request, $query_root_request = null)
     {
@@ -75,7 +73,7 @@ class PHPDS_user extends PHPDS_dependant
     /**
      * Deletes a specific role by given ID.
      *
-     * @param $id
+     * @param int $id
      * @return string
      */
     public function deleteRole($id)
@@ -89,7 +87,7 @@ class PHPDS_user extends PHPDS_dependant
     /**
      * Deletes a specific user by given ID.
      *
-     * @param $id
+     * @param int $id
      * @return string
      */
     public function deleteUser($id)
@@ -100,11 +98,10 @@ class PHPDS_user extends PHPDS_dependant
     /**
      * Check if user is a root user.
      *
-     * @date 20100608 (v1.0.1) (greg) moved to query system
-     * @param mixed $user_id If not logged in user, what user should be checked (primary role check only).
+     * @param int $user_id If not logged in user, what user should be checked (primary role check only).
      * @return boolean
      */
-    public function isRoot($user_id = false)
+    public function isRoot($user_id = 0)
     {
         if (!empty($user_id)) {
             if ($this->configuration['user_id'] == $user_id) {
@@ -155,9 +152,6 @@ class PHPDS_user extends PHPDS_dependant
     /**
      * Simple method to return users IP, this method will be improved in the future if needed.
      *
-     * @version 1.0.1
-     * @date 20110315 (v1.0.1) (greg) fix a possible undef when not used through a webserver
-     *
      * @return string
      */
     public function getUserIp()
@@ -186,12 +180,9 @@ class PHPDS_user extends PHPDS_dependant
     /**
      * Check if a user has access to a given node id.
      *
-     * @version 1.0.1
-     * @date 20091105 fixed a possible warning when the node is not in the list (i.e. the user is not allowed)
-     *
-     * @param mixed  $node_id This can have both the node id as an integer or as a string.
-     * @param string $type    The type of item requested, node_id, node_name etc...
-     * @return boolean Will return requested variable if user has access to requested node item node item.
+     * @param string  $node_id This can have both the node id as an integer or as a string.
+     * @param string  $type    The type of item requested, node_id, node_name etc...
+     * @return boolean|string Will return requested variable if user has access to requested node item node item.
      */
     public function canAccessNode($node_id, $type = 'node_id')
     {
@@ -204,10 +195,6 @@ class PHPDS_user extends PHPDS_dependant
 
     /**
      * Simply writes user session data.
-     *
-     * @date 20110622
-     * @version 1.1
-     * @author  Jason Schoeman
      */
     public function userConfig()
     {
@@ -226,10 +213,6 @@ class PHPDS_user extends PHPDS_dependant
 
     /**
      * Actual processing of login page.
-     *
-     * @verion 1.0.0
-     * @date 2011-06-20
-     * @author Jason Schoeman
      */
     public function controlLogin()
     {

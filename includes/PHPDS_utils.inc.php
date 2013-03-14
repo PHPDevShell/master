@@ -9,9 +9,6 @@
  * @param array $includeInGet
  * @param array $excludeFromGet
  * @return array
- *
- * @date 20110809 (v1.0.1) (greg) fixed a typo with $includeInGet
- * @author greg
  */
 function PU_BuildGETArray(array $myGET, $includeInGet = null, $excludeFromGet = null)
 {
