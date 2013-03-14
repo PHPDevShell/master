@@ -795,7 +795,7 @@ class PHPDS
         }
 
         // Engine classes default directories
-        $includes = array('includes/local', 'includes');
+        $includes = array('includes/local', 'includes', 'includes/databases');
         foreach ($includes as $path) {
             $engine_include_path = $absolute_path . $path . '/' . $class_name . '.class.php';
             if ($this->sneakClass($class_name, $engine_include_path)) {

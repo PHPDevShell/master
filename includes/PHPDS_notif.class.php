@@ -6,14 +6,26 @@ class PHPDS_notif extends PHPDS_dependant
     const MESSAGE = 1;
     const URGENT  = 2;
 
+    /**
+     * Legacy
+     * @var string
+     */
     protected $legacy;
 
+    /**
+     * Message type constant.
+     * @var array
+     */
     protected $heritage = array(
         PHPDS_notif::SILENT  => array(),
         PHPDS_notif::MESSAGE => array(),
         PHPDS_notif::URGENT  => array()
     );
 
+    /**
+     * The notification var.
+     * @var string
+     */
     protected $varName = 'PHPDS_notifications';
 
     /**
@@ -39,10 +51,11 @@ class PHPDS_notif extends PHPDS_dependant
     }
 
     /**
-     * @param int $priority
+     * Fetch message as json
+     *
      * @return string
      */
-    public function fetchAsJson($priority = PHPDS_notif::MESSAGE)
+    public function fetchAsJson()
     {
         $notifications = $this->fetch();
         if (is_array($notifications)) {
@@ -59,12 +72,18 @@ class PHPDS_notif extends PHPDS_dependant
         }
     }
 
+    /**
+     * Destruct
+     */
     public function __destruct()
     {
         $this->import();
         $this->save();
     }
 
+    /**
+     * Import messages.
+     */
     protected function import()
     {
         if (is_null($this->legacy)) {
@@ -77,16 +96,25 @@ class PHPDS_notif extends PHPDS_dependant
         }
     }
 
+    /**
+     * Store message in legacy.
+     */
     protected function save()
     {
         $this->set(array_merge($this->legacy, $this->heritage));
     }
 
+    /**
+     *
+     */
     public function waiting()
     {
 
     }
 
+    /**
+     * Clear all messages.
+     */
     public function clear()
     {
         $this->legacy   = null;
@@ -95,6 +123,10 @@ class PHPDS_notif extends PHPDS_dependant
         $this->set(null);
     }
 
+    /**
+     * Set new message.
+     * @param string $value
+     */
     protected function set($value = null)
     {
         $_SESSION[$this->varName] = $value;

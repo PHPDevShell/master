@@ -68,7 +68,7 @@ class PHPDS_exception extends Exception
         $this->extendedMessage .= $str;
     }
 
-    /** the following methods are meant to be overriden */
+    /** the following methods are meant to be override */
 
     /**
      * some Exception may choose to display some possible cause for the error, to help tracking down the error
@@ -303,7 +303,7 @@ class PHPDS_sprintfnException extends PHPDS_exception
 
 
 /**
- * Exception extention.
+ * Exception extension.
  */
 class PHPDS_extendNodeException extends PHPDS_exception
 {
@@ -338,7 +338,6 @@ class PHPDS_extendNodeException extends PHPDS_exception
      */
     public function getCauses()
     {
-        $navigation = $this->navigation;
         $result     = array(
             'The current node item is acually a link to a base node item, which cannot be accessed',
             array(

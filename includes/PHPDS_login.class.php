@@ -40,7 +40,7 @@ interface iBaseLogin
      * Make the given user the logged in user
      *
      * @param array $select_user_array
-     * @return nothing
+     * @param bool  $persistent
      */
     public function setLogin($select_user_array, $persistent = false);
 
@@ -66,12 +66,10 @@ interface iBaseLogin
 
 
 /**
- * This base class implements the fundations for an authentification plugin
- * It doesn't actually provides authentification (it will reject any request) but provides structure, cookie support ("remember me") and writing to the system log
+ * This base class implements the foundations for an authentication plugin
+ * It doesn't actually provides authentication (it will reject any request) but provides structure, cookie support ("remember me") and writing to the system log
  *
- * Note: it doesn't in any deal with template or GUI, the auth plugin must do that
- *
- * @author Jason Schoeman
+ * Note: it does'nt in any deal with template or GUI, the auth plugin must do that
  */
 class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 {
@@ -81,9 +79,6 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      *
      * @param string $cookie
      * @return array or false the user record
-     * @date 20100702 (v1.0.0) (ross) created from the lookup_user fct by jason and greg
-     * @version 1.0.0
-     * @author  jason, greg, ross
      */
     public function lookupCookieLogin($cookie)
     {
@@ -117,7 +112,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
     /**
      * Selects user details from provided cookie.
      *
-     * @param varchar $cookie
+     * @param string $cookie
      * @return array
      */
     public function selectUserFromCookie($cookie)
@@ -128,7 +123,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
     /**
      * Select cookie data by providing cookie crypt key.
      *
-     * @param varchar $id_crypt
+     * @param string $id_crypt
      * @return array
      */
     public function selectCookie($id_crypt)
@@ -141,9 +136,6 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      *
      * @param int $user_id
      * @return array or false the user record
-     * @date 20100702 (v1.0.0) (ross) created function
-     * @version    1.0.0
-     * @author     ross
      */
     public function setUserCookie($user_id)
     {
@@ -163,10 +155,8 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
     /**
      * Delete the current persistent cookie from the db and kill the cookie on the user end.
      *
+     * @param int $user_id
      * @return boolean
-     * @date 20100702 (v1.0.0) (ross) created function
-     * @version 1.0.0
-     * @author  ross
      */
     public function clearUserCookie($user_id)
     {
@@ -177,6 +167,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      * Loads the username & password html template form.
      *
      * @param boolean $return
+     * @return bool
      */
     public function loginForm($return = false)
     {
@@ -185,10 +176,6 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 
     /**
      * Check what to do with login action.
-     *
-     * @verion 1.0.0
-     * @date 2011-06-20
-     * @author Jason Schoeman
      */
     public function controlLogin()
     {
@@ -221,15 +208,11 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
     }
 
     /**
-     * Search the database for the given credentials
+     * Search the database for the given credentials.
      *
      * @param string $username
      * @param string $password
      * @return array or false the user record
-     * @date 20100204 (v1.0) (greg) created from Jason's original fct
-     * @date 20100608 (v1.0.1) (greg) moved to query system
-     * @version 1.0.1
-     * @author  jason, greg
      */
     public function lookupUser($username, $password = '')
     {
@@ -240,10 +223,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      * Make the given user the logged in user
      *
      * @param array $select_user_array
-     * @return nothing
-     * @date 20100204 greg: created from Jason's original fct
-     * @version    1.0
-     * @author     jason, greg
+     * @param bool $persistent
      */
     public function setLogin($select_user_array, $persistent = false)
     {
@@ -251,7 +231,6 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
         $db   = $this->db;
 
         $user_name_db          = $select_user_array['user_name'];
-        $user_user_password_db = $select_user_array['user_password'];
         $user_display_name_db  = $select_user_array['user_display_name'];
         $user_email_db         = $select_user_array['user_email'];
         $user_id_db            = $select_user_array['user_id'];
@@ -305,8 +284,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
 
     /**
      * Destroys login session data.
-     *
-     * @author Jason Schoeman
+     * @param bool $set_guest
      */
     public function clearLogin($set_guest = true)
     {
@@ -339,9 +317,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
     /**
      * Sets all settings to guest account.
      *
-     * @date 20100608 (v1.0.1) (greg) moved to query system
      * @return string
-     * @author Jason Schoeman, greg
      */
     public function setGuest()
     {

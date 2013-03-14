@@ -6,13 +6,12 @@
  * @author Grzegorz Godlewski redone by Jason Schoeman
  */
 
-
 include_once dirname(__FILE__) . '/PHPDS_exception.class.php';
 
 interface iPHPDS_errorConduit
 {
     /**
-     * Outpust a single message
+     * Output a single message
      *
      * @see     class PHPDS_debug
      * @version 1.0
@@ -32,8 +31,8 @@ interface iPHPDS_errorConduit
      * @version 1.0
      * @author  greg <greg@phpdevshell.org>
      *
-     * @param string          $domain domain to which the message is related
-     * @param PHPDS_exception $ex     a complete exception object
+     * @param string $domain domain to which the message is related
+     * @param Exception $ex     a complete exception object
      * @return string
      */
     public function exception($domain, $ex);
@@ -50,35 +49,29 @@ class PHPDS_errorHandler extends PHPDS_dependant
      * Error handler options
      */
 
-    protected $ignore_notices = false; // - if set to true Error handler ignores notices
-    protected $ignore_warnings = false; // - if set to true Error handler ignores warnings
-    protected $warningsAreFatal = true; // if true warning are handled as Exceptions
-    protected $noticesAreFatal = false; // if true, notices are handled as Exceptions
+    protected $ignore_notices       = false; // - if set to true Error handler ignores notices
+    protected $ignore_warnings      = false; // - if set to true Error handler ignores warnings
+    protected $warningsAreFatal     = true; // if true warning are handled as Exceptions
+    protected $noticesAreFatal      = false; // if true, notices are handled as Exceptions
 
-    protected $serverlog = true; // log to syslog using error_log()
-    protected $file = ''; // - log file
-    protected $mail = ''; // - log mail
-    protected $display = true; // - if set to true Error handler display error to output
-    protected $firebug = false; // - if set to true Error handler send error to firebug
-    protected $firephp = null; // - firephp object
+    protected $serverlog            = true; // log to syslog using error_log()
+    protected $file                 = ''; // - log file
+    protected $mail                 = ''; // - log mail
+    protected $display              = true; // - if set to true Error handler display error to output
+    protected $firebug              = false; // - if set to true Error handler send error to firebug
+    protected $firephp              = null; // - firephp object
 
-    protected $I_give_up = false; // if this is true something serious is wrong.
-    protected $production = false; // is this a system in production
+    protected $I_give_up            = false; // if this is true something serious is wrong.
+    protected $production           = false; // is this a system in production
 
-    public $error_backtrace = false; // - Should a backtrace be created. (Causes problems some times)
+    public $error_backtrace         = false; // - Should a backtrace be created. (Causes problems some times)
 
-    protected $conduits = array(); // array of iPHPDS_errorConduit
+    protected $conduits             = array(); // array of iPHPDS_errorConduit
 
-    protected $crumbs = array(); // in case they are error AFTER the exception reported is triggered
+    protected $crumbs               = array(); // in case they are error AFTER the exception reported is triggered
 
     /**
-     * Construtor
-     *
-     * @date 20100402 (v1.0.1) (greg) fix a typo regarding firephp config field
-     * @date 20100927 (v1.0.2) (greg) using the new constructor
-     * @date 20110808 (v1.0.3) (greg) don't do anything if we're running embedded (for example unit testing)
-     *
-     * @version 1.0.3
+     * Constructor
      */
     public function construct()
     {
@@ -168,11 +161,6 @@ class PHPDS_errorHandler extends PHPDS_dependant
 
     /**
      * Exception handler
-     *
-     * @date 20120511 (v1.1) (greg) handle extended report
-     * @date 20120724 (v1.2) (greg) the bottom-most exception is used in case of stacked PHPDS_exception's
-     *
-     * @version 1.2
      *
      * @param Exception $ex Exception
      */
@@ -272,12 +260,6 @@ class PHPDS_errorHandler extends PHPDS_dependant
         exit(); // bye bye
     }
 
-    /**
-     * Error handler
-     *
-     * @param int    $errno  Error code
-     * @param string $errstr Error message
-     */
     public function doHandleError($errno, $errstr, $errfile, $errline)
     {
         $errmask = error_reporting();
@@ -320,20 +302,6 @@ class PHPDS_errorHandler extends PHPDS_dependant
         return true; // to reset internal error
     }
 
-    /**
-     * Sends a message through the various built-in and registered conduits
-     *
-     * @version 2.0
-     *
-     * @date 20120312 (v2.0) (greg) added support for registered conduits
-     *
-     * @param string  $domain domain to which the message is related
-     * @param string  $msg    a text message to handle
-     * @param integer $level  (optional) severity level (can be PHPDS_debug::DEBUG, PHPDS_debug::INFO, PHPDS_debug::WARN, PHPDS_debug::ERROR or PHPDS_debug::LOG)
-     * @param string  $label  (optional) a text label to given to the message
-     *
-     * @return PHPDS_errorHandler itself
-     */
     public function conductor($msg, $level = 0, $label = '', $code = null)
     {
         // first send through registered conduits, as they may report even in production
@@ -413,37 +381,18 @@ class PHPDS_errorHandler extends PHPDS_dependant
     }
 
 
-    /**
-     * Cleans a string for outputing on plain text devices (such as log files)
-     *
-     * @param $text        the string to clean
-     * @return $text
-     */
     function textualize($text)
     {
         $text = preg_replace('/[\x00-\x1F]+/', ' ', $text);
         return $text;
     }
 
-    /**
-     * Write data to the error log using Apache flow
-     *
-     * @param $prefix      A string to add at the beginning
-     * @param $data        An array of strings to output
-     * @return void
-     */
     function error_log($prefix, $data)
     {
         if (is_array($data)) foreach ($data as $text) $this->error_log('-', $text);
         else error_log('[ PHPDS ] ' . $prefix . ': ' . $this->textualize($data));
     }
 
-    /**
-     * Converts variable into short text
-     *
-     * @param mixed $arg Variable
-     * @return string
-     */
     public static function getArgument($arg)
     {
         switch (strtolower(gettype($arg))) {
@@ -462,12 +411,6 @@ class PHPDS_errorHandler extends PHPDS_dependant
         }
     }
 
-    /**
-     * Quick independent message styling, just to make it look better yea.
-     *
-     * @param string $message
-     * @return string
-     */
     public function message($message, $trace = '')
     {
         // Simple styled message.
@@ -772,7 +715,7 @@ HTML;
      *
      * @param string  $filepath path to the source file
      * @param integer $lineno   line number of the interesting line
-     * @return string html formated string
+     * @return string html formatted string
      */
     public static function fetchCodeFragment($filepath, $lineno)
     {

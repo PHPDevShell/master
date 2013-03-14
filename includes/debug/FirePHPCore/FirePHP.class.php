@@ -741,7 +741,7 @@ class FirePHP
     {
         if ($this instanceof FirePHP_Insight && method_exists($this, '_logUpgradeClientMessage')) {
             if (!FirePHP_Insight::$upgradeClientMessageLogged) { // avoid infinite recursion as _logUpgradeClientMessage() logs a message
-                $this->_logUpgradeClientMessage();
+                $this->logUpgradeClientMessage();
             }
         }
 

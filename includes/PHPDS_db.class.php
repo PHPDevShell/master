@@ -1,4 +1,128 @@
 <?php
+/**
+ * With version 4.0 we did an API cleanup.
+ *
+ * Direct access to database connection data is deprecated:
+ * - $server, $dbUserName, $dbPassword, $dbName
+ */
+
+
+/**
+ * Database specifics features
+ *
+ * Note that this deals with software specific features (such as language, error codes...)
+ * The connector deals with specific calls (i.e. communication protocol)
+ */
+interface iPHPDS_dbSpecifics
+{
+
+    /**
+     * Build and throw a database specific exception
+     *
+     * The first parameter can be a message (as a string) or a previous exception (can also be omitted)
+     * If a message is provided, an error code can also be provided
+     *
+     * @param PHPDS_Exception|string|null $e
+     * @param integer|null error code
+     */
+    public function throwException($e = null, $code = 0);
+
+
+    /**
+     * Sets the configuration settings for this connector as per the configuration file.
+     *
+     * The first parameter is a pointer to the connector's internal data array
+     *
+     * The parameter allows flexible configuration:
+     * - if it's empty, the configuration in $this->dbConfig is used; if the later is empty too,
+     *     the default system config is used
+     * - if it's a string, a configuration by that name is looked up into the global configuration
+     * - if it's an array, it's used a direct connection info
+     *
+     * Note that if a connection is already up, it's disconnected
+     *
+     * @param array $current_config the field which actually holds the connector data
+     * @param string|array|null $db_config new data to specify how to connect to the database
+     * @return void
+     *
+     */
+    public function applyConfig(&$current_config, $db_config = null);
+}
+
+
+/**
+ * A generic implementation of the iPHPDS_dbSpecifics interface
+ *
+ * Used when there is not specific support for a given database server software
+ */
+class PHPDS_genericDB extends PHPDS_dependant implements iPHPDS_dbSpecifics
+{
+    /**
+     * Secondary constructor
+     *
+     * You can pass a config ref (array or string, @see iPHPDS_dbSpecifics) to have to applied directly
+     *
+     * @param null $db_config
+     * @return bool|void
+     */
+    public function  construct($db_config = null)
+    {
+        if (!empty($db_config)) {
+            $this->applyConfig($db_config);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function throwException($e = null, $code = 0)
+    {
+        $message = is_string($e) ? $e : 'Database error';
+        $previous = is_a('Exception', $e) ? $e : null;
+
+        if (!is_a($e, 'PHPDS_DatabaseException')) {
+            /* @var PHPDS_DatabaseException $e */
+            $e = $this->factory('PHPDS_DatabaseException', $message, $code, $previous);
+        }
+        throw $e;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function applyConfig(&$current_config, $db_config = null)
+    {
+        $dbSettings = array();
+
+        // try to find a source for the database config
+        if (empty($db_config)) {
+            $dbSettings = empty($current_config) ? PU_GetDBSettings($this->configuration) : $current_config;
+        } else {
+            if (is_string($db_config)) {
+                $dbSettings = PU_GetDBSettings($this->configuration, $db_config);
+            } elseif (is_array($db_config)) {
+                $dbSettings = $db_config;
+            } else {
+                $this->throwException('Wrong database setting specification');
+            }
+        }
+
+        // build DSN if needed
+        if (empty($dbSettings['dsn'])) {
+            $dsn = empty($dbSettings['driver']) ? 'mysql' : $dbSettings['driver'];
+            $dsn .= ':host=' . (empty($dbSettings['host']) ? 'localhost' : $dbSettings['host']);
+            $dsn .= ';dbname=' . (empty($dbSettings['database']) ? 'PHPDS' : $dbSettings['database']);
+
+            if (!empty($dbSettings['charset'])) {
+                $dsn .= ';charset=' . $dbSettings['charset'];
+            }
+
+            $dbSettings['dsn'] = $dsn;
+        }
+
+        $current_config = $dbSettings;
+    }
+}
 
 /**
  * This is a blueprint for a connector, ie an object which handles the basic I/O to a database.
@@ -6,47 +130,126 @@
  *
  * All of these methods are based on php-mysql interface function of the same name
  *
- * @author Greg
- *
+ * @see iPHPDS_dbSpecifics
  */
-
 interface iPHPDS_dbConnector
 {
+    /**
+     * Clears the current data result (useful for example if we're fetching one row
+     * at a time and we give up before the end)
+     *
+     * @return boolean TRUE on success or FALSE on failure
+     * @see includes/PHPDS_db_connector#free()
+     */
     public function free();
 
-    public function connect();
+    /**
+     * Connect to the database server
+     *
+     * If $db_config is provided and the connection is already up, disconnect it and reconnect with the new settings
+     *
+     * $db_config has been added in 4.0
+     *
+     * @see stable/phpdevshell/includes/PHPDS_db_connector#connect()
+     */
+    public function connect($db_config = null);
 
-    public function query($sql);
+    /**
+     * Shutdown the connection to the database
+     *
+     * Added in 4.0
+     *
+     * @return null
+     */
+    public function disconnect();
 
+    /**
+     * Actually send the query to MySQL (through $db)
+     *
+     * If $parameters is provided, the query maybe be prepared (or not, depending on the connector)
+     *
+     * $parameters has been added in 4.0
+     *
+     * May throw a PHPDS_databaseException
+     *
+     * @param string $sql the actual sql query
+     * @param array $parameters
+     * @return resource the resulting resource (or false is something bad happened)
+     */
+    public function query($sql, $parameters = null);
+
+    /**
+     * Protect a single string from possible hacker (i.e. escape possible harmful chars)
+     *
+     * @param    $param        string, the parameter to protect
+     * @return string, the escaped string
+     * @see includes/PHPDS_db_connector#protect()
+     */
     public function protect($param);
 
+    /**
+     * Return the next line as an associative array
+     *
+     * @return array, the resulting line (or false is nothing is found)
+     * @see includes/PHPDS_db_connector#fetch_assoc()
+     */
     public function fetchAssoc();
 
+    /**
+     * Move the internal pointer to the asked line
+     *
+     * @param    $row_number        integer, the line number
+     * @return boolean, TRUE on success or FALSE on failure
+     * @see includes/PHPDS_db_connector#seek()
+     */
     public function seek($row_number);
 
+    /**
+     * Return the number of rows in the result of a SELECT query
+     *
+     * @return integer, the number of rows
+     * @see includes/PHPDS_db_connector#numrows()
+     */
     public function numrows();
 
+    /**
+     * Return the number of affected rows by a non-SELECT query
+     *
+     * @return integer, the number of affected rows
+     * @see includes/PHPDS_db_connector#affectedRows()
+     */
     public function affectedRows();
 
+    /**
+     * Simply returns last inserted id from database.
+     *
+     * @return int
+     */
     public function lastId();
 
+    /**
+     * Will return a single row as a string depending on what column was selected.
+     *
+     * @return string
+     */
     public function rowResults();
 
+    /**
+     * Start SQL transaction.
+     */
     public function startTransaction();
 
+    /**
+     * Ends SQL transaction.
+     *
+     * @param boolean $commit
+     */
     public function endTransaction($commit = true);
 }
 
-require_once 'PHPDS_legacyConnector.class.php';
-require_once 'PHPDS_query.class.php';
 /**
  * This is a new version of one the Big5: the db class
- *
  * This new version supports connectors and queries class and should be compatible with the old one
- *
- * @version        1.0
- * @date                20100219
- * @author         greg
  *
  */
 class PHPDS_db extends PHPDS_dependant
@@ -154,10 +357,19 @@ class PHPDS_db extends PHPDS_dependant
      * Constructor.
      *
      */
-    public function __construct($dependance)
+    public function construct()
     {
-        $this->PHPDS_dependance($dependance);
-        $this->connector = new PHPDS_legacyConnector($dependance);
+        $dbSettings = PU_GetDBSettings($this->configuration);
+
+        // For backwards compatibility, set the database class's parameters here as we don't know if anyone references
+        // db's properties somewhere else
+        $this->server = $dbSettings['host'];
+        $this->dbName = $dbSettings['database'];
+        $this->dbUsername = $dbSettings['username'];
+        $this->dbPassword = $dbSettings['password'];
+
+        $connectorClass = empty($dbSettings['connector']) ? 'PHPDS_pdoConnector' : $dbSettings['connector'];
+        $this->connector = $this->factory($connectorClass, $dbSettings);
     }
 
     /**
@@ -170,24 +382,26 @@ class PHPDS_db extends PHPDS_dependant
      * class won't have public properties for the database settings such as $db->server, $db->dbName, etc. since each connector may
      * have different settings.
      *
-     * @date 20120308
+     * @throws PHPDS_databaseException
      */
     public function connect($db_config = '')
     {
         try {
             $this->connector->connect($db_config);
         } catch (Exception $e) {
-            throw $this->factory('PHPDS_databaseException', '', 0, $e);
+            /* @var PHPDS_databaseException $e */
+            $e = $this->factory('PHPDS_databaseException', '', 0, $e);
+            throw $e;
         }
     }
 
     /**
      * Handle access to the alternate connector list
-     *
      * Give a class name, the connector will be instantiated if needed
      *
      * @param string $connector, class name of the connector
      * @return iPHPDS_dbConnector
+     * @throws PHPDS_exception
      */
     public function connector($connector = null)
     {
@@ -212,10 +426,7 @@ class PHPDS_db extends PHPDS_dependant
      * Compatibility
      * Do direct sql query without models.
      *
-     * @date 20110512
      * @param string
-     * @version    1.0
-     * @author     jason
      * @return mixed
      * @throws PHPDS_databaseException
      */
@@ -248,11 +459,7 @@ class PHPDS_db extends PHPDS_dependant
     /**
      * Locates the query class of the given name, loads it, instantiate it, send the query to the DB, and return the result
      *
-     * @date 20100219
-     * @version 1.2
-     * @date 20100922 (1.2) (greg) now use invokeQueryWithArgs
-     * @author  greg
-     * @param $query_name string, the name of the query class (descendant of PHPDS_query)
+     * @param string $query_name the name of the query class (descendant of PHPDS_query)
      * @return array (usually), the result data of the query
      */
     public function invokeQuery($query_name) // actually more parameters can be given
@@ -265,12 +472,10 @@ class PHPDS_db extends PHPDS_dependant
     /**
      * Locates the query class of the given name, loads it, instantiate it, send the query to the DB, and return the result
      *
-     * @date 20100922 (1.0) (greg) added
-     * @version 1.0
-     * @author  greg
-     * @param $query_name string, the name of the query class (descendant of PHPDS_query)
-     * @param $args       array of parameters
+     * @param string $query_name the name of the query class (descendant of PHPDS_query)
+     * @param array $params array of parameters
      * @return array (usually), the result data of the query
+     * @throws PHPDS_databaseException
      */
     public function invokeQueryWith($query_name, $params)
     {
@@ -283,12 +488,9 @@ class PHPDS_db extends PHPDS_dependant
     /**
      * Locates the query class of the given name, loads it, intantiate it, and returns the query object
      *
-     * @date 20100219 (greg) created
-     * @date 20110812 (v1.2) (greg) doesn't provide the query with the default connector anymore (let the query requests it at contruct time)
-     * @version 1.2
-     * @author  greg
-     * @param $query_name string, the name of the query class (descendant of PHPDS_query)
-     * @return PHPDS_query descendant, the query object
+     * @param string $query_name the name of the query class (descendant of PHPDS_query)
+     * @return object the query object
+     * @throws PHPDS_exception
      */
     public function makeQuery($query_name)
     {
@@ -326,18 +528,16 @@ class PHPDS_db extends PHPDS_dependant
 
     /**
      * Set the starting point for a SQL transaction
-     *
      * You should call end_transaction(true) for the queries to actually occur
      */
     public function startTransaction()
     {
-        return $this->connector->startTransaction();
+        $this->connector->startTransaction();
     }
 
     /**
      * Commits database transactions.
-     *
-     * @author Jason Schoeman <titan@phpdevshell.org>
+     * @return mixed
      */
     public function endTransaction()
     {
@@ -359,16 +559,10 @@ class PHPDS_db extends PHPDS_dependant
 
     /**
      * Protect a single string from possible hacker (i.e. escape possible harmfull chars)
-     *
      * Actually deleguate the action to the connector
      *
-     * @date 20100329
-     * @version 1.1
-     * @author  greg
-     * @date 20111018 (v1.1) (greg) $param can now be an array
-     * @param $param mixed, the parameter to espace
-     * @return string, the escaped string/array
-     * @see     includes/PHPDS_db_connector#protect()
+     * @param mixed $param the parameter to escape
+     * @return string the escaped string/array
      */
     public function protect($param)
     {
@@ -382,12 +576,10 @@ class PHPDS_db extends PHPDS_dependant
     /**
      * Protect a array of strings from possible hacker (i.e. escape possible harmfull chars)
      * (this has been moved from PHPDS_query)
-     * @version 1.1
-     * @date 20111010 (v1.1) (greg) added "quote" parameter
-     * @author  greg
-     * @param $a     array, the strings to protect
-     * @param $quote string, the quotes to add to each non-numerical scalar value
-     * @return array, the same string but safe
+
+     * @param $a array the strings to protect
+     * @param $quote string the quotes to add to each non-numerical scalar value
+     * @return array the same string but safe
      */
     public function protectArray(array $a, $quote = '')
     {
@@ -412,14 +604,14 @@ class PHPDS_db extends PHPDS_dependant
 
     /**
      * Will convert object configuration into array for parsing.
-     *
      */
     public function debugConfig()
     {
+        $converted_config = array();
         foreach ($this->configuration as $key => $extended_config) {
             $converted_config[$key] = $extended_config;
         }
-        $this->_log($converted_config);
+        $this->log($converted_config);
     }
 
     /**
@@ -438,10 +630,10 @@ class PHPDS_db extends PHPDS_dependant
      *
      * @param string $table_name
      * @param string $column
+     *
      * @return integer
-     * @author Jason Schoeman <titan@phpdevshell.org>
      */
-    public function countRows($table_name, $column = false)
+    public function countRows($table_name, $column = null)
     {
         // Check what to count.
         if (empty($column)) $column = '*';
@@ -450,10 +642,6 @@ class PHPDS_db extends PHPDS_dependant
 
     /**
      * This method logs error and success entries to the database.
-     *
-     * @author  Jason Schoeman <titan@phpdevshell.org>
-     *
-     * @version 1.0.1 Changed mysql_escape_string() to mysql_real_escape_string() [see http://www.php.net/manual/en/function.mysql-escape-string.php ]
      */
     public function logThis()
     {
@@ -461,110 +649,12 @@ class PHPDS_db extends PHPDS_dependant
     }
 
     /**
-     * This function gets all role id's for a given user id, while returning a string divided by ',' character or an array with ids.
-     * To pull multiple user roles, provide a string for $user_ids like so: '2,5,10,19'.
-     *
-     * @deprecated
-     * @param string  $user_id
-     * @param boolean $return_array
-     * @return mixed If $return_array = false a comma delimited string will be returned, else an array.
-     * @author Jason Schoeman <titan@phpdevshell.org>
-     */
-    public function getRoles($user_id = false, $return_array = false)
-    {
-        return $this->user->getRoles($user_id, $return_array);
-    }
-
-    /**
-     * This function gets all group id's for given user ids, while returning a string divided by ',' character or an array with ids.
-     * To pull multiple user groups, provide a string for $user_ids like so : '2,5,10,19'.
-     *
-     * @deprecated
-     * @param string  $user_id    Leave this field empty if you want skip if user is root.
-     * @param boolean $return_array
-     * @param string  $alias_only If you would like only items of a certain alias to be called.
-     * @return mixed If $return_array = false a comma delimited string will be returned, else an array.
-     * @author Jason Schoeman <titan@phpdevshell.org>
-     */
-    public function getGroups($user_id = false, $return_array = false, $alias_only = false)
-    {
-        return $this->user->getGroups($user_id, $return_array, $alias_only);
-    }
-
-    /**
-     * Simple check to see if a certain role exists.
-     *
-     * @deprecated
-     * @param integer $role_id
-     * @return boolean
-     */
-    public function roleExist($role_id)
-    {
-        return $this->user->roleExist($role_id);
-    }
-
-    /**
-     * Simple check to see if a certain group exists.
-     *
-     * @deprecated
-     * @param integer $group_id
-     * @return boolean
-     */
-    public function groupExist($group_id)
-    {
-        return $this->user->groupExist($group_id);
-    }
-
-    /**
-     * Check if user belongs to given role. Returns true if user belongs to user role.
-     *
-     * @deprecated
-     * @param integer $user_id
-     * @param integer $user_role
-     * @return boolean Returns true if user belongs to user role.
-     * @author Jason Schoeman <titan@phpdevshell.org>
-     */
-    public function belongsToRole($user_id = false, $user_role)
-    {
-        return $this->user->belongsToRole($user_id, $user_role);
-    }
-
-    /**
-     * Creates a query to extend a role query, it will return false if user is root so everything can get listed.
-     * This is meant to be used inside an existing role query.
-     *
-     * @deprecated
-     * @param string $query_request      Normal query to be returned if user is not a root user.
-     * @param string $query_root_request If you want a query to be processed for a root user seperately.
-     * @return mixed
-     */
-    public function setRoleQuery($query_request, $query_root_request = false)
-    {
-        return $this->user->setRoleQuery($query_request, $query_root_request);
-    }
-
-    /**
-     * Creates a query to extend a group query, it will return false if user is root so everything can get listed.
-     * This is meant to be used inside an existing group query.
-     *
-     * @deprecated
-     * @param string $query_request      Normal query to be returned if user is not a root user.
-     * @param string $query_root_request If you want a query to be processed for a root user seperately.
-     * @return mixed
-     */
-    public function setGroupQuery($query_request, $query_root_request = false)
-    {
-        return $this->user->setGroupQuery($query_request, $query_root_request);
-    }
-
-    /**
      * Generates a prefix for plugin general settings.
      *
      * @param string $custom_prefix
      * @return string Complete string with prefix.
-     * @author Jason Schoeman <titan@phpdevshell.org>
      */
-    public function settingsPrefix($custom_prefix = false)
+    public function settingsPrefix($custom_prefix = null)
     {
         // Create prefix.
         if ($custom_prefix == false) {
@@ -584,10 +674,7 @@ class PHPDS_db extends PHPDS_dependant
     /**
      * Used to write general plugin settings to the database.
      * Class will always use plugin name as prefix for settings if no custom prefix is provided.
-     * <code>
-     * // Example:
-     * $db->writeSettings(array('setting_name'=>'value')[,'Example'][,array('setting_name'=>'note')]);
-     * </code>
+     *
      * @param array  $write_settings This array should contain settings to write.
      * @param string $custom_prefix  If you would like to have a custom prefix added to your settings.
      * @param array  $notes          For adding notes about setting.
@@ -602,17 +689,11 @@ class PHPDS_db extends PHPDS_dependant
     /**
      * Delete all settings stored by a given plugins name, is used when uninstalling a plugin.
      *
-     * Example:
-     * <code>
-     * deleteSettings(false, 'SimplePhonebook')
-     * </code>
-     *
-     * @param array  $settings_to_delete Use '*' to delete all settings for certain plugin.
+     * @param mixed  $settings_to_delete Use '*' to delete all settings for certain plugin.
      * @param string $custom_prefix
      * @return boolean
-     * @author Jason Schoeman <titan@phpdevshell.org>
      */
-    public function deleteSettings($settings_to_delete = false, $custom_prefix = false)
+    public function deleteSettings($settings_to_delete = null, $custom_prefix = null)
     {
         return $this->invokeQuery('DB_deleteSettingsQuery', $settings_to_delete, $custom_prefix);
     }
@@ -621,12 +702,11 @@ class PHPDS_db extends PHPDS_dependant
      * Loads and returns required settings from database.
      * Class will always use plugin name as prefix for settings if no custom prefix is provided.
      *
-     * @param array  $settings_required
-     * @param string $prefix This allows you to use a prefix value of your choice to select a setting from another plugin, otherwise PHPDevShell will be used.
+     * @param mixed  $settings_required
+     * @param string $custom_prefix This allows you to use a prefix value of your choice to select a setting from another plugin, otherwise PHPDevShell will be used.
      * @return array An array will be returned containing all the values requested.
-     * @author Jason Schoeman <titan@phpdevshell.org>
      */
-    public function getSettings($settings_required = false, $custom_prefix = false)
+    public function getSettings($settings_required = false, $custom_prefix = null)
     {
         return $this->invokeQuery('DB_getSettingsQuery', $settings_required, $custom_prefix);
     }
@@ -654,15 +734,14 @@ class PHPDS_db extends PHPDS_dependant
      * is NOT included in the search.
      * Usefull when modifying an existing record and you need first to check if another record with the same value doesn't already exist.
      *
-     * @param string The name of the database table.
-     * @param mixed  The array names of the columns in which to look for the search strings, a single value can also be given.
-     * @param mixed  In the same order as $search_column_name array, the search strings in array that should not be duplicated, a single value can also be given.
-     * @param string The name of the primary key column name of the record you will be updating.
-     * @param string The value of the primary key of the record you will be updating that should not be included in the search.
-     * @return boolean If TRUE is returned it means the record already exists, FALSE means the record doesn't exist.
-     * @author Jason Schoeman <titan@phpdevshell.org>
+     * @param string        $table_name The name of the database table.
+     * @param array|string  $search_column_names The array names of the columns in which to look for the search strings, a single value can also be given.
+     * @param array|string  $search_field_values In the same order as $search_column_name array, the search strings in array that should not be duplicated, a single value can also be given.
+     * @param string        $column_name_for_exclusion The name of the primary key column name of the record you will be updating.
+     * @param string        $exclude_field_value The value of the primary key of the record you will be updating that should not be included in the search.
+     * @return boolean      If TRUE is returned it means the record already exists, FALSE means the record doesn't exist.
      */
-    public function doesRecordExist($table_name, $search_column_names, $search_field_values, $column_name_for_exclusion = false, $exclude_field_value = false)
+    public function doesRecordExist($table_name, $search_column_names, $search_field_values, $column_name_for_exclusion = null, $exclude_field_value = null)
     {
         return $this->invokeQuery('DB_doesRecordExistQuery', $table_name, $search_column_names, $search_field_values, $column_name_for_exclusion, $exclude_field_value);
     }
@@ -674,8 +753,7 @@ class PHPDS_db extends PHPDS_dependant
      * @param string $select_column_name
      * @param string $where_column_name
      * @param string $is_equal_to_column_value
-     * @return string
-     * @author Jason Schoeman <titan@phpdevshell.org>
+     * @return mixed
      */
     public function selectQuick($from_table_name, $select_column_name, $where_column_name, $is_equal_to_column_value)
     {
@@ -690,9 +768,8 @@ class PHPDS_db extends PHPDS_dependant
      * @param string $is_equal_to_column_value
      * @param string $return_column_value
      * @return string
-     * @author Jason Schoeman <titan@phpdevshell.org>
      */
-    public function deleteQuick($from_table_name, $where_column_name, $is_equal_to_column_value, $return_column_value = false)
+    public function deleteQuick($from_table_name, $where_column_name, $is_equal_to_column_value, $return_column_value = null)
     {
         return $this->invokeQuery('DB_deleteQuickQuery', $from_table_name, $where_column_name, $is_equal_to_column_value, $return_column_value);
     }
@@ -707,8 +784,7 @@ class PHPDS_db extends PHPDS_dependant
     }
 
     /**
-     * Does the connection to the memcache server.
-     * Currently memcache is the primary supported engine.
+     * Does the connection to the cache server.
      */
     public function connectCacheServer()
     {
@@ -738,10 +814,11 @@ class PHPDS_db extends PHPDS_dependant
 
     /**
      * Writes new data to cache.
-     * @param string  $unique_key
-     * @param mixed   $cache_data
-     * @param boolean $compress
-     * @param int     $timeout
+     *
+     * @param string        $unique_key
+     * @param mixed         $cache_data
+     * @param boolean       $compress
+     * @param int|boolean   $timeout
      */
     public function cacheWrite($unique_key, $cache_data, $compress = false, $timeout = false)
     {
@@ -750,7 +827,7 @@ class PHPDS_db extends PHPDS_dependant
     }
 
     /**
-     * Return exising cache result to required item.
+     * Return existing cache result to required item.
      * @param mixed $unique_key
      * @return mixed
      */

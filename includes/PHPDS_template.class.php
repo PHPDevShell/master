@@ -157,7 +157,6 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * Will add any css path to the <head></head> tags of your document.
      *
-     * @author jason <titan@phpdevshell.org>
      * @param string $cssRelativePath
      * @param string $media
      */
@@ -226,9 +225,9 @@ class PHPDS_template extends PHPDS_dependant
      * Activate a GUI plugin, i.e. give the plugin the opportunity to do whatever is needed so be usable from the Javascript code
      *
      * @param string $plugin     the name of the plugin
-     * @param mixed  $parameters (optional) parameters if the plugin have ones
+     * @param string|array  $parameters (optional) parameters if the plugin have ones
      *
-     * @return iPHPDS_activableGUI the plugin
+     * @return string the plugin
      */
     public function activatePlugin($plugin, $parameters = null)
     {
@@ -245,8 +244,9 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Changes head output.
-     * @param boolean $return
-     * @return string
+     *
+     * @param boolean $return return or print out method
+     * @return string|void
      */
     public function outputHead($return = false)
     {
@@ -264,9 +264,10 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Outputs current language identifier being used.
+     * Prints current language identifier being used.
      *
-     * @author Jason Schoeman
+     * @param boolean $return return or print out method
+     * @return string|void
      */
     public function outputLanguage($return = false)
     {
@@ -281,8 +282,9 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Add elegant loading to controllers.
-     * @param boolean $return
-     * @return string
+     *
+     * @param boolean $return return or print out method
+     * @return string|void
      */
     public function outputLoader($return = false)
     {
@@ -296,9 +298,10 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Outputs charset.
+     * Prints charset.
      *
-     * @author Jason Schoeman
+     * @param boolean $return return or print out method
+     * @return string|void
      */
     public function outputCharset($return = false)
     {
@@ -312,9 +315,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Outputs the active scripts title.
-     *
-     * @author Jason Schoeman
+     * Prints the active scripts title.
      */
     public function outputTitle()
     {
@@ -334,9 +335,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints the skin for inside theme usage.
      *
-     * @param mixed default is print, can be set true, print, return.
-     * @return string Skin.
-     * @author Jason Schoeman
+     * @param boolean|string $return return or print out method
+     * @return string|void
      */
     public function outputSkin($return = 'print')
     {
@@ -354,9 +354,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints the absolute url for inside theme usage.
      *
-     * @param mixed default is print, can be set true, print, return.
-     * @return string Absolute url.
-     * @author Jason Schoeman
+     * @param boolean|string $return return or print out method
+     * @return string|void
      */
     public function outputAbsoluteURL($return = 'print')
     {
@@ -371,9 +370,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints the home url for inside theme usage.
      *
-     * @param mixed default is print, can be set true, print, return.
-     * @return string Absolute url without CDN.
-     * @author Jason Schoeman
+     * @param boolean|string $return return or print out method
+     * @return string|void
      */
     public function outputHomeURL($return = 'print')
     {
@@ -388,9 +386,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints the meta keywords for inside theme usage.
      *
-     * @param mixed default is print, can be set true, print, return.
-     * @return string Meta Keywords.
-     * @author Jason Schoeman
+     * @param boolean|string $return return or print out method
+     * @return string|void
      */
     public function outputMetaKeywords($return = 'print')
     {
@@ -408,9 +405,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints the meta description for inside theme usage.
      *
-     * @param mixed default is print, can be set true, print, return.
-     * @return string Meta Description.
-     * @author Jason Schoeman
+     * @param boolean|string $return return or print out method
+     * @return string|void
      */
     public function outputMetaDescription($return = 'print')
     {
@@ -427,8 +423,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Gets the desired logo and displays it. This method will try its best to deliver a logo, whatever the case.
-     *
-     * @author Jason Schoeman
      */
     public function outputLogo()
     {
@@ -464,14 +458,15 @@ class PHPDS_template extends PHPDS_dependant
      * @param string $active_plugin
      * @param string $alias
      * @param int    $is_parent
+     * @return string
      */
-    public function scriptLogo($node_link, $active_plugin, $alias = null, $is_parent = null)
+    public function scriptLogo($node_link, $active_plugin, $alias = null, $is_parent = 0)
     {
         // Find last occurance.
         $filename_from = strrchr($node_link, '/');
         if (empty($filename_from)) $filename_from = $node_link;
         // Set image name.
-        $image_name = ltrim($this->core->rightTrim($filename_from, '.php'), '/');
+        $image_name = ltrim(PU_rightTrim($filename_from, '.php'), '/');
         // Create image url.
         $img_url_alias            = !empty($alias) ? "plugins/$active_plugin/images/$alias.png" : '';
         $img_url                  = "plugins/$active_plugin/images/$image_name.png";
@@ -495,9 +490,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Sets template time.
-     *
-     * @author Jason Schoeman
-     * @date 20120306 (greg) replace double equal with triple equal
      */
     public function outputTime()
     {
@@ -512,8 +504,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Sets template login link.
-     *
-     * @author Jason Schoeman
      */
     public function outputLoginLink()
     {
@@ -538,8 +528,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Sets template role.
-     *
-     * @author Jason Schoeman
      */
     public function outputRole()
     {
@@ -559,9 +547,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints an image of the current script running.
      *
-     * @param boolean Default is false, if set true, the heading will return instead of print.
-     * @return string Returns image tag with image url.
-     * @author Jason Schoeman
+     * @param boolean|string $return return or print out method
+     * @return string|void
      */
     public function outputScriptIcon($return = false)
     {
@@ -585,9 +572,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Returns "subnav" to the template system. Intended to be used by the engine.
-     *
-     * @author Jason Schoeman
+     * Prints "subnav" to the template system. Intended to be used by the engine.
      */
     public function outputSubnav()
     {
@@ -601,8 +586,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Returns "nodes" to the template system. Intended to be used by the engine.
-     *
-     * @author Jason Schoeman
      */
     public function outputMenu()
     {
@@ -615,9 +598,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Returns "output script" to the template system. Intended to be used by the engine.
-     *
-     * @author Jason Schoeman
+     * Prints "output script" to the template system. Intended to be used by the engine.
      */
     public function outputScript()
     {
@@ -625,9 +606,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Returns "output script" to the template system. Intended to be used by the engine.
-     *
-     * @author Jason Schoeman
+     * Prints "output script" to the template system. Intended to be used by the engine.
      */
     public function outputController()
     {
@@ -639,9 +618,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Outputs the active scripts title/heading.
-     *
-     * @author Jason Schoeman
+     * Prints the active scripts title/heading.
      */
     public function outputName()
     {
@@ -662,12 +639,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Allows to assign different names for the active controller.
-     *
-     * @version 1.0
-     *
-     * @param string This is the message that will be displayed as the controller name.
-     * @return nothing
-     * @author  Jason Schoeman
      */
     public function heading($heading)
     {
@@ -675,17 +646,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * This returns/prints a heading discription of the script being executed. Intended to be used by the developer.
-     *
-     * @version 2.0
-     *
-     * @date 20110309 (v1.1) (greg) changed to use the pieces repository
-     * @date 20110309 (v1.2) (jason) good idea but it wont work as heading is not mandatory in controllers.
-     * @date 20121212 (v1.3) (jason) rewrote how the heading works, needs to be present in theme if heading is required to be output in theme.
-     *
-     * @param string This is the message that will be displayed as the heading.
-     * @return nothing
-     * @author  Jason Schoeman
+     * This prints a heading description of the script being executed. Intended to be used by the developer.
      */
     public function outputHeading()
     {
@@ -704,8 +665,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Sets template system logo or name.
-     *
-     * @author Jason Schoeman
      */
     public function outputTextLogo()
     {
@@ -719,9 +678,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Returns the last footer string to the template system. Intended to be used by the engine.
-     *
-     * @author Jason Schoeman
+     * Prints the last footer string to the template system. Intended to be used by the engine.
      */
     public function outputFooter()
     {
@@ -734,9 +691,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Will add code from configuration to theme closing body tag.
-     *
-     * @author Jason Schoeman
+     * Will add js code from configuration to theme closing body tag.
      */
     public function outputFooterJS()
     {
@@ -746,8 +701,12 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This method is used to load a widget at into a certain location of your page.
      *
-     * @author Jason Schoeman
-     * @since  V 3.0.5
+     * @param string $node_id_to_load
+     * @param string $element_id
+     * @param string $extend_url
+     * @param string $settings
+     *
+     * @return bool
      */
     public function requestWidget($node_id_to_load, $element_id, $extend_url = '', $settings = '')
     {
@@ -770,8 +729,12 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This method is used to load ajax into a certain location of your page.
      *
-     * @author Jason Schoeman
-     * @since  V 3.0.5
+     * @param string $node_id_to_load
+     * @param string $element_id
+     * @param string $extend_url
+     * @param string $settings
+     *
+     * @return bool
      */
     public function requestAjax($node_id_to_load, $element_id, $extend_url = '', $settings = '')
     {
@@ -794,8 +757,12 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This method is used to load a lightbox page.
      *
-     * @author Jason Schoeman
-     * @since  V 3.0.5
+     * @param string $node_id_to_load
+     * @param string $element_id
+     * @param string $extend_url
+     * @param string $settings
+     *
+     * @return bool
      */
     public function requestLightbox($node_id_to_load, $element_id, $extend_url = '', $settings = '')
     {
@@ -821,9 +788,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Pushes javascript to <head> for styling purposes.
-     *
-     * @return nothing
-     * @author Jason Schoeman
      */
     public function styleButtons()
     {
@@ -832,9 +796,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Pushes javascript to <head> for validationg purposes.
-     *
-     * @return nothing
-     * @author Jason Schoeman
      */
     public function validateForms()
     {
@@ -844,9 +805,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Pushes javascript to <head> for styling purposes.
-     *
-     * @return nothing
-     * @author Jason Schoeman
      */
     public function styleForms()
     {
@@ -855,9 +813,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Pushes javascript to <head> for styling purposes.
-     *
-     * @return nothing
-     * @author Jason Schoeman
      */
     public function styleFloatHeaders()
     {
@@ -867,9 +822,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Pushes javascript to <head> for styling purposes.
-     *
-     * @return nothing
-     * @author Jason Schoeman
      */
     public function styleTables()
     {
@@ -878,9 +830,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Pushes javascript to <head> for styling purposes.
-     *
-     * @return nothing
-     * @author Jason Schoeman
      */
     public function stylePagination()
     {
@@ -889,9 +838,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Pushes javascript to <select> for styling purposes.
-     *
-     * @return nothing
-     * @author Don Schoeman
      */
     public function styleSelect()
     {
@@ -902,14 +848,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Calls a single jquery-ui effect plugin and includes it inside head.
-     *
-     * @version 1.1
-     *
-     * @date 20120606 (v1.1) (greg) added support for multiple times
-     *
-     * @param string Plugin name (multiple times)
-     * @return nothing
-     * @author  Jason Schoeman
      */
     public function jqueryEffect($plugin)
     {
@@ -920,14 +858,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Calls a single jquery-ui plugin and includes it inside head.
-     *
-     * @version 1.1
-     *
-     * @date 20120606 (v1.1) (greg) added support for multiple times
-     *
-     * @param string Plugin name (multiple times)
-     * @return nothing
-     * @author  Jason Schoeman
      */
     public function jqueryUI($plugin)
     {
@@ -938,14 +868,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Ability to call and display notifications pushed to the notification system.
-     *
-     * @author  greg <greg@phpdevshell.org>
-     * @version 1.1
-     * @since   v3.0.5
-     *
-     * @date 20121210 (v1.2) (jason) added text support for clean messages
-     * @date 20120308 (v1.1) (greg) added html and mod support
-     * @date 20110706 (v1.0) (greg) added
      */
     public function outputNotifications()
     {
@@ -999,14 +921,15 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This method will load given png icon from icon database,
      *
-     * @param string  Icon name without extention.
-     * @param Title   of given image.
-     * @param int     The size folder to look within.
-     * @param string  If an alternative class must be added to image.
-     * @param string  File type.
-     * @param boolean Default is false, if set true, the heading will return instead of print.
+     * @param string  $name    Icon name without extention.
+     * @param string  $title   of given image.
+     * @param int     $size    The size folder to look within.
+     * @param string  $class   If an alternative class must be added to image.
+     * @param string  $type    File type.
+     * @param boolean $return  Default is false, if set true, the heading will return instead of print.
+     * @return string|void
      */
-    public function icon($name, $title = false, $size = 16, $class = 'class', $type = '.png', $return = true)
+    public function icon($name, $title = null, $size = 16, $class = 'class', $type = '.png', $return = true)
     {
         $navigation = $this->navigation->navigation;
         // Create icon dir.
@@ -1027,15 +950,9 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints info of the script being executed. Intended to be used by the developer.
      *
-     * @version 1.3
-     *
-     * @date 20110309 (v1.1) (greg) changed to use the pieces repository
-     * @date 20110309 (v1.2) (jason) good idea but it wont work as info is not mandatory in controllers.
-     * @date 20120308 (v1.3) (greg) switched to notifications queue
-     *
-     * @param string This is the message that will be displayed as the info.
-     * @return nothing
-     * @author  Jason Schoeman
+     * @param string $information message
+     * @param string $return
+     * @return string|void
      */
     public function info($information, $return = 'print')
     {
@@ -1050,11 +967,10 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a warning message regarding the active script. Intended to be used by the developer.
      *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @param mixed  default is log, can be set true, print, return.
-     * @return string Warning string.
-     * @author Jason Schoeman
+     * @param string $warning message
+     * @param string $return
+     * @param string $log
+     * @return string|void
      */
     public function warning($warning, $return = 'print', $log = 'log')
     {
@@ -1081,15 +997,10 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a ok message regarding the active script. Intended to be used by the developer.
      *
-     * @version 1.1
-     *
-     * @date 20120308 (v1.1) (greg) switched to notifications queue
-     *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @param mixed  default is log, can be set true, print, return.
-     * @return string Ok string.
-     * @author  Jason Schoeman
+     * @param string $ok message
+     * @param string $return
+     * @param string $log
+     * @return string|void
      */
     public function ok($ok, $return = 'print', $log = 'log')
     {
@@ -1118,14 +1029,10 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a error message regarding the active script. Intended to be used by the developer where exceptions are caught.
      *
-     * @version 1.1
-     * @date 20120308 (v1.1) (greg) switched to notifications queue
-     *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @param mixed  default is log, can be set true, print, return.
-     * @return string Error string.
-     * @author  Jason Schoeman
+     * @param string $error message
+     * @param string $return
+     * @param string $log
+     * @return string|void
      */
     public function error($error, $return = 'print', $log = 'log')
     {
@@ -1153,14 +1060,11 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a critical message regarding the active script. Intended to be used by the developer.
      *
-     * @version 1.1
-     * @date 20120308 (v1.1) (greg) switched to notifications queue
-     *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @param mixed  default is log, can be set true, print, return.
-     * @return string Critical string.
-     * @author  Jason Schoeman
+     * @param string $critical message
+     * @param string $return
+     * @param string $log
+     * @param string $mail
+     * @return string|void
      */
     public function critical($critical, $return = 'print', $log = 'log', $mail = 'mailadmin')
     {
@@ -1191,9 +1095,10 @@ class PHPDS_template extends PHPDS_dependant
 
             if ($mail === true || $mail == 'mailadmin') {
                 // Initiate email class.
-                $email = $this->factory('mailer');
+                // TODO: Add default mailer class.
+                //$email = $this->factory('mailer');
                 // Ok we can now send the critical email message.
-                $email->sendmail("{$this->configuration['setting_admin_email']}", $subject, $message);
+                //$email->sendmail("{$this->configuration['setting_admin_email']}", $subject, $message);
             }
         }
         // Return or print to browser.
@@ -1207,13 +1112,9 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a notice of the script being executed. Intended to be used by the developer.
      *
-     * @version 1.1
-     * @date 20120308 (v1.1) (greg) switched to notifications queue
-     *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @return string Notice string.
-     * @author  Jason Schoeman
+     * @param string $notice message
+     * @param string $return
+     * @return string|void
      */
     public function notice($notice, $return = 'print')
     {
@@ -1228,13 +1129,9 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a busy of the script being executed. Intended to be used by the developer.
      *
-     * @version 1.1
-     * @date 20120308 (v1.1) (greg) switched to notifications queue
-     *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @return string Busy string.
-     * @author  Jason Schoeman
+     * @param string $busy message
+     * @param string $return
+     * @return string|void
      */
     public function busy($busy, $return = 'print')
     {
@@ -1249,13 +1146,9 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a message of the script being executed. Intended to be used by the developer.
      *
-     * @version 1.1
-     * @date 20120312 (v1.1) (greg) switched to notifications queue
-     *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @return string Message string.
-     * @author  Jason Schoeman
+     * @param string $message message
+     * @param string $return
+     * @return string|void
      */
     public function message($message, $return = 'print')
     {
@@ -1270,13 +1163,9 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a note of the script being executed. Intended to be used by the developer.
      *
-     * @version 1.1
-     * @date 20120312 (v1.1) (greg) switched to notifications queue
-     *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @return string Note string.
-     * @author  Jason Schoeman
+     * @param string $note message
+     * @param string $return
+     * @return string|void
      */
     public function note($note, $return = 'print')
     {
@@ -1291,10 +1180,9 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This returns/prints a heading of the script being executed. Intended to be used by the developer.
      *
-     * @param string This is the message that will be displayed.
-     * @param mixed  default is print, can be set true, print, return.
-     * @return string Heading string.
-     * @author Jason Schoeman
+     * @param string $scripthead message
+     * @param string $return
+     * @return string|void
      */
     public function scripthead($scripthead, $return = 'print')
     {
@@ -1311,9 +1199,9 @@ class PHPDS_template extends PHPDS_dependant
      * This creates an the [i] when over with mouse a popup with a message appears, this can be placed anywhere.
      * Intended to be used by the developer.
      *
-     * @param string  The message to diplay when mouse goes over the [i].
-     * @param boolean Sets to print out confirm link instead of return.
-     * @author Jason Schoeman
+     * @param string $text message
+     * @param bool $print
+     * @return string|void
      */
     public function tip($text, $print = false)
     {
@@ -1330,7 +1218,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * Login heading messages.
      *
-     * @author Jason Schoeman
+     * @param bool $return
+     * @return string|void
      */
     public function loginFormHeading($return = false)
     {
@@ -1368,7 +1257,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * Executes the login.
      *
-     * @author Jason Schoeman
+     * @param bool $return
+     * @return string|void
      */
     public function loginForm($return = false)
     {
@@ -1384,7 +1274,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * Shows alternative logout information and preferences to existing logged in users.
      *
-     * @author Jason Schoeman
+     * @param bool $return
+     * @return string|void
      */
     public function outputLogin($return = false)
     {
@@ -1416,7 +1307,8 @@ class PHPDS_template extends PHPDS_dependant
      * An alternative way to add more custom links to your page, these are direct links to existing node items.
      * Contains an array of available links.
      *
-     * @author Jason Schoeman
+     * @param bool $return
+     * @return string|void
      */
     public function outputAltNav($return = false)
     {
@@ -1432,7 +1324,8 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * This provides a simple styled link depending if the user is logged in or not.
      *
-     * @author Jason Schoeman
+     * @param bool $return
+     * @return string|void
      */
     public function outputAltHome($return = false)
     {
@@ -1450,7 +1343,6 @@ class PHPDS_template extends PHPDS_dependant
      * Get and return the supposed to run template.
      *
      * @return string if not found, return default.
-     * @author Jason Schoeman
      */
     public function getTemplate()
     {
@@ -1469,21 +1361,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Gets the correct location of a tpl file, will return full path, can be a view.tpl or view.tpl.php files.
-     *
-     * @param string $load_view
-     * @param string $plugin_override If another plugin is to be used in the directory.
-     *
-     * @return string
-     */
-    public function getTpl($load_view = '', $plugin_override = '')
-    {
-        return $this->core->getTpl($load_view, $plugin_override);
-    }
-
-    /**
      * Returns some debug info to the frontend, at the bottom of the page
-     *
      */
     public function debugInfo()
     {
@@ -1505,7 +1383,6 @@ class PHPDS_template extends PHPDS_dependant
 
     /**
      * Prints some debug info to the frontend, at the bottom of the page
-     *
      */
     public function outPutDebugInfo()
     {
@@ -1523,76 +1400,4 @@ class PHPDS_template extends PHPDS_dependant
         // Decode characters.
         return html_entity_decode($string_to_decode, ENT_QUOTES, $this->configuration['charset']);
     }
-
-    /**
-     * This creates a simple confirmation box to ask users input before performing a critical link click.
-     *
-     * @param string What is the question to be asked in the confirmation box.
-     * @return string Javascript popup confirmation box.
-     * @author Jason Schoeman
-     */
-    public function confirmLink($confirm_what)
-    {
-        $onclick = "onClick=\"return confirm('$confirm_what')\"";
-        return eval('return $onclick;');
-    }
-
-    /**
-     * This creates a simple confirmation box to ask users input before performing a critical submit.
-     *
-     * @param string What is the question to be asked in the confirmation box.
-     * @return string Javascript popup confirmation box.
-     * @author Jason Schoeman
-     */
-    public function confirmSubmit($confirm_what)
-    {
-        $onclick = "onSubmit=\"return confirm('$confirm_what')\"";
-        return eval('return $onclick;');
-    }
-
-    /**
-     * This shows a simple "alert" box which notifies the user about a specified condition.
-     *
-     * @param string The actual warning message.
-     * @return string Javascript popup warning box.
-     * @author Don Schoeman
-     */
-    public function alertSubmit($alert_msg)
-    {
-        $onclick = "onSubmit=\"alert('$alert_msg')\"";
-        return eval('return $onclick;');
-    }
-
-    /**
-     * This shows a simple "alert" box which notifies the user about a specified condition.
-     *
-     * @param string The actual warning message.
-     * @return string Javascript popup warning box.
-     * @author Don Schoeman
-     */
-    public function alertLink($alert_msg)
-    {
-        $onclick = "onClick=\"alert('$alert_msg')\"";
-        return eval('return $onclick;');
-    }
-}
-
-/**
- * Creates a language tooltip string and prints it out to the template.
- *
- * @param string $info_mark
- */
-function tip($text)
-{
-    print _($text);
-}
-
-/**
- * Creates a language tooltip string inside a text domain and prints it out to the template.
- *
- * @param string $info_mark
- */
-function dtip($text, $domain)
-{
-    print dgettext($domain, $text);
 }

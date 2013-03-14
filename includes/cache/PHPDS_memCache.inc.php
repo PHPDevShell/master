@@ -13,6 +13,7 @@ class PHPDS_memCache
      * Currently memcache is the primary supported engine.
      *
      * @param array $conf
+     * @return bool
      */
     public function connectCacheServer($conf)
     {
@@ -26,6 +27,7 @@ class PHPDS_memCache
             foreach ($conf['cache_host'] as $server => $host) {
                 $this->cacheObject->addserver($host, $conf['cache_port'][$server], $conf['cache_persistent'][$server], $conf['cache_weight'][$server], $conf['cache_timeout'][$server], $conf['cache_retry_interval'][$server], $conf['cache_status'][$server]);
             }
+            return true;
         } else {
             return false;
         }
@@ -34,10 +36,10 @@ class PHPDS_memCache
     /**
      * Writes new data to cache.
      *
-     * @param string  $unique_key
-     * @param mixed   $cache_data
-     * @param boolean $compress
-     * @param int     $timeout
+     * @param string        $unique_key
+     * @param mixed         $cache_data
+     * @param boolean       $compress
+     * @param int|bool      $timeout
      */
     public function cacheWrite($unique_key, $cache_data, $compress = false, $timeout = false)
     {
@@ -61,7 +63,7 @@ class PHPDS_memCache
     }
 
     /**
-     * Return exising cache result for required key.
+     * Return existing cache result for required key.
      * @param mixed $unique_key
      * @return mixed
      */

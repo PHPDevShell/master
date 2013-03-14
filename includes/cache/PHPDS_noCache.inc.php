@@ -18,10 +18,10 @@ class PHPDS_noCache
     /**
      * Writes new data to cache.
      *
-     * @param string  $unique_key
-     * @param mixed   $cache_data
-     * @param boolean $compress
-     * @param int     $timeout
+     * @param string        $unique_key
+     * @param mixed         $cache_data
+     * @param boolean       $compress
+     * @param int|bool      $timeout
      */
     public function cacheWrite($unique_key, $cache_data, $compress = false, $timeout = false)
     {
@@ -29,7 +29,7 @@ class PHPDS_noCache
     }
 
     /**
-     * Return exising cache result to required item.
+     * Return existing cache result to required item.
      *
      * @param mixed $unique_key
      * @return mixed

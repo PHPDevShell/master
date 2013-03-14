@@ -670,7 +670,7 @@ class PHPDS_core extends PHPDS_dependant
 
         (file_exists($loc_dir)) ? $mo_ok = true : $mo_ok = false;
         if ($mo_ok) {
-            $this->_log('Found Translation File : ' . $loc_dir);
+            $this->log('Found Translation File : ' . $loc_dir);
             bindtextdomain($textdomain, $bindtextdomain);
             bind_textdomain_codeset($textdomain, $configuration['charset']);
             textdomain($textdomain);
@@ -817,7 +817,7 @@ class PHPDS_core extends PHPDS_dependant
      */
     public function logConfig()
     {
-        $this->_log((array)$this->configuration);
+        $this->log((array)$this->configuration);
     }
 
 

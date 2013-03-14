@@ -15,7 +15,6 @@ class PHPDS_navigation extends PHPDS_dependant
     const node_lightbox      = 11;
     const node_ajax_raw      = 12;
 
-
     /**
      * @var array
      */
@@ -69,9 +68,10 @@ class PHPDS_navigation extends PHPDS_dependant
      * @param string $replacement_name
      * @param string $node_link
      * @param int    $node_id
+     * @param string $plugin
      * @return string
      */
-    public function determineNodeName($replacement_name = '', $node_link = '', $node_id = false, $plugin = '')
+    public function determineNodeName($replacement_name = '', $node_link = '', $node_id = 0, $plugin = '')
     {
         if (!empty($replacement_name)) {
             return __("$replacement_name", "$plugin");
@@ -86,6 +86,7 @@ class PHPDS_navigation extends PHPDS_dependant
      * @param integer $hide_type
      * @param integer $node_id
      * @param integer $active_id
+     * @return bool
      */
     public function showNode($hide_type, $node_id = null, $active_id = null)
     {
@@ -103,8 +104,7 @@ class PHPDS_navigation extends PHPDS_dependant
     /**
      * Compiles node items in order.
      *
-     * @return string
-     * @author Jason Schoeman
+     * @return string will return HTML node list
      */
     public function createMenuStructure()
     {
@@ -144,8 +144,9 @@ class PHPDS_navigation extends PHPDS_dependant
      * Assists write_node in calling node children.
      *
      * @param int $node_id
+     * @return string will return HTML node list
      */
-    public function callFamily($node_id = false)
+    public function callFamily($node_id = 0)
     {
         $node          = '';
         $configuration = $this->configuration;
@@ -210,7 +211,6 @@ class PHPDS_navigation extends PHPDS_dependant
      * Method assists method generate_history_tree in getting breadcrumb links.
      *
      * @param integer
-     * @return array
      */
     private function callbackParentItem($node_id_)
     {
@@ -229,7 +229,7 @@ class PHPDS_navigation extends PHPDS_dependant
     /**
      * Simply returns current node id.
      *
-     * @return int
+     * @return string
      */
     public function currentNodeID()
     {
@@ -238,10 +238,6 @@ class PHPDS_navigation extends PHPDS_dependant
 
     /**
      * Returns the complete current node structure
-     *
-     * @version 1.0
-     * @author  greg <greg@phpdevshell.org>
-     * @date 20120608 (1.0) (greg) added
      *
      * @return array
      */
@@ -329,11 +325,10 @@ class PHPDS_navigation extends PHPDS_dependant
      * Will return self url when no node id is given. No starting & or ? is needed, this gets auto determined!
      * If left empty it will return current active node.
      *
-     * @param mixed   The node id or node file location to create a url from.
-     * @param string  extend_url
-     * @param boolean strip_trail Will strip unwanted empty operators at the end.
+     * @param mixed   $node_id The node id or node file location to create a url from.
+     * @param string  $extend_url
+     * @param boolean $strip_trail Will strip unwanted empty operators at the end.
      * @return string
-     * @author Jason Schoeman
      */
     public function buildURL($node_id = null, $extend_url = '', $strip_trail = true)
     {
@@ -370,14 +365,6 @@ class PHPDS_navigation extends PHPDS_dependant
 
     /**
      * Parses the REQUEST_URI to get the page id
-     *
-     * @version 1.1
-     *
-     * @date 20120312 (v1.1) (greg) added support for given parameter
-     * @date 20101007 (v1.0.2) (greg) moved from PHPDS to PHPDS_navigation ; little cleanup
-     * @date 20100109
-     *
-     * @author  Ross Kuyper
      */
     public function parseRequestString($uri = '')
     {
@@ -475,7 +462,7 @@ class PHPDS_navigation extends PHPDS_dependant
      *
      * @param string
      * @param string
-     * @author Jason Schoeman
+     * @return bool
      */
     public function urlAccessError($alias = null, $get_node_id = null)
     {
@@ -499,8 +486,8 @@ class PHPDS_navigation extends PHPDS_dependant
     /**
      * This function support output_script by looking deeper into node structure to find last linked node item that is not linked to another.
      *
-     * @param integer $extendedNodeId
-     * @return integer
+     * @param string $extended_node_id
+     * @return string
      */
     public function extendNodeLoop($extended_node_id)
     {
@@ -528,12 +515,11 @@ class PHPDS_navigation extends PHPDS_dependant
     }
 
     /**
-     * This method saves the current URL with the option to add more $this->security->get variables like ("&variable1=1&variable2=2")
+     * This method returns the current URL with the option to add more $this->security->get variables like ("&variable1=1&variable2=2")
      * This is mostly used for when additional $this->security->get variables are required! Usefull when using forms.
      *
-     * @param string Add more $this->security->get variables like ("&variable1=1&variable2=2")
+     * @param string $extra_get_variables Add more $this->security->get variables like ("&variable1=1&variable2=2")
      * @return string
-     * @author Jason Schoeman
      */
     public function selfUrl($extra_get_variables = '')
     {
@@ -543,9 +529,9 @@ class PHPDS_navigation extends PHPDS_dependant
     /**
      * Will convert any given plugin script location to its correct url.
      *
-     * @param $file_path   The full file path, "DummyPlugin/sample/sample1.php"
-     * @param $extend_url  Should the url be extended with $_GET vars, 'e=12'
-     * @param $strip_trail Will strip unwanted empty operators at the end.
+     * @param string $file_path   The full file path, "DummyPlugin/sample/sample1.php"
+     * @param string $extend_url  Should the url be extended with $_GET vars, 'e=12'
+     * @param bool $strip_trail Will strip unwanted empty operators at the end.
      * @return string
      */
     public function purl($file_path, $extend_url = '', $strip_trail = true)
@@ -577,9 +563,8 @@ class PHPDS_navigation extends PHPDS_dependant
     /**
      * Convert plugin file location to unsigned CRC32 value. This is unique and allows one to locate a node item from location as well.
      *
-     * @param string The plugin folder the file is in.
+     * @param string $path The plugin folder the file is in.
      * @return integer
-     * @author Jason Schoeman
      */
     public function createNodeId($path)
     {
@@ -589,13 +574,12 @@ class PHPDS_navigation extends PHPDS_dependant
     /**
      * Redirects to new url.
      *
-     * @param string  URL to redirect to.
-     * @param integer Time in seconds before redirecting.
-     * @author Jason Schoeman
+     * @param string $url URL to redirect to.
+     * @param integer $time Time in seconds before redirecting.
      */
-    public function redirect($url = false, $time = 0)
+    public function redirect($url = null, $time = 0)
     {
-        if ($url == false) {
+        if ($url == null) {
             $redirect_url = $this->template->mod->nodeRedirect($this->buildURL($this->configuration['m']), $time);
         } else {
             $redirect_url = $this->template->mod->nodeRedirect($url, $time);

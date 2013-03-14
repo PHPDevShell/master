@@ -23,10 +23,10 @@ class PHPDS_sessionCache
     /**
      * Writes new data to cache.
      *
-     * @param string  $unique_key
-     * @param mixed   $cache_data
-     * @param boolean $compress
-     * @param int     $timeout
+     * @param string        $unique_key
+     * @param mixed         $cache_data
+     * @param boolean       $compress
+     * @param int|bool      $timeout
      */
     public function cacheWrite($unique_key, $cache_data, $compress = false, $timeout = false)
     {

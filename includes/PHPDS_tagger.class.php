@@ -16,9 +16,9 @@ class PHPDS_tagger extends PHPDS_dependant
      *
      * @param string $object
      * @param string $name
-     * @param string $target
+     * @param string|int $target
      * @param string $value (optional)
-     * @return string|array|nothing
+     * @return string|array|null
      */
     public function tag($object, $name, $target, $value = null)
     {
@@ -36,14 +36,10 @@ class PHPDS_tagger extends PHPDS_dependant
      *
      * @param string $object (optional)
      * @param string $name   (optional)
-     * @param string $target (optional)
+     * @param string|int $target (optional)
      * @param string $value  (optional)
      *
-     * @return string|nothing
-     *
-     * @version 1.0
-     * @author  greg
-     * @date 20120105 (v1.0) (greg) added
+     * @return string|null
      */
     public function tagLookup($object = null, $name = null, $target = null, $value = null)
     {
@@ -53,10 +49,11 @@ class PHPDS_tagger extends PHPDS_dependant
     }
 
     /**
-     * List of [object;target] for the given tag (optionaly restricted to the given $object/$target)
-     *
-     * @param $object
-     * @param $target
+     * List of [object;target] for the given tag (optionally restricted to the given $object/$target)
+     * @param string $name
+     * @param string $object
+     * @param string|int $target
+     * @return array
      */
     public function tagList($name, $object, $target = null)
     {
@@ -69,9 +66,10 @@ class PHPDS_tagger extends PHPDS_dependant
     /**
      * Tag (set/get) the user specified in $target
      *
-     * @param $name
-     * @param $target
-     * @param $value
+     * @param string $name
+     * @param string|int $target
+     * @param mixed $value
+     * @return mixed
      */
     public function tagUser($name, $target, $value = null)
     {
@@ -81,8 +79,9 @@ class PHPDS_tagger extends PHPDS_dependant
     /**
      * Tag (set/get) the current user
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
+     * @return mixed
      */
     public function tagMe($name, $value = null)
     {
@@ -94,9 +93,10 @@ class PHPDS_tagger extends PHPDS_dependant
     /**
      * Tag (set/get) the node specified in $target
      *
-     * @param $name
-     * @param $target
-     * @param $value
+     * @param string $name
+     * @param string|int $target
+     * @param mixed $value
+     * @return mixed
      */
     public function tagNode($name, $target, $value = null)
     {
@@ -106,8 +106,9 @@ class PHPDS_tagger extends PHPDS_dependant
     /**
      * Tag (set/get) the current node
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
+     * @return mixed
      */
     public function tagHere($name, $value = null)
     {
@@ -119,9 +120,10 @@ class PHPDS_tagger extends PHPDS_dependant
     /**
      * Tag (set/get) the role specified in $target
      *
-     * @param $name
-     * @param $target
-     * @param $value
+     * @param string $name
+     * @param string|int $target
+     * @param mixed $value
+     * @return mixed
      */
     public function tagRole($name, $target, $value = null)
     {
@@ -131,9 +133,10 @@ class PHPDS_tagger extends PHPDS_dependant
     /**
      * Tag (set/get) the group specified in $target
      *
-     * @param $name
-     * @param $target
-     * @param $value
+     * @param string $name
+     * @param string|int $target
+     * @param mixed $value
+     * @return mixed
      */
     public function tagGroup($name, $target, $value = null)
     {
@@ -143,18 +146,12 @@ class PHPDS_tagger extends PHPDS_dependant
     /**
      * This function creates tag view list with form input fields. Can also store it if available
      *
-     *
      * @param string $object
      * @param string $target
      * @param array  $taggernames   Array of names posted by the tagger form.
      * @param array  $taggervalues  Array of values posted by the tagger form.
      * @param array  $taggerids     Array of updated ids posted by the tagger form.
-     * @param array  $taggerdeletes Array of deleted tags posted by the tagger form.
      * @return string
-     *
-     * @version 2.0
-     * @author  jason <titan@phpdevshell.org>
-     * @date 20130123 (v2.0) (jason) rewrote its functionality
      */
     public function tagArea($object, $target, $taggernames, $taggervalues, $taggerids)
     {
@@ -179,7 +176,6 @@ class PHPDS_tagger extends PHPDS_dependant
      * @param   array  $taggernames   Array of names posted by the tagger form.
      * @param   array  $taggervalues  Array of values posted by the tagger form.
      * @param   array  $taggerids     Array of updated ids posted by the tagger form.
-     * @param   array  $taggerdeletes Array of deleted tags posted by the tagger form.
      * @return  string
      *
      * @version 1.0

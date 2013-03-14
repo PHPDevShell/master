@@ -13,16 +13,16 @@ class PHPDS_debug extends PHPDS_dependant
     const WARN  = 2;
     const ERROR = 1;
     const LOG   = 0;
-    protected $enabled = false; /* boolean: is the data to be sent, anyway */
-    protected $level = PHPDS_debug::LOG; /* level of verbosity */
+    protected $enabled  = false; /* boolean: is the data to be sent, anyway */
+    protected $level    = PHPDS_debug::LOG; /* level of verbosity */
     protected $domain; /* string (maybe null): to which semantic domain this instance is related */
     protected $conduits = null;
 
     /**
-     * @date 20110202 (v1.1) (greg) moved to construct() instead of __cosntruct()
-     * @date 20110216 (v1.1.1)  (greg) fixed a bug with enable
-     * @version 1.1.1
-     * @param $domain the semantic domain of the debug object (to match (or not) the filters are set in configuration)
+     * Constructor.
+     *
+     * @param $domain string the semantic domain of the debug object (to match (or not) the filters are set in configuration)
+     * @return boolean
      */
     public function construct($domain = null)
     {
@@ -44,13 +44,8 @@ class PHPDS_debug extends PHPDS_dependant
      * The domain is the semantic field of the data sent to this instance ; it's used to filter which data will be actually sent
      * Note: the object will enable/disabled itself based on the domain debug configuration: the domain MUST be in the array to be active.
      *
-     * @version 1.1
-     * @author  greg
-     *
-     * @date 20110216 (v1.1) (greg) domain filters can now be regex
-     *
-     * @param $domain string (optional) the semantic domain
-     * @return string, the domain (maybe null)
+     * @param string $domain (optional) the semantic domain
+     * @return string the domain (maybe null)
      */
     public function domain($domain = null)
     {
@@ -76,11 +71,10 @@ class PHPDS_debug extends PHPDS_dependant
 
     /**
      * Enable or disable the debugger output ; get the current state
-     *
      * Note: at this time, the debugger has to be enabled at startup
      *
-     * @param $doit                (optional) enable (true or disable (false)
-     * @return boolean        weither it's currently enabled
+     * @param boolean $doit (optional) enable (true or disable (false)
+     * @return boolean whether it's currently enabled
      */
     function enable($doit = null)
     {
@@ -103,14 +97,14 @@ class PHPDS_debug extends PHPDS_dependant
      */
     public function __invoke($data, $label = null)
     {
-        return $this->log($data);
+        $this->log($data);
     }
 
     /**
      * Dump the content of a variable to the backends
      *
-     * @param $data
-     * @param $label
+     * @param string $data
+     * @param string $label
      */
     public function dump($data, $label = 'data')
     {
@@ -123,8 +117,8 @@ class PHPDS_debug extends PHPDS_dependant
     /**
      * Log the data to the backends with the LOG level (the smallest, most often seen)
      *
-     * @param $data
-     * @param $label
+     * @param string $data
+     * @param string $label
      */
     public function log($data, $label = null)
     {
@@ -140,7 +134,6 @@ class PHPDS_debug extends PHPDS_dependant
      * Push Firebug Debug Info
      *
      * @param mixed $data
-     * @return void
      */
     public function debug($data)
     {
@@ -153,7 +146,6 @@ class PHPDS_debug extends PHPDS_dependant
      * Push Firebug Info
      *
      * @param mixed $data
-     * @return void
      */
     public function info($data)
     {
@@ -166,7 +158,6 @@ class PHPDS_debug extends PHPDS_dependant
      * Push Firebug Warning
      *
      * @param mixed $data
-     * @return void
      */
     public function warn($data)
     {
@@ -196,7 +187,7 @@ class PHPDS_debug extends PHPDS_dependant
      *
      * @param mixed $data
      * @param mixed $code
-     * @return itself
+     * @return $this
      */
     public function error($data, $code = null)
     {
@@ -222,5 +213,3 @@ class PHPDS_debug extends PHPDS_dependant
     }
 
 }
-
-?>
