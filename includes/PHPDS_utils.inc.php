@@ -51,7 +51,7 @@ function PU_BuildGETString(array $myGET, $glue = '&amp;')
  *
  * @param string $includeInGet   (optional) array of pairs: parameters to add as GET in the url
  * @param string $excludeFromGet (optional) array of strings: parameters to remove from GET in the url
- * @param        string          The character connector in between.
+ * @param string $glue           The character connector in between.
  * @return string the whole parameter part of the url (including '?') ; maybe empty if there are no parameters
  */
 function PU_BuildGET($includeInGet = null, $excludeFromGet = null, $glue = '&amp;')
@@ -60,17 +60,17 @@ function PU_BuildGET($includeInGet = null, $excludeFromGet = null, $glue = '&amp
 }
 
 /**
- * Simply checks if variable is a constant or not.
+ * Simply checks if string is a constant or not.
  *
- * @param $is_variable_constant
+ * @param string $is_constant
  * @return mixed will return constant if it exists.
  */
-function PU_isConstant($is_variable_constant)
+function PU_isConstant($is_constant)
 {
-    if (defined($is_variable_constant)) {
-        return constant($is_variable_constant);
+    if (defined($is_constant)) {
+        return constant($is_constant);
     } else {
-        return $is_variable_constant;
+        return $is_constant;
     }
 }
 
@@ -89,9 +89,6 @@ function PU_nameToId($convert_to_id)
 /**
  * Build a xml-style attributes string based on an array
  *
- * @version 1.1
- * @date 20091203
- * @date 20110203 (v1.1) (greg) added the glue parameter
  * @param $attributes array, the attribute array to compile
  * @param $glue       string, a piece of string to insert between the values
  * @return string
@@ -156,15 +153,10 @@ function PU_buildParsedURL($p)
 /**
  * Build a url with GET parameters
  *
- * @version 1.1
- * @author  greg
- *
- * @date 20100930 (v1.1) (greg) $target parameter can now be an array resulting from php's parse_url function
- *
  * @param string|array $target          (optional) string: the target script url (current script if missing)
  * @param array        $includeInGet    (optional) array of pairs: parameters to add as GET in the url
  * @param array        $excludeFromGet  (optional) array of strings: parameters to remove from GET in the url
- * @param              string           Connector between strings of url.
+ * @param string       $glue            Connector between strings of url.
  * @return string the built url
  *
  */
@@ -188,35 +180,12 @@ function PU_BuildURL($target = null, $includeInGet = null, $excludeFromGet = nul
 }
 
 /**
- * Build a html link (A+HREF html tag) with label and url and GET parameters
- *
- * @version 1.0.1
- * @date 20091203: added $attrs parameter
- * @param $label          string: the text of the link
- * @param $includeInGet   (optional) array of pairs: parameters to add as GET in the url
- * @param $excludeFromGet (optional) array of strings: parameters to remove from GET in the url
- * @param $target         (optional) string: the target script url (current script if missing)
- * @return string the complete html link
- *
- * TODO: support attrs!!!
- */
-function PU_BuildHREF($label, $includeInGet = null, $excludeFromGet = null, $target = null, array $attrs = null)
-{
-    $url  = PU_BuildURL($target, $includeInGet, $excludeFromGet);
-    $href = '<a href="' . $url . '">' . $label . '</a>';
-    return $href;
-}
-
-/**
  * Clean a string from possibly harmful chars
- *
  * These are removed: single and double quotes, backslashes, optionnaly html tags (everything between < and >)
- *
  * A cleaned string should be safe to include in an html output
  *
- * @param $string     the string to clean
- * @param $clean_htlm if true, HTML tags are deleted too
- *
+ * @param string $string     the string to clean
+ * @param bool   $clean_htlm if true, HTML tags are deleted too
  * @return string
  */
 function PU_CleanString($string, $clean_htlm = false)
@@ -230,12 +199,8 @@ function PU_CleanString($string, $clean_htlm = false)
 /**
  * Convert a string to UTF8 (default) or to HTML
  *
- * @version 1.1
- * @date 20120309 (v1.1) (greg) $htmlize can now specify a target encoding
- *
- * @param $string  the string to convert
- * @param $htmlize if true the string is converted to HTML, if nul to UTF8; otherwise specified encoding
- *
+ * @param string $string  the string to convert
+ * @param bool   $htmlize if true the string is converted to HTML, if nul to UTF8; otherwise specified encoding
  * @return string
  */
 function PU_MakeString($string, $htmlize = false)
@@ -283,16 +248,6 @@ function PU_ArraySearch($needle, $haystack)
  */
 if (function_exists('gettext')) {
 
-    /**
-     * Wrapper for $core->__() method.
-     * Converts text to use gettext PO system. Does the same as $core->__();
-     * @author Jason Schoeman
-     *
-     * @param string $gettext what The string required to output or convert.
-     * @param string $domain  Override textdomain that should be looked under for this text string.
-     *
-     * @return string Will return converted string or same string if not available.
-     */
     function __($gettext, $domain = '')
     {
         if (empty($domain)) {
@@ -302,34 +257,16 @@ if (function_exists('gettext')) {
         }
     }
 
-    /**
-     * Specifically meant for core translation domain.
-     *
-     * @param string $gettext The string required to output or convert.
-     *
-     * @return string
-     */
     function ___($gettext)
     {
         return dgettext('core.lang', $gettext);
     }
 
-    /**
-     * This function echos the returning text.
-     *
-     * @param string $text
-     */
     function _e($text)
     {
         echo gettext($text);
     }
 
-    /**
-     * This function echos the returning text inside a domain.
-     *
-     * @param string $text
-     * @oaram string $domain
-     */
     function __e($text, $domain)
     {
         echo dgettext($domain, $text);
@@ -383,13 +320,6 @@ if (function_exists('gettext')) {
  * A slightly better version of print_r()
  * Note: this output is html
  *
- * @version 2.0
- * @author  greg
- *
- * @date 20100825 (greg) (v1.1) updated to deal with associative arrays
- * @date 20110211 (greg) (v1.2) added $htmlize parameter
- * @data 20120630 (greg) (v2.0) made it recursive; improved html
- *
  * @param array   $a
  * @param string  $title
  * @param boolean $htmlize (default to false) if true html is escaped to be displayed as source
@@ -439,7 +369,7 @@ function PU_dumpArray($a, $title = '', $htmlize = false)
 }
 
 /**
- * Get rid of all buffer, optionaly flushing (i.e. writing to the browser)
+ * Get rid of all buffer, optionally flushing (i.e. writing to the browser)
  * Default behavior is to ignore.
  *
  * @param boolean $flush do we flush or ignore?
@@ -465,12 +395,6 @@ function PU_cleanBuffers($flush = false)
  * Add a header if and only if headers have not been sent yet
  *
  * @param string $header the header string to add
- * @return nothing
- *
- * @version 1.0
- * @since   3.0.6
- * @date 20110809 (v1.0) (greg) added
- * @author  greg <greg@phpdevshell.org>
  */
 function PU_silentHeader($header)
 {
@@ -484,10 +408,6 @@ function PU_silentHeader($header)
  *
  * @param boolean $json set to true if you want to force the request's result as json
  * @return boolean
- *
- * @version 1.0.1
- * @date 20110809 (v1.0.1) (greg) use PU_silentHeader to prevent unit tests from failing
- * @author  greg <greg@phpdevshell.org>
  */
 function PU_isAJAX($json = false)
 {
@@ -502,15 +422,9 @@ function PU_isAJAX($json = false)
 /**
  * Checks for a json context and if so, outputs data
  *
- * @author  greg <greg@phpdevshell.org>
- * @version 1.1
- * @since   v3.0.1
- * @date 20110309 (v1.0) (greg) added
- * @date 20110316 (v1.1) (greg) returns instead of printing (for buffering)
- *
- * @param $data  mixed, the data to be encoded and sent
- * @param $force boolean, (optionnal) do we pretend it's json context even if it's not?
- * @return boolean, false if it's not JSON, or the encoded data
+ * @param mixed $data   the data to be encoded and sent
+ * @param bool  $force (optional) do we pretend it's json context even if it's not?
+ * @return boolean false if it's not JSON, or the encoded data
  */
 function PU_isJSON($data, $force = false)
 {
@@ -522,24 +436,8 @@ function PU_isJSON($data, $force = false)
 }
 
 /**
- * OBSOLETE don't use
- *
- * @param $data
- */
-function PU_exitToAJAX($data)
-{
-    PU_isAJAX(true);
-    print json_encode($data);
-    exit;
-}
-
-/**
  * Get rid of null values inside an array
- *
  * All values which are null in the array are remove, shortening the array
- *
- * @version 2.0
- * @date 20121010 (v2.0) (greg) rewrote using a simple loop as clever array_walk didn't work
  *
  * @param array $a the array to compact
  * @return array
@@ -553,22 +451,17 @@ function PU_array_compact(array $a)
 }
 
 /**
- * version of sprintf for cases where named arguments are desired (python syntax)
- *
+ * Version of sprintf for cases where named arguments are desired (python syntax)
  * with sprintf: sprintf('second: %2$s ; first: %1$s', '1st', '2nd');
- *
  * with sprintfn: sprintfn('second: %(second)s ; first: %(first)s', array(
  *  'first' => '1st',
  *  'second'=> '2nd'
  * ));
- * @author  nate at frickenate dot com
- *
- * @version 1.0.1
- * @date 20120724 (v1.0.1) (greg) cleaned up exception
  *
  * @param string $format sprintf format string, with any number of named arguments
  * @param array  $args   array of [ 'arg_name' => 'arg value', ... ] replacements to be made
- * @return string|false result of sprintf call, or bool false on error
+ * @return string|bool result of sprintf call, or bool false on error
+ * @throws PHPDS_sprintfnException
  */
 function PU_sprintfn($format, array $args = array())
 {
@@ -600,38 +493,10 @@ function PU_sprintfn($format, array $args = array())
 }
 
 /**
- * Create a html string of <options> from an associative array
- *
- * @version 1.0.1
- * @date 20101021 (v1.0.1) (greg) added checks on $a ; removed htmlentities
- * @author  greg
- *
- * @param array        $a
- * @param string|array $selected which key(s) should be marked as "selected" (optional)
- * @return string the html to display
- */
-function PU_buildHTMLoptions($a, $selected = null)
-{
-    $options = '';
-    if (is_array($a) && (count($a) > 0))
-        foreach ($a as $key => $value) {
-            $options .= '<option value="' . htmlspecialchars($key) . '"';
-            if (($key == $selected) || (is_array($selected) && in_array($key, $selected)))
-                $options .= ' selected ';
-            $options .= '>' . ($value) . '</option>';
-        }
-    return $options;
-}
-
-/**
  * Add an include path to check in for classes.
  *
- * @version 1.1
- * @author  greg <greg@phpdevshell.org>
- *
- * @date 20120606 (v1.1) (greg) ensure the given path actually exists before adding it
- *
  * @param string $path
+ * @return string|bool
  */
 function PU_addIncludePath($path)
 {
@@ -648,14 +513,10 @@ function PU_addIncludePath($path)
  * Also, now the output is encased within a div block that sets the background color, font style, and left-justifies it
  * so it is not at the mercy of ambient styles.
  *
- * Inspired from:     PHP.net Contributions
- * Stolen from:       [highstrike at gmail dot com]
- * Modified by:       stlawson *AT* JoyfulEarthTech *DOT* com
- *
  * @param mixed        $var       -- variable to dump
  * @param string       $var_name  -- name of variable (optional) -- displayed in printout making it easier to sort out what variable is what in a complex output
  * @param string       $indent    -- used by internal recursive call (no known external value)
- * @param unknown_type $reference -- used by internal recursive call (no known external value)
+ * @param string       $reference -- used by internal recursive call (no known external value)
  */
 function PU_printr(&$var, $var_name = NULL, $indent = NULL, $reference = NULL)
 {
@@ -718,10 +579,9 @@ function PU_printr(&$var, $var_name = NULL, $indent = NULL, $reference = NULL)
 /**
  * This method creates a random string with mixed alphabetic characters.
  *
- * @param integer $length         The lenght the string should be.
+ * @param integer $length         The length the string should be.
  * @param boolean $uppercase_only Should the string be uppercase.
  * @return string Will return required random string.
- * @author Andy Shellam, andy [at] andycc [dot] net
  */
 function PU_createRandomString($length = 4, $uppercase_only = false)
 {
@@ -743,35 +603,6 @@ function PU_createRandomString($length = 4, $uppercase_only = false)
         $rndstring .= $template[$b];
     }
     return $rndstring;
-}
-
-/**
- * Function formats locale according to logged in user settings else will default to system.
- *
- * @param boolean $charset Whether the charset should be included in the format.
- * @return string Will return formatted locale.
- * @author Jason Schoeman
- */
-function PU_formatLocale($charset = true, $user_language = false, $user_region = false)
-{
-    $configuration = $this->configuration;
-    if (empty($configuration['charset_format'])) $configuration['charset_format'] = false;
-    if (!empty($user_language)) $configuration['user_language'] = $user_language;
-    if (!empty($user_region)) $configuration['user_region'] = $user_region;
-    if (empty($configuration['user_language'])) $configuration['user_language'] = $configuration['language'];
-    if (empty($configuration['user_region'])) $configuration['user_region'] = $configuration['region'];
-    if ($charset && !empty($configuration['charset_format'])) {
-        $locale_format = preg_replace('/\{charset\}/', $configuration['charset_format'], $configuration['locale_format']);
-        $locale_format = preg_replace('/\{lang\}/', $configuration['user_language'], $locale_format);
-        $locale_format = preg_replace('/\{region\}/', $configuration['user_region'], $locale_format);
-        $locale_format = preg_replace('/\{charset\}/', $configuration['charset'], $locale_format);
-        return $locale_format;
-    } else {
-        $locale_format = preg_replace('/\{lang\}/', $configuration['user_language'], $configuration['locale_format']);
-        $locale_format = preg_replace('/\{region\}/', $configuration['user_region'], $locale_format);
-        $locale_format = preg_replace('/\{charset\}/', '', $locale_format);
-        return $locale_format;
-    }
 }
 
 /**
@@ -800,7 +631,7 @@ function PU_rightTrim($str, $remove = null)
 }
 
 /**
- * This method simply renames a string to safe unix standards.
+ * This method simply renames a string to safe unix "file" naming conventions.
  *
  * @param string $name
  * @param string $replace Replace odd characters with what?
@@ -822,6 +653,7 @@ function PU_safeName($name, $replace = '-')
  * Replaces accents with plain text for a given string.
  *
  * @param string $string
+ * @return string
  */
 function PU_replaceAccents($string)
 {
@@ -837,6 +669,7 @@ function PU_replaceAccents($string)
  * @param string $start
  * @param string $end
  * @param string $replace Use %s to be replaced with the string between tags.
+ * @param string $replace_char
  * @return string
  */
 function PU_SearchAndReplaceBetween($string, $start, $end, $replace = '', $replace_char = '%')
@@ -854,7 +687,6 @@ function PU_SearchAndReplaceBetween($string, $start, $end, $replace = '', $repla
             $replaced_text = str_replace($replace_char, $string_between, $replace);
             return str_replace($start . $string_between . $end, $replaced_text, $string);
         }
-        return $string;
     } else {
         return $string_between;
     }
@@ -864,14 +696,12 @@ function PU_SearchAndReplaceBetween($string, $start, $end, $replace = '', $repla
  * Returns an array containing the current database settings as per the system configuration. This function
  * handles both old legacy settings and the new multi-db setup configuration.
  *
- * TODO: rethink all this
- *
- * @version  1.1
- * @date 20121010 (1.1) (greg) changed to comply with the databases settings move inside a single array $configuration['databases']
+ * TODO: rethink all this (this function is mostly broken, also should this not be in "db")
  *
  * @param array  $configuration The configuration array. This is required since we don't necessarily have access to it otherwise.
  * @param string $db            Specifies the database configuration to use, leave blank if not sure.
  * @return array The database settings
+ * @throws PHPDS_databaseException
  */
 function PU_GetDBSettings($configuration, $db = '')
 {
@@ -888,7 +718,6 @@ function PU_GetDBSettings($configuration, $db = '')
             'charset'    => (!empty($configuration['database_charset']) ? $configuration['database_charset'] : 'utf8'));
     } else {
         // Return with new style database settings
-        $databases = $configuration['databases'];
         if (empty($db)) {
             $db = $configuration['master_database'];
         }
@@ -897,11 +726,11 @@ function PU_GetDBSettings($configuration, $db = '')
             return $configuration['databases'][$db];
         }
     }
-    throw new PHPDS_databaseException(_('Unable to provide the required database settings'));
+    throw new PHPDS_databaseException('Unable to provide the required database settings');
 }
 
 /**
- * Pack all available environnement variable into a DB safe string
+ * Pack all available environment variable into a DB safe string
  * Useful mainly for log functions
  *
  * @return string
@@ -935,16 +764,11 @@ function PU_DebugLog($text, $filename = '')
 
 /**
  * Flattens the given $path and ensure it's below the given root
- *
  * The goal is to avoid getting access to files outside the web site tree
- *
- * @version 1.1
- *
- * @date 20120607 (v1.1) (greg) added support for both absolute path and relative path (relative to the given root)
  *
  * @param string $path
  * @param string $root
- * @return string|false the actual path or false
+ * @return string|bool the actual path or false
  */
 function PU_SafeSubpath($path, $root)
 {
@@ -964,132 +788,13 @@ function PU_SafeSubpath($path, $root)
  * Equivalent of intval() but safe for large number
  *
  * @param mixed $value
+ * @return int
  */
 function numval($value)
 {
     return is_numeric($value) ? $value : 0;
 }
 
-
-/**
- * A class to deal with tree-structured data (such as groups)
- *
- * Usage:
- * $tree = new PU_tree
- * $tree->add(1, 0); // add a root node
- * $tree->add(2, 1, 'leaf'); // add a named leaf to the root node
- * $tree->climb(); // study the tree YOU HAVE TO DO THAT BEFORE ACTUALLY USING THE TREE
- *
- * @author     greg
- * @date 20100514
- * @version    1.0
- *
- */
-class PU_tree
-{
-
-    /**
-     * Associative array of the nodes (element ref => element, usually a label)
-     *
-     * @var array
-     */
-    protected $elements = array(0);
-
-    /**
-     * Associative array: for each node (by ref), what are the nodes upper in the tree
-     *
-     * @var array
-     */
-    protected $ascendants = array();
-
-    /**
-     * Associative array: for each node (by ref), what are the nodes lower in the tree
-     *
-     * @var array
-     */
-    protected $descendants = array();
-
-    /**
-     * Add an element to the tree. When all elements are added, you MUST call climb()
-     *
-     * @param mixed $leaf  the new element ref
-     * @param mixed $node  the element onto this new element is stuck
-     * @param mixed $label an optional label to display
-     * @return this
-     */
-    public function add($leaf, $node, $label = '')
-    {
-        $this->elements[$leaf]      = $label;
-        $this->descendants[$node][] = $leaf;
-
-        return $this;
-    }
-
-    /**
-     * Climb the tree in order to fill the descendant array.
-     * Don't call it with parameter
-     *
-     * @param unknown_type $branch
-     * @return this
-     */
-    public function climb($branch = 0)
-    {
-        if (!empty($this->descendants[$branch]) && is_array($this->descendants[$branch])) {
-            foreach ($this->descendants[$branch] as $leaf) {
-                $this->ascendants[$leaf] = (empty($branch)) ? array() : $this->ascendants[$branch];
-                if ($branch)
-                    $this->ascendants[$leaf][] = $branch;
-                $this->climb($leaf);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * Returns the ascendants of the given node, either as array or as a string for sql
-     *
-     * @param $node        the node which ascendants are asked
-     * @param $as_array    boolean, do you want an array (true) or a string (false)
-     * @return array or string
-     */
-    public function ascendants($node, $as_array = false)
-    {
-        if ($as_array)
-            return (isset($this->ascendants[$node]) ? $this->ascendants[$node] : array());
-        else
-            return (isset($this->ascendants[$node]) ? implode(',', $this->ascendants[$node]) : '');
-    }
-
-    /**
-     * Returns the descendants of the given node, either as array or as a string for sql
-     *
-     * @param $node        the node which ascendants are asked
-     * @param $as_array    boolean, do you want an array (true) or a string (false)
-     * @return array or string
-     */
-    public function descendants($node, $as_array = false)
-    {
-        if ($as_array)
-            return (isset($this->descendants[$node]) ? $this->descendants[$node] : array());
-        else
-            return (isset($this->descendants[$node]) ? implode(',', $this->descendants[$node]) : '');
-    }
-
-    /**
-     * Returns an array of nodes, either the whole tree, or only the nodes listed in the filter
-     *
-     * @param array $filter
-     * @return array
-     */
-    public function nodes(array $filter = null)
-    {
-        if ($filter)
-            return array_intersect_key($this->elements, $filter);
-        else
-            return $this->elements;
-    }
-
-}
 
 ///////////////////////// WINDOWS COMPATIBILITY FUNCTIONS //////////////////////////////
 // thanks to me at rowanlewis dot com (http://fr2.php.net/manual/en/function.fnmatch.php)

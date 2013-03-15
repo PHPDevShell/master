@@ -46,7 +46,7 @@ class PHPDS_view extends PHPDS_dependant
     /**
      * This method is meant to be the entry point of your class. Most checks and cleanup should have been done by the time it's executed
      *
-     * @return whatever, if you return "false" output will be truncated
+     * @return mixed if you return "false" output will be truncated
      */
     public function execute()
     {
