@@ -1,0 +1,51 @@
+<style type="text/css">
+    div.plugin-manager {
+        margin-top: 20px;
+    }
+    div.plugin-repo .plugin-name {
+        font-size: 32px;
+        padding-bottom: 15px;
+        text-indent: -2px;
+    }
+    div.plugin-repo .plugin-short-description {
+        font-size: 18px;
+    }
+    div.plugin-repo .row {
+        padding: 20px 0;
+        border-top: 1px solid #EEEEEE;
+    }
+</style>
+<!-- HTML -->
+<div class="plugin-manager">
+    <div class="row">
+        <div class="span6">
+            <form>
+                <div class="input-append">
+                    <input id="plugin-search" type="search" name="search_field">
+                    <button id="search_button" class="btn" type="submit"><i class="icon-search"></i></button>
+                </div>
+                <input type="hidden" value="Filter" name="search">
+            </form>
+        </div>
+        <div class="span3"></div>
+        <div class="span3"><button class="btn btn-success">Update Repository</button></div>
+    </div>
+</div>
+<div class="plugin-repo">
+    {{#RESULTS}}
+    <div class="row">
+        <div class="span6">
+            <div class="plugin-name"><a href="#">{{name}}</a></div>
+            <div class="plugin-short-description">{{desc}}</div>
+        </div>
+        <div class="span3">
+        </div>
+        <div class="span3">
+            <button class="btn btn-success"><i class="icon-ok icon-white"></i></button>
+            <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
+            <button class="btn btn-primary"><i class="icon-globe icon-white"></i></button>
+            <button class="btn btn"><i class="icon-off"></i></button>
+        </div>
+    </div>
+    {{/RESULTS}}
+</div>

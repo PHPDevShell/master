@@ -3,7 +3,6 @@
 interface iPHPDS_activableGUI
 {
     public function construct();
-
     public function activate();
 }
 
@@ -1384,7 +1383,7 @@ class PHPDS_template extends PHPDS_dependant
     /**
      * Prints some debug info to the frontend, at the bottom of the page
      */
-    public function outPutDebugInfo()
+    public function outputDebugInfo()
     {
         print $this->debugInfo();
     }

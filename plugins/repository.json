@@ -1,0 +1,25 @@
+{
+    "compatibility-version":4,
+    "plugins": {
+        "NewPlugin": {
+            "desc":"Empty plugin to get you started",
+            "repo":"todo"
+        },
+        "Mustache": {
+            "desc":"Light and fast template Engine for PHPDevShell",
+            "repo":""
+        },
+        "PluginManager": {
+            "desc":"Easy to use UI to manage PHPDevShell plugins from",
+            "repo":""
+        },
+        "StandardLogin": {
+            "desc":"The default login mechanism for PHPDevShell",
+            "repo":"todo"
+        },
+        "About": {
+            "desc":"Provides introduction page for PHPDevShell",
+            "repo":"todo"
+        }
+    }
+}

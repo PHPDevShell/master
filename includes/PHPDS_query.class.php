@@ -603,6 +603,7 @@ class PHPDS_query extends PHPDS_dependant
                 return array_shift($row);
             }
         }
+        return null;
     }
 
     /**

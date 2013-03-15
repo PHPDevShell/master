@@ -2,25 +2,42 @@
 
 class PluginActivation extends PHPDS_controller
 {
-
     /**
-     * Activates a plugin
-     * @author Jason Schoeman
-     * @since  06 July 2010
+     * @var pluginManager $pm
      */
+    public $pm;
+
+    public function onLoad()
+    {
+        $this->pm = $this->factory('pluginManager');
+    }
+
     public function execute()
     {
-        // Require plugin manager ////////////////////////////////////////////////////////////////////////////////////////////////
-        $pluginmanager = $this->factory('pluginManager');
-        $template      = $this->template;
+        /////////////////////////////////////////////////
+        // Call current plugins status from database. ///
+        /////////////////////////////////////////////////
+        // Read plugin directory.
+        $RESULTS = $this->db->invokeQuery('PluginManager_readRepository');
+
+        // Load views.
+        $view = $this->factory('views');
+
+        // Set Array.
+        $view->set('RESULTS', $RESULTS);
+        // $view->set('log', $log);
+
+        // Output Template.
+        $view->show();
+    }
+
+    public function viaAjax()
+    {
+
         $log[]         = '';
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Header information
-        $template->heading(__('Plugin Activation'));
-
         // Plugin activation starts.
-        if (isset($this->security->post) && $this->user->isRoot()) {
+        if ($this->P() && $this->user->isRoot()) {
             $plugin = $this->security->post['plugin'];
             /////////////////////////////////////////////////////////////////////
             // When save is submitted... ////////////////////////////////////////
@@ -32,27 +49,27 @@ class PluginActivation extends PHPDS_controller
             /////////////////////////////////////////////////////////////////////
             if (isset($this->security->post['install'])) {
                 // Execute plugin method.
-                $pluginmanager->setPlugin($plugin, 'install');
+                $this->pm->setPlugin($plugin, 'install');
             } else if (isset($this->security->post['uninstall'])) {
                 // Execute plugin method.
-                $pluginmanager->setPlugin($plugin, 'uninstall');
+                $this->pm->setPlugin($plugin, 'uninstall');
             } else if (isset($this->security->post['reinstall'])) {
                 // Execute plugin method.
-                $pluginmanager->setPlugin($plugin, 'reinstall');
+                $this->pm->setPlugin($plugin, 'reinstall');
             } else if (isset($this->security->post['upgrade'])) {
                 // Execute plugin method.
-                $pluginmanager->setPlugin($plugin, 'upgrade', $this->security->post['version']);
+                $this->pm->setPlugin($plugin, 'upgrade', $this->security->post['version']);
             } else if (isset($this->security->post['auto_upgrade'])) {
                 // Execute plugin method.
-                $pluginmanager->setPlugin($plugin, 'auto_upgrade');
+                $this->pm->setPlugin($plugin, 'auto_upgrade');
             } else if (isset($this->security->post['set_logo'])) {
                 // Execute plugin method.
-                $pluginmanager->setPlugin($plugin, 'set_logo');
+                $this->pm->setPlugin($plugin, 'set_logo');
             }
 
             // Plugin log
-            if (!empty($pluginmanager->log)) {
-                $log["{$plugin}"] = $pluginmanager->log;
+            if (!empty($this->pm->log)) {
+                $log["{$plugin}"] = $this->pm->log;
             } else {
                 $log["{$plugin}"] = '';
             }
@@ -61,22 +78,6 @@ class PluginActivation extends PHPDS_controller
             // End save is submitted... /////////////////////////////////////////
             /////////////////////////////////////////////////////////////////////
         }
-        /////////////////////////////////////////////////
-        // Call current plugins status from database. ///
-        /////////////////////////////////////////////////
-        // Read plugin directory.
-        $RESULTS = $this->db->invokeQuery('PHPDS_readPluginsQuery', $this->db->invokeQuery('PHPDS_currentPluginStatusQuery'));
-
-        // Load views.
-        $view = $this->factory('views');
-
-        // Set Array.
-        $view->set('RESULTS', $RESULTS);
-        $view->set('log', $log);
-        $view->set('logtext', $this->template->note(__('Dropdown to view log'), 'return'));
-
-        // Output Template.
-        $view->show();
     }
 }
 

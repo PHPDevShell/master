@@ -8,7 +8,7 @@ class USER_guestRoleNameQuery extends PHPDS_query
 			FROM
 				_db_core_user_roles
 			WHERE
-				user_role_id = %u
+				user_role_id = '%u'
 		";
 
     protected $singleValue = true;
@@ -30,7 +30,7 @@ class USER_isRootQuery extends PHPDS_query
 			FROM
 				_db_core_users
 			WHERE
-				user_id = %u
+				user_id = '%u'
 		";
 
     protected $singleValue = true;
@@ -51,7 +51,7 @@ class USER_getRolesQuery extends PHPDS_query
 		FROM
 			_db_core_users
 		WHERE
-			user_id = %u
+			user_id = '%u'
 	";
 
     protected $singleValue = true;
@@ -118,9 +118,9 @@ class USER_belongsToRoleQuery extends PHPDS_query
 		FROM
 			_db_core_users AS t1
 		WHERE
-			(t1.user_role = %u)
+			(t1.user_role = '%u')
 		AND
-			(t1.user_id = %u)
+			(t1.user_id = '%u')
 	";
 
     protected $singleRow = true;
@@ -152,7 +152,7 @@ class USER_updateUserRoleQuery extends PHPDS_query
 		SET
 			user_role = FALSE
 		WHERE
-			user_role = %u
+			user_role = '%u'
     ";
     protected $returnId = true;
 }

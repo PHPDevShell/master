@@ -54,7 +54,7 @@ CREATE TABLE `_db_core_node_items` (
 
 -- Insert default node items.;
 INSERT INTO `_db_core_node_items` VALUES ('readme', '0', 'Readme', 'readme.php', 'About', '1', null, '0', '1', '0', 'default', 'readme', null, null);
-INSERT INTO `_db_core_node_items` VALUES ('plugin-admin', '0', 'Plugins', 'plugin-activation.php', 'PluginManager', '1', null, '0', '15', '0', 'default', 'plugins-admin', null, null);
+INSERT INTO `_db_core_node_items` VALUES ('plugin-admin', '0', 'Plugins', 'plugin-admin.php', 'PluginManager', '1', null, '0', '15', '0', 'default', 'plugins-admin', null, null);
 
 -- Create node tree structure.;
 CREATE TABLE `_db_core_node_structure` (
@@ -84,8 +84,9 @@ CREATE TABLE `_db_core_plugin_activation` (
   DEFAULT CHARSET = utf8;
 
 -- Insert available default plugins.;
-INSERT INTO `_db_core_plugin_activation` VALUES ('Pagination', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('Mustache', 'install', '1000', '0');
+INSERT INTO `_db_core_plugin_activation` VALUES ('PluginManager', 'install', '1000', '0');
+INSERT INTO `_db_core_plugin_activation` VALUES ('About', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('StandardLogin', 'install', '1000', '0');
 
 -- Create classes available from default plugins.;

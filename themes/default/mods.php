@@ -367,7 +367,7 @@ HTML;
                 <form id="search-form-phpds" action="{$action}" method="post">
                     <div id="searchForm">
                         <div class="input-append">
-                            <input id="search_field" type="text" name="search_field" value="{$value}" class="{$class}">
+                            <input id="search_field" type="search" name="search_field" value="{$value}" class="{$class}">
                             <button id="search_button" class="btn" type="submit"><i class="icon-search"></i></button>
                         </div>
                         <input type="hidden" value="Filter" name="search">
@@ -692,23 +692,6 @@ HTML;
 
         $JS = <<<JS
 
-					$(document).ready(function() {
-						$.ajax({
-						  url: "{$widget_url}",
-						  dataType: 'html',
-						  {$options}
-						  data: 'widget=true',
-						  beforeSend: function() {
-							 $("#{$element_id}").append('<img id="loading_{$element_id}" src="themes/cloud/images/widget-loader.gif" title="{$text}" alt="{$text}" />');
-						  },
-						  complete: function(){
-							 $("#loading_{$element_id}").hide()
-						  },
-						  success: function(html){
-							$("#{$element_id}").append(html).hide().fadeIn('slow');
-						  }
-						});
-					});
 
 JS;
         return $JS;
@@ -719,23 +702,6 @@ JS;
 
         $JS = <<<JS
 
-					$(document).ready(function() {
-						$.ajax({
-						  url: "{$ajax_url}",
-						  dataType: 'html',
-						  {$options}
-						  data: "ajax=true",
-						  beforeSend: function() {
-							 $("#{$element_id}").append('<img id="loading_{$element_id}" src="themes/cloud/images/ajax-loader.gif" title="{$text}" alt="{$text}" />');
-						  },
-						  complete: function(){
-							 $("#loading_{$element_id}").hide()
-						  },
-						  success: function(html){
-							$("#{$element_id}").append(html).hide().fadeIn('slow');
-						  }
-						});
-					});
 
 JS;
         return $JS;
@@ -743,25 +709,18 @@ JS;
 
     public function lightBoxScript()
     {
-        return "themes/cloud/js/fancybox/jquery.fancybox.pack.js";
+        return "";
     }
 
     public function lightBoxCss()
     {
-        return "themes/cloud/js/fancybox/jquery.fancybox.css";
+        return "";
     }
 
     public function lightBox($element_id, $options = '')
     {
 
         $JS = <<<JS
-
-				$(document).ready(function() {
-					$("#{$element_id}").fancybox({
-						{$options}
-						'ajax' : { data: "lightbox=true" }
-					});
-				});
 
 JS;
         return $JS;
@@ -1024,16 +983,13 @@ HTML;
 
     public function styleFloatHeadersScript()
     {
-        return "themes/cloud/js/floatheader/jquery.floatheader.js";
+        return "";
     }
 
     public function styleFloatHeaders()
     {
         $H = <<<HTML
 
-			$(document).ready(function() {
-				$("table.floatHeader").floatHeader();
-			});
 
 HTML;
         return $H;

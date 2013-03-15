@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<config type="plugin">
+	<name>PluginManager</name>
+	<version>4.0.0</version>
+	<description>Easy to use UI to manage PHPDevShell plugins from.</description>
+	<founder>Jason Schoeman</founder>
+	<author>Jason Schoeman</author>
+	<email>titan@phpdevshell.org</email>
+	<homepage>http://www.phpdevshell.org</homepage>
+	<date>15 March 2013</date>
+	<copyright>Jason Schoeman (c)</copyright>
+	<license>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU/LGPL</license>
+	<info>
+		<![CDATA[
+			<p>
+				Ater installing PHPDevShell you can use this plugin manager to install all your required plugins you
+				may need for your project.
+			</p>
+			<p>
+			    In addition to this, you can also update, delete and disable plugins from your system.
+			</p>
+		]]>
+	</info>
+	<versionurl current="1000" />
+	<install version="1000">
+		<classes>
+            <class name="pluginManager" alias="PHPDS_pluginmanager" plugin="PluginManager" rank="last" />
+		</classes>
+	</install>
+	<uninstall>
+	</uninstall>
+</config>
