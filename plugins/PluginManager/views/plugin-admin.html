@@ -1,51 +1,81 @@
-<style type="text/css">
-    div.plugin-manager {
-        margin-top: 20px;
-    }
-    div.plugin-repo .plugin-name {
-        font-size: 32px;
-        padding-bottom: 15px;
-        text-indent: -2px;
-    }
-    div.plugin-repo .plugin-short-description {
-        font-size: 18px;
-    }
-    div.plugin-repo .row {
-        padding: 20px 0;
-        border-top: 1px solid #EEEEEE;
-    }
-</style>
-<!-- HTML -->
 <div class="plugin-manager">
     <div class="row">
-        <div class="span6">
+        <div class="span3">
             <form>
                 <div class="input-append">
                     <input id="plugin-search" type="search" name="search_field">
-                    <button id="search_button" class="btn" type="submit"><i class="icon-search"></i></button>
+                    <span class="add-on"><i class="icon-search"></i></span>
                 </div>
-                <input type="hidden" value="Filter" name="search">
             </form>
         </div>
-        <div class="span3"></div>
-        <div class="span3"><button class="btn btn-success">Update Repository</button></div>
+        <div class="span6"></div>
+        <div class="span3">
+            <a href="#" class="btn btn-inverse"><i class="icon-refresh icon-white"></i> Repository</a>
+            <a href="#" class="btn btn-inverse"><i class="icon-search icon-white"></i> Updates</a>
+        </div>
     </div>
 </div>
 <div class="plugin-repo">
     {{#RESULTS}}
     <div class="row">
-        <div class="span6">
-            <div class="plugin-name"><a href="#">{{name}}</a></div>
-            <div class="plugin-short-description">{{desc}}</div>
+        <div class="column span1">
+            <div>
+                {{#status}}
+                <div class="label label-success">{{#i}}installed{{/i}}</div>
+                {{/status}}
+                {{#remote}}
+                <div class="label label-info">{{#i}}remote{{/i}}</div>
+                {{/remote}}
+                {{#local}}
+                <div class="label label-inverse">{{#i}}local{{/i}}</div>
+                {{/local}}
+            </div>
         </div>
-        <div class="span3">
+        <div class="column span4">
+            {{#status}}
+            <div class="plugin-name text-success">{{name}}</div>
+            {{/status}}
+            {{^status}}
+            <div class="plugin-name muted">{{name}}</div>
+            {{/status}}
+            <div class="plugin-short-description muted">{{desc}}</div>
         </div>
-        <div class="span3">
-            <button class="btn btn-success"><i class="icon-ok icon-white"></i></button>
-            <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
-            <button class="btn btn-primary"><i class="icon-globe icon-white"></i></button>
-            <button class="btn btn"><i class="icon-off"></i></button>
+        <div class="column span4">
+            <div class="hide">
+                {{#status}}
+                <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
+                <button class="btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
+                <button class="btn btn"><i class="icon-off"></i></button>
+                {{/status}}
+                {{#installable}}
+                <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
+                <button class="btn btn-inverse"><i class="icon-hdd icon-white"></i></button>
+                <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
+                {{/installable}}
+                {{^installable}}
+                <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
+                {{/installable}}
+            </div>
+        </div>
+        <div class="column span3">
+            {{#cfgerror}}
+            <div class="alert alert-error">{{#i}}<strong>add xml config here:</strong> {{/i}}{{cfgerror}}</div>
+            {{/cfgerror}}
         </div>
     </div>
     {{/RESULTS}}
 </div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#plugin-search").searchFilter("div.plugin-repo div.row");
+        $(".row").hover(
+            function() {
+                $("div.hide", this).show();
+            },
+            function () {
+                $("div.hide", this).hide();
+            }
+        );
+    });
+</script>

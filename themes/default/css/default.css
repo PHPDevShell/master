@@ -1,9 +1,5 @@
-body, button, label {
-    font-family: "Droid Sans Mono", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
 textarea, input, select {
-    font-family: "Droid Sans Mono", "Lucida Console", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 }
 
 /* Code basics */
@@ -206,4 +202,34 @@ input.info, textarea.info {
         right: 0;
         top: 20px;
     }
+}
+
+/* plugin screen css */
+div.plugin-manager {
+    margin-top: 20px;
+}
+
+div.plugin-repo .row {
+    border-top: 1px dashed #CCC;
+}
+
+div.plugin-repo .column {
+    padding: 15px 0;
+}
+
+div.plugin-repo .plugin-name {
+    font-size: 32px;
+    padding-bottom: 10px;
+}
+
+div.plugin-repo .plugin-short-description {
+    font-size: 18px;
+}
+
+div.plugin-repo .alert {
+    margin-bottom: 0;
+}
+
+div.plugin-repo button {
+    margin-bottom: 5px;
 }

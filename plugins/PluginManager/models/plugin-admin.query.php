@@ -22,10 +22,84 @@ class PluginManager_readRepository extends PHPDS_query
 
     private function handleRepositoryData($repoarray)
     {
+        // Check installed plugins from database.
+        $existing_plugins = $this->db->invokeQuery('PluginManager_currentPluginStatusQuery');
+
+        // Plugins available in repository.
         foreach ($repoarray['plugins'] as $name => $data) {
-            $repo[] = array('name'=>$name, 'desc'=>$data['desc'], 'repo'=>$data['repo']);
+            $status          = (!empty($existing_plugins[$name]['status'])) ? $existing_plugins[$name]['status'] : '';
+            $remote_         = ($status == 'install') ? false : true;
+            $remote[]        = array(
+                'name'        => $name,
+                'desc'        => $data['desc'],
+                'repo'        => $data['repo'],
+                'status'      => $status,
+                'remote'      => $remote_,
+                'installable' => $remote_
+            );
+            $syncrepo[$name] = true;
         }
 
+        // Check plugins that exists locally.
+        $local = $this->localAvailablePlugins($syncrepo);
+
+        return $this->sortPluginByName($remote, $local);
+    }
+
+    private function localAvailablePlugins($remote)
+    {
+        // Plugins available locally.
+        $directory      = $this->configuration['absolute_path'] . 'plugins';
+        $level_deduct   = substr_count($directory . '/', '/') - 1;
+        $base           = $directory . '/';
+        $subdirectories = opendir($base);
+        $level          = substr_count($base, '/') - ($level_deduct);
+        $local          = array();
+
+        while (false !== ($object = readdir($subdirectories))) {
+            if (ctype_alnum($object)) {
+                if (empty($remote[$object])) {
+                    $local[] = $this->getLocalPluginInfo($base, $object);
+                }
+            }
+        }
+
+        return $local;
+    }
+
+    private function getLocalPluginInfo($directory, $plugin)
+    {
+        // get local plugins with config files, ignore the rest.
+        $xmlconfig = $directory . $plugin . '/config/plugin.config.xml';
+        $localxml  = @simplexml_load_file($xmlconfig);
+        if (! empty($localxml) && ! empty($localxml->name)) {
+            $local = array(
+                'name'        => (string)$localxml->name,
+                'desc'        => rtrim((string)$localxml->description, '.'),
+                'local'       => true,
+                'installable' => true
+            );
+        } else {
+            $local = array(
+                'name'        => $plugin,
+                'cfgerror'    => $xmlconfig,
+                'local'       => true,
+                'installable' => false
+            );
+        }
+
+        return $local;
+    }
+
+    private function sortPluginByName($remote, $local)
+    {
+        $repo = array_merge($remote, $local);
+
+        foreach ($repo as $key => $value) {
+            $sortbyname[$key] = $value['name'];
+        }
+
+        array_multisort($sortbyname, SORT_ASC, $repo);
         return $repo;
     }
 }
@@ -57,7 +131,7 @@ class PHPDS_availableClassesQuery extends PHPDS_query
     }
 }
 
-class PHPDS_currentPluginStatusQuery extends PHPDS_query
+class PluginManager_currentPluginStatusQuery extends PHPDS_query
 {
     protected $sql = "
 		SELECT

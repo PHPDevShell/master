@@ -6,19 +6,19 @@
             "repo":"todo"
         },
         "Mustache": {
-            "desc":"Light and fast template Engine for PHPDevShell",
+            "desc":"Light and fast template Engine",
             "repo":""
         },
         "PluginManager": {
-            "desc":"Easy to use UI to manage PHPDevShell plugins from",
+            "desc":"Easy to use UI to manage plugins",
             "repo":""
         },
         "StandardLogin": {
-            "desc":"The default login mechanism for PHPDevShell",
+            "desc":"The default login mechanism",
             "repo":"todo"
         },
         "About": {
-            "desc":"Provides introduction page for PHPDevShell",
+            "desc":"Introduction page",
             "repo":"todo"
         }
     }

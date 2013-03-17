@@ -422,8 +422,12 @@ function ajaxMessage(request, delaytime, fadeout) {
  * Does simple name filtering for search fields that does not need filtering from database.
  */
 (function (jQuery) {
-    jQuery.fn.searchFilter = function () {
+    jQuery.fn.searchFilter = function (typeofselector) {
+
+        typeofselector = typeof typeofselector !== 'undefined' ? typeofselector : 'tbody tr';
+
         return this.each(function () {
+
             var filterelement = jQuery(this);
 
             //filter results based on query
@@ -446,8 +450,7 @@ function ajaxMessage(request, delaytime, fadeout) {
                     no_results.fadeOut("slow");
                 }
             }
-
-            jQuery('tbody tr').addClass('visible');
+            jQuery(typeofselector).addClass('visible');
             jQuery(filterelement).keyup(function (event) {
                 //if esc is pressed or nothing is entered
                 if (event.keyCode == 27 || jQuery(this).val() == '') {
@@ -455,11 +458,11 @@ function ajaxMessage(request, delaytime, fadeout) {
                     jQuery(this).val('');
                     //we want each row to be visible because if nothing
                     //is entered then all rows are matched.
-                    jQuery('tbody tr').removeClass('visible').show().addClass('visible');
+                    jQuery(typeofselector).removeClass('visible').show().addClass('visible');
                 }
                 //if there is text, lets filter
                 else {
-                    filter('tbody tr', jQuery(this).val());
+                    filter(typeofselector, jQuery(this).val());
                 }
             });
         });

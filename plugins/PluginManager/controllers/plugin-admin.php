@@ -10,6 +10,9 @@ class PluginActivation extends PHPDS_controller
     public function onLoad()
     {
         $this->pm = $this->factory('pluginManager');
+
+        // Pre-checks.
+        $this->canPluginManagerWrite();
     }
 
     public function execute()
@@ -78,6 +81,36 @@ class PluginActivation extends PHPDS_controller
             // End save is submitted... /////////////////////////////////////////
             /////////////////////////////////////////////////////////////////////
         }
+    }
+
+    public function canPluginManagerWrite()
+    {
+        $path = $this->configuration['absolute_path'] . 'plugins';
+        $repo = $path . '/repository.json';
+
+
+        if (!is_writable($path)) {
+            $this->template->critical(sprintf(__('Plugin manager cannot write to: %s'), $path));
+        } else {
+            if (!is_writable($repo)) {
+                $this->template->critical(sprintf(__('Plugin manager cannot write to repository: %s'), $repo));
+            }
+        }
+    }
+
+    function is_removeable($dir)
+    {
+        $folder = opendir($dir);
+        while ($file = readdir($folder))
+            if ($file != '.' && $file != '..' &&
+                (!is_writable($dir . "/" . $file) ||
+                    (is_dir($dir . "/" . $file) && !is_removeable($dir . "/" . $file)))
+            ) {
+                closedir($dir);
+                return false;
+            }
+        closedir($dir);
+        return true;
     }
 }
 
