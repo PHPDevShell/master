@@ -32,6 +32,10 @@
         "RepoTester333": {
             "desc":"Just another awesome repo update test, and guess what, it works!",
             "repo":"todo2"
+        },
+        "BrandNewPlugin": {
+            "desc":"Enough with the examples already.",
+            "repo":"todo2"
         }
     }
 }

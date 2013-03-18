@@ -6,16 +6,21 @@ class PluginManager_readRepository extends PHPDS_query
 
     public function invoke($parameters = null)
     {
-        $config = $this->configuration;
-
         $this->availablePlugins = $this->db->invokeQuery('PluginManager_currentPluginStatusQuery');
+        return $this->handleRepositoryData($this->readJsonRepo());
+
+    }
+
+    private function readJsonRepo()
+    {
+        $config = $this->configuration;
 
         $jsonfile = $config['absolute_path'] . 'plugins/repository.json';
         if (file_exists($jsonfile)) {
-            $json       = file_get_contents($jsonfile);
-            $repoarray  = json_decode($json, true);
-            if (is_array($repoarray) && ! empty($repoarray)) {
-                return $this->handleRepositoryData($repoarray);
+            $json      = file_get_contents($jsonfile);
+            $repoarray = json_decode($json, true);
+            if (is_array($repoarray) && !empty($repoarray)) {
+                return $repoarray;
             } else {
                 throw new PHPDS_exception('Local repository plugins/repository.json file empty?');
             }

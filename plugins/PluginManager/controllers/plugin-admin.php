@@ -30,6 +30,7 @@ class PluginActivation extends PHPDS_controller
         $view->set('RESULTS', $RESULTS);
         $view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
         $view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
+        $view->set('updatelocal', $this->navigation->selfUrl());
         // $view->set('log', $log);
 
         // Output Template.
@@ -133,7 +134,7 @@ class PluginActivation extends PHPDS_controller
         if ($curl) {
             if ($size == $sizecurl) {
                 $this->template->info(__('Repository was up to date.'));
-                print 'false';
+                return 'false';
             } else {
                 $this->template->ok(__('Repository updated with plugins.'));
                 return 'true';

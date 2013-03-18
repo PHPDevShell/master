@@ -1,102 +1,109 @@
-<div class="plugin-manager">
-    <div class="row">
-        <div class="span6">
-            <form>
-                <div class="input-append">
-                    <input id="plugin-search" type="search" name="search_field">
-                    <span class="add-on"><i class="icon-search"></i></span>
-                </div>
-            </form>
+<div id="repository">
+    <div class="plugin-manager">
+        <div class="row">
+            <div class="span1">
+                <a id="repo-local" href="{{updatelocal}}" class="btn btn-inverse" data-via-ajax="page"><i
+                        class="icon-refresh icon-white"></i></a>
+            </div>
+            <div class="span5">
+                <form>
+                    <div class="input-append">
+                        <input id="plugin-search" type="search" name="search_field">
+                        <span class="add-on"><i class="icon-search"></i></span>
+                    </div>
+                </form>
+            </div>
+            <div class="span3">
+                <a id="repo-refresh" href="{{updaterepo}}" class="btn btn-info"><i class="icon-retweet icon-white"></i></a>
+
+                <a href="{{updateplugins}}" class="btn btn-primary"><i class="icon-globe icon-white"></i></a>
+            </div>
+            <div class="span3"></div>
         </div>
-        <div class="span3">
-            <a id="repo-refresh" href="{{updaterepo}}" class="btn btn-inverse"><i class="icon-retweet icon-white"></i></a>
-            <a href="{{updateplugins}}" class="btn btn-primary"><i class="icon-globe icon-white"></i></a>
-        </div>
-        <div class="span3"></div>
     </div>
-</div>
-<div class="plugin-repo">
-    {{#RESULTS}}
-    <div class="row">
-        <div class="column span1">
-            <div>
+    <div class="plugin-repo">
+        {{#RESULTS}}
+        <div class="row">
+            <div class="column span1">
+                <div>
+                    {{#installed}}
+                    <div class="label label-success">{{#i}}ready{{/i}}</div>
+                    {{/installed}}
+
+                    {{^installed}}
+                        {{#repo}}
+                    <div class="label label-info">{{#i}}repo{{/i}}</div>
+                        {{/repo}}
+                    {{/installed}}
+
+                    {{^installed}}
+                        {{#local}}
+                    <div class="label label-inverse">{{#i}}local{{/i}}</div>
+                        {{/local}}
+                    {{/installed}}
+
+                    {{#broken}}
+                    <div class="label label-important">{{#i}}broken{{/i}}</div>
+                    {{/broken}}
+                </div>
+            </div>
+            <div class="column span5">
                 {{#installed}}
-                <div class="label label-success">{{#i}}ready{{/i}}</div>
+                <div class="plugin-name text-success">{{name}}</div>
                 {{/installed}}
 
                 {{^installed}}
-                    {{#repo}}
-                <div class="label label-info">{{#i}}repo{{/i}}</div>
-                    {{/repo}}
+                    {{^local}}
+                        {{#repo}}
+                <div class="plugin-name text-info">{{name}}</div>
+                        {{/repo}}
+                    {{/local}}
                 {{/installed}}
 
                 {{^installed}}
                     {{#local}}
-                <div class="label label-inverse">{{#i}}local{{/i}}</div>
+                        {{^broken}}
+                <div class="plugin-name">{{name}}</div>
+                        {{/broken}}
+                        {{#broken}}
+                <div class="plugin-name text-error">{{name}}</div>
+                        {{/broken}}
                     {{/local}}
                 {{/installed}}
 
-                {{#broken}}
-                <div class="label label-important">{{#i}}broken{{/i}}</div>
-                {{/broken}}
+                <div class="plugin-short-description muted">{{desc}}</div>
             </div>
-        </div>
-        <div class="column span5">
-            {{#installed}}
-            <div class="plugin-name text-success">{{name}}</div>
-            {{/installed}}
+            <div class="column span3">
+                <div class="hide">
+                    {{#installed}}
+                    <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
+                    <button class="btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
+                    <button class="btn btn"><i class="icon-off"></i></button>
+                    {{/installed}}
 
-            {{^installed}}
-                {{^local}}
-                    {{#repo}}
-            <div class="plugin-name text-info">{{name}}</div>
-                    {{/repo}}
-                {{/local}}
-            {{/installed}}
+                    {{^installed}}
+                        {{^broken}}
+                    <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
+                    <button class="btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
+                            {{#local}}
+                    <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
+                            {{/local}}
+                        {{/broken}}
+                    {{/installed}}
 
-            {{^installed}}
-                {{#local}}
-                    {{^broken}}
-            <div class="plugin-name">{{name}}</div>
-                    {{/broken}}
                     {{#broken}}
-            <div class="plugin-name text-error">{{name}}</div>
+                    <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
                     {{/broken}}
-                {{/local}}
-            {{/installed}}
-
-            <div class="plugin-short-description muted">{{desc}}</div>
-        </div>
-        <div class="column span3">
-            <div class="hide">
-                {{#installed}}
-                <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
-                <button class="btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
-                <button class="btn btn"><i class="icon-off"></i></button>
-                {{/installed}}
-
-                {{^installed}}
-                    {{^broken}}
-                <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
-                <button class="btn btn-inverse"><i class="icon-hdd icon-white"></i></button>
-                        {{#local}}
-                <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
-                        {{/local}}
-                    {{/broken}}
-                {{/installed}}
-
-                {{#broken}}
-                <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
-                {{/broken}}
+                </div>
+            </div>
+            <div class="column span3">
+                {{#cfgerror}}
+                <div class="alert alert-error">{{#i}}<strong>add xml config here:</strong> {{/i}}{{cfgerror}}</div>
+                {{/cfgerror}}
             </div>
         </div>
-        <div class="column span3">
-            {{#cfgerror}}
-            <div class="alert alert-error">{{#i}}<strong>add xml config here:</strong> {{/i}}{{cfgerror}}</div>
-            {{/cfgerror}}
-        </div>
+        {{/RESULTS}}
     </div>
-    {{/RESULTS}}
 </div>
 
 <script type="text/javascript">
@@ -118,9 +125,9 @@
             $.get(url, function (data, textStatus, request) {
                 if (data === 'true') {
                     $.get(url, {'via-ajax': 'page'}, function (data, textStatus, request) {
-                        var newrepohtml = $(data);
-                        var replacehtml = $(newrepohtml).find(".plugin-repo");
-                        $(".plugin-repo").replaceWith(replacehtml);
+                        var root        = $(data);
+                        var repo        = root.find(".plugin-repo");
+                        $(".plugin-repo").replaceWith(repo);
                     });
                 }
                 destroyPage();
