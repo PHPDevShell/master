@@ -1,6 +1,6 @@
 <div class="plugin-manager">
     <div class="row">
-        <div class="span3">
+        <div class="span6">
             <form>
                 <div class="input-append">
                     <input id="plugin-search" type="search" name="search_field">
@@ -8,11 +8,11 @@
                 </div>
             </form>
         </div>
-        <div class="span6"></div>
         <div class="span3">
-            <a href="#" class="btn btn-inverse"><i class="icon-refresh icon-white"></i> Repository</a>
-            <a href="#" class="btn btn-inverse"><i class="icon-search icon-white"></i> Updates</a>
+            <a id="repo-refresh" href="{{updaterepo}}" class="btn btn-inverse"><i class="icon-retweet icon-white"></i></a>
+            <a href="{{updateplugins}}" class="btn btn-primary"><i class="icon-globe icon-white"></i></a>
         </div>
+        <div class="span3"></div>
     </div>
 </div>
 <div class="plugin-repo">
@@ -20,41 +20,74 @@
     <div class="row">
         <div class="column span1">
             <div>
-                {{#status}}
-                <div class="label label-success">{{#i}}installed{{/i}}</div>
-                {{/status}}
-                {{#remote}}
-                <div class="label label-info">{{#i}}remote{{/i}}</div>
-                {{/remote}}
-                {{#local}}
+                {{#installed}}
+                <div class="label label-success">{{#i}}ready{{/i}}</div>
+                {{/installed}}
+
+                {{^installed}}
+                    {{#repo}}
+                <div class="label label-info">{{#i}}repo{{/i}}</div>
+                    {{/repo}}
+                {{/installed}}
+
+                {{^installed}}
+                    {{#local}}
                 <div class="label label-inverse">{{#i}}local{{/i}}</div>
-                {{/local}}
+                    {{/local}}
+                {{/installed}}
+
+                {{#broken}}
+                <div class="label label-important">{{#i}}broken{{/i}}</div>
+                {{/broken}}
             </div>
         </div>
-        <div class="column span4">
-            {{#status}}
+        <div class="column span5">
+            {{#installed}}
             <div class="plugin-name text-success">{{name}}</div>
-            {{/status}}
-            {{^status}}
-            <div class="plugin-name muted">{{name}}</div>
-            {{/status}}
+            {{/installed}}
+
+            {{^installed}}
+                {{^local}}
+                    {{#repo}}
+            <div class="plugin-name text-info">{{name}}</div>
+                    {{/repo}}
+                {{/local}}
+            {{/installed}}
+
+            {{^installed}}
+                {{#local}}
+                    {{^broken}}
+            <div class="plugin-name">{{name}}</div>
+                    {{/broken}}
+                    {{#broken}}
+            <div class="plugin-name text-error">{{name}}</div>
+                    {{/broken}}
+                {{/local}}
+            {{/installed}}
+
             <div class="plugin-short-description muted">{{desc}}</div>
         </div>
-        <div class="column span4">
+        <div class="column span3">
             <div class="hide">
-                {{#status}}
+                {{#installed}}
                 <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
                 <button class="btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
                 <button class="btn btn"><i class="icon-off"></i></button>
-                {{/status}}
-                {{#installable}}
+                {{/installed}}
+
+                {{^installed}}
+                    {{^broken}}
                 <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
                 <button class="btn btn-inverse"><i class="icon-hdd icon-white"></i></button>
+                        {{#local}}
                 <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
-                {{/installable}}
-                {{^installable}}
+                        {{/local}}
+                    {{/broken}}
+                {{/installed}}
+
+                {{#broken}}
                 <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
-                {{/installable}}
+                {{/broken}}
             </div>
         </div>
         <div class="column span3">
@@ -71,11 +104,29 @@
         $("#plugin-search").searchFilter("div.plugin-repo div.row");
         $(".row").hover(
             function() {
-                $("div.hide", this).show();
+                $("div.hide", this).fadeIn('fast');
             },
             function () {
                 $("div.hide", this).hide();
             }
         );
+
+        // Repository update.
+        $("#repo-refresh").on("click", function() {
+            requestPage();
+            var url = $(this).attr("href");
+            $.get(url, function (data, textStatus, request) {
+                if (data === 'true') {
+                    $.get(url, {'via-ajax': 'page'}, function (data, textStatus, request) {
+                        var newrepohtml = $(data);
+                        var replacehtml = $(newrepohtml).find(".plugin-repo");
+                        $(".plugin-repo").replaceWith(replacehtml);
+                    });
+                }
+                destroyPage();
+            });
+            return false;
+        });
+
     });
 </script>

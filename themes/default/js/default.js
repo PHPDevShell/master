@@ -705,9 +705,10 @@ function ajaxMessage(request, delaytime, fadeout) {
     };
 })(jQuery);
 
-function spinner(size) {
+function spinner(size,color) {
     size = typeof size !== 'undefined' ? size : 15;
-    return '<img class="ajax-spinner-image" src="themes/default/images/loader.gif" width="' + size + '" height="' + size + '" />';
+    color = typeof color !== 'undefined' ? 'white-loader' : 'loader';
+    return '<img class="ajax-spinner-image" src="themes/default/images/' + color + '.gif" width="' + size + '" height="' + size + '" />';
 }
 
 /*

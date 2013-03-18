@@ -348,6 +348,8 @@ $configuration['development'] = false;
 /**
  * This is all the settings that will be available in $configuration['value'] loaded from database.
  * In general this would never be changed, however a developer might need to add their own variables they would need on every page.
+ *
+ * @global array
  */
 $configuration['preloaded_settings'] = array(
     'scripts_name_version',
@@ -398,3 +400,10 @@ $configuration['preloaded_settings'] = array(
     'spam_assassin',
     'custom_css'
 );
+
+/**
+ * This is the repository the plugin manager will use to check for updates or install new plugins.
+ *
+ * @global string
+ */
+$configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';

@@ -197,7 +197,7 @@ HTML;
 
         $HTML = <<<HTML
 
-            <div id="logged-in-info" class="form-actions"xmlns="http://www.w3.org/1999/html">
+            <div id="logged-in-info" class="form-actions">
                 <span style="font-size: 15px; font-weight: bold;">{$name}</span><br>
                 <div class="label label-success">{$role}</div>
                 <div class="divider"></div>

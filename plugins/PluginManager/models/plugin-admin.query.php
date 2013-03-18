@@ -2,9 +2,13 @@
 
 class PluginManager_readRepository extends PHPDS_query
 {
+    private $availablePlugins;
+
     public function invoke($parameters = null)
     {
         $config = $this->configuration;
+
+        $this->availablePlugins = $this->db->invokeQuery('PluginManager_currentPluginStatusQuery');
 
         $jsonfile = $config['absolute_path'] . 'plugins/repository.json';
         if (file_exists($jsonfile)) {
@@ -22,44 +26,39 @@ class PluginManager_readRepository extends PHPDS_query
 
     private function handleRepositoryData($repoarray)
     {
-        // Check installed plugins from database.
-        $existing_plugins = $this->db->invokeQuery('PluginManager_currentPluginStatusQuery');
+        $remote = array();
 
         // Plugins available in repository.
         foreach ($repoarray['plugins'] as $name => $data) {
-            $status          = (!empty($existing_plugins[$name]['status'])) ? $existing_plugins[$name]['status'] : '';
-            $remote_         = ($status == 'install') ? false : true;
-            $remote[]        = array(
+            $remote[$name]   = array(
                 'name'        => $name,
                 'desc'        => $data['desc'],
                 'repo'        => $data['repo'],
-                'status'      => $status,
-                'remote'      => $remote_,
-                'installable' => $remote_
+                'installed'   => $this->isPluginInstalled($name)
             );
-            $syncrepo[$name] = true;
         }
 
         // Check plugins that exists locally.
-        $local = $this->localAvailablePlugins($syncrepo);
+        $local     = $this->localAvailablePlugins($remote);
+        $allpugins = $this->sortPluginByName($remote, $local);
 
-        return $this->sortPluginByName($remote, $local);
+        return $allpugins;
     }
 
     private function localAvailablePlugins($remote)
     {
         // Plugins available locally.
         $directory      = $this->configuration['absolute_path'] . 'plugins';
-        $level_deduct   = substr_count($directory . '/', '/') - 1;
         $base           = $directory . '/';
         $subdirectories = opendir($base);
-        $level          = substr_count($base, '/') - ($level_deduct);
         $local          = array();
 
         while (false !== ($object = readdir($subdirectories))) {
             if (ctype_alnum($object)) {
                 if (empty($remote[$object])) {
-                    $local[] = $this->getLocalPluginInfo($base, $object);
+                    $local[$object] = $this->getLocalPluginInfo($base, $object);
+                } else {
+                    $local[$object] = $this->getLocalPluginInfo($base, $object, $remote[$object]);
                 }
             }
         }
@@ -67,24 +66,35 @@ class PluginManager_readRepository extends PHPDS_query
         return $local;
     }
 
-    private function getLocalPluginInfo($directory, $plugin)
+    private function getLocalPluginInfo($directory, $plugin, $remote=array())
     {
-        // get local plugins with config files, ignore the rest.
+        if (empty($remote)) {
+            $installed = $this->isPluginInstalled($plugin);
+            $repo      = '';
+        } else {
+            $installed = $remote['installed'];
+            $repo      = $remote['repo'];
+        }
+        // get local plugins with config files, ignore the rest.f
         $xmlconfig = $directory . $plugin . '/config/plugin.config.xml';
         $localxml  = @simplexml_load_file($xmlconfig);
         if (! empty($localxml) && ! empty($localxml->name)) {
             $local = array(
                 'name'        => (string)$localxml->name,
                 'desc'        => rtrim((string)$localxml->description, '.'),
+                'repo'        => $repo,
                 'local'       => true,
-                'installable' => true
+                'installed'   => $installed
             );
         } else {
             $local = array(
                 'name'        => $plugin,
+                'desc'        => '',
+                'repo'        => $repo,
                 'cfgerror'    => $xmlconfig,
+                'broken'      => true,
                 'local'       => true,
-                'installable' => false
+                'installed'   => $installed
             );
         }
 
@@ -93,14 +103,30 @@ class PluginManager_readRepository extends PHPDS_query
 
     private function sortPluginByName($remote, $local)
     {
+        $reposorted = array();
         $repo = array_merge($remote, $local);
-
-        foreach ($repo as $key => $value) {
-            $sortbyname[$key] = $value['name'];
+        ksort($repo);
+        foreach ($repo as $value) {
+            $reposorted[] = $value;
         }
+        return $reposorted;
+    }
 
-        array_multisort($sortbyname, SORT_ASC, $repo);
-        return $repo;
+    private function isPluginInstalled($plugin)
+    {
+        $p         = $this->availablePlugins;
+        $installed = false;
+        if (! empty($p[$plugin]['status'])) {
+            switch ($p[$plugin]['status']) {
+                case 'install':
+                    $installed = true;
+                    break;
+                default:
+                    $installed = false;
+                    break;
+            }
+        }
+        return $installed;
     }
 }
 
@@ -135,7 +161,7 @@ class PluginManager_currentPluginStatusQuery extends PHPDS_query
 {
     protected $sql = "
 		SELECT
-			plugin_folder, status, version, use_logo
+			plugin_folder, status, version
 		FROM
 			_db_core_plugin_activation
 	";
@@ -152,7 +178,7 @@ class PluginManager_currentPluginStatusQuery extends PHPDS_query
         // Compile results and save into array to compare against user selected options and already installed plugins.
         if (empty($plugin_record_db)) $plugin_record_db = array();
         foreach ($plugin_record_db as $plugin_record_array) {
-            $activation_db[$plugin_record_array['plugin_folder']] = array('status' => $plugin_record_array['status'], 'version' => $plugin_record_array['version'], 'use_logo' => $plugin_record_array['use_logo']);
+            $activation_db[$plugin_record_array['plugin_folder']] = array('status' => $plugin_record_array['status'], 'version' => $plugin_record_array['version']);
         }
         if (!empty($activation_db)) {
             return $activation_db;

@@ -20,6 +20,18 @@
         "About": {
             "desc":"Introduction page",
             "repo":"todo"
+        },
+        "RepoTest": {
+            "desc":"This is a cURL repo download test",
+            "repo":"todo"
+        },
+        "RepoTest2": {
+            "desc":"This is a cURL repo download test2",
+            "repo":"todo2"
+        },
+        "RepoTester333": {
+            "desc":"Just another awesome repo update test, and guess what, it works!",
+            "repo":"todo2"
         }
     }
 }

@@ -10,13 +10,13 @@ class PluginActivation extends PHPDS_controller
     public function onLoad()
     {
         $this->pm = $this->factory('pluginManager');
-
-        // Pre-checks.
-        $this->canPluginManagerWrite();
     }
 
     public function execute()
     {
+        // Pre-checks.
+        $this->canPluginManagerWork();
+
         /////////////////////////////////////////////////
         // Call current plugins status from database. ///
         /////////////////////////////////////////////////
@@ -28,6 +28,8 @@ class PluginActivation extends PHPDS_controller
 
         // Set Array.
         $view->set('RESULTS', $RESULTS);
+        $view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
+        $view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
         // $view->set('log', $log);
 
         // Output Template.
@@ -36,8 +38,10 @@ class PluginActivation extends PHPDS_controller
 
     public function viaAjax()
     {
-
-        $log[]         = '';
+        // Attempt repo update.
+        if ($this->G('update') == 'repo') {
+            return $this->updateRepository();
+        }
 
         // Plugin activation starts.
         if ($this->P() && $this->user->isRoot()) {
@@ -69,48 +73,74 @@ class PluginActivation extends PHPDS_controller
                 // Execute plugin method.
                 $this->pm->setPlugin($plugin, 'set_logo');
             }
-
-            // Plugin log
-            if (!empty($this->pm->log)) {
-                $log["{$plugin}"] = $this->pm->log;
-            } else {
-                $log["{$plugin}"] = '';
-            }
-
             /////////////////////////////////////////////////////////////////////
             // End save is submitted... /////////////////////////////////////////
             /////////////////////////////////////////////////////////////////////
         }
     }
 
-    public function canPluginManagerWrite()
+    public function canPluginManagerWork()
     {
         $path = $this->configuration['absolute_path'] . 'plugins';
         $repo = $path . '/repository.json';
 
 
         if (!is_writable($path)) {
-            $this->template->critical(sprintf(__('Plugin manager cannot write to: %s'), $path));
+            $this->template->critical(sprintf('Plugin manager cannot write to: %s', $path));
         } else {
             if (!is_writable($repo)) {
-                $this->template->critical(sprintf(__('Plugin manager cannot write to repository: %s'), $repo));
+                $this->template->critical(sprintf('Plugin manager cannot write to repository: %s', $repo));
             }
+        }
+
+        if (!function_exists('curl_init')) {
+            $this->template->critical('Plugin manager required the cURL PHP Extention to work.');
         }
     }
 
-    function is_removeable($dir)
+    private function isWritable($dir)
     {
         $folder = opendir($dir);
         while ($file = readdir($folder))
             if ($file != '.' && $file != '..' &&
                 (!is_writable($dir . "/" . $file) ||
-                    (is_dir($dir . "/" . $file) && !is_removeable($dir . "/" . $file)))
+                    (is_dir($dir . "/" . $file) && !$this->isWritable($dir . "/" . $file)))
             ) {
                 closedir($dir);
                 return false;
             }
         closedir($dir);
         return true;
+    }
+
+    private function updateRepository()
+    {
+        $config = $this->configuration;
+        $path   = $config['absolute_path'] . 'plugins';
+        $repo   = $path . '/repository.json';
+        $size   = filesize($repo);
+
+        $ch = curl_init($config['repository']);
+        $fp = fopen($repo, "w");
+
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+
+        $curl     = curl_exec($ch);
+        $sizecurl = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+        curl_close($ch);
+        fclose($fp);
+        if ($curl) {
+            if ($size == $sizecurl) {
+                $this->template->info(__('Repository was up to date.'));
+                print 'false';
+            } else {
+                $this->template->ok(__('Repository updated with plugins.'));
+                return 'true';
+            }
+        } else {
+            return 'false';
+        }
     }
 }
 
