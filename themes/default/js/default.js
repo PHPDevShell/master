@@ -264,14 +264,14 @@ function ajaxInputError(request) {
 }
 
 function ajaxMessage(request, delaytime, fadeout) {
-    delaytime = typeof delaytime !== 'undefined' ? delaytime : 500;
+    delaytime = typeof delaytime !== 'undefined' ? delaytime : 1600;
     fadeout = typeof fadeout !== 'undefined' ? fadeout : 1000;
     var json = request.getResponseHeader('ajaxResponseMessage');
     if (json) {
         var mobj = jQuery.parseJSON(json);
         for (var i = 0; i < mobj.length; i++) {
             if (mobj[i].type) {
-                var notify_type, id_tmp;
+                var notify_type;
                 var kill = true;
                 switch (mobj[i].type) {
                     case "ok":
