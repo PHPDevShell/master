@@ -145,13 +145,31 @@
         </div>
     </div>
     <!-- Modal -->
-    <div id="pluginInfo" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div id="plugin-info" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="plugin-modal-label" aria-hidden="true">
         <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="pluginModalLabel">Modal header</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="plugin-modal-label">Modal header</h3>
         </div>
         <div class="modal-body">
-            <p>One fine body…</p>
+            <p id="config-description" class="text-info"></p>
+            <dl class="dl-horizontal">
+                <dt>{{#i}}Recource Author{{/i}}</dt>
+                <dd id="config-founder"></dd>
+                <dt>{{#i}}Plugin Author{{/i}}</dt>
+                <dd id="config-author"></dd>
+                <dt>{{#i}}Plugin Author Email{{/i}}</dt>
+                <dd id="config-email"></dd>
+                <dt>{{#i}}Plugin Homepage{{/i}}</dt>
+                <dd id="config-homepage"></dd>
+                <dt>{{#i}}Date Created{{/i}}</dt>
+                <dd id="config-date"></dd>
+                <dt>{{#i}}Copyright{{/i}}</dt>
+                <dd id="config-copyright"></dd>
+                <dt>{{#i}}License{{/i}}</dt>
+                <dd id="config-license"></dd>
+            </dl>
+            <hr>
+            <div id="config-info"></div>
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">{{#i}}Close{{/i}}</button>
@@ -174,7 +192,7 @@
             $.get(url, function (data, textStatus, request) {
                 if (data !== 'false') {
                     var results  = $.parseJSON(data);
-                    var template = $('#new-plugin-template');
+                    var template = $("#new-plugin-template");
                     $.each(results, function(i, item) {
                         $(".plugin-name", template).text(i);
                         $(".plugin-short-description", template).text(item.desc);
@@ -200,10 +218,21 @@
         });
         // Plugin get info.
         $(".plugin-get-info").on("click", function() {
-            var plugin = $(this).data("plugin");
+            var plugin        = $(this).data("plugin");
+            var template      = $("#plugin-info");
             $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
                 var config = $.parseJSON(data);
-                $('#pluginInfo').modal();
+                $("#plugin-modal-label", template).text(config.name + ' V ' + config['version']);
+                $("#config-description", template).text(config.description);
+                $("#config-founder", template).text(config.founder);
+                $("#config-author", template).text(config.author);
+                $("#config-email", template).text(config.email);
+                $("#config-homepage", template).text(config.homepage);
+                $("#config-date", template).text(config.date);
+                $("#config-copyright", template).text(config.copyright);
+                $("#config-license", template).text(config.license);
+                $("#config-info", template).html(config.info);
+                $('#plugin-info').modal();
             });
             return false;
         });
