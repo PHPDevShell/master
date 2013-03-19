@@ -99,6 +99,12 @@ class PHPDS_core extends PHPDS_dependant
                     $this->loadMods();
                     $this->ajaxType = 'page';
                     break;
+                // Will use viaAjax but will also include mods.
+                case 'light+mods':
+                    $this->themeFile = '';
+                    $this->loadMods();
+                    $this->ajaxType = 'light+mods';
+                    break;
                 default:
                     $this->themeFile = '';
                     $this->ajaxType  = 'light';

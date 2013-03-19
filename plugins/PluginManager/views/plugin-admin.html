@@ -2,8 +2,34 @@
     <div class="plugin-manager">
         <div class="row">
             <div class="span1">
-                <a id="repo-local" href="{{updatelocal}}" class="btn btn-inverse" data-via-ajax="page"><i
-                        class="icon-refresh icon-white"></i></a>
+                <div class="btn-group">
+                    <button class="btn btn-inverse"><i class="icon-wrench icon-white"></i></button>
+                    <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a id="repo-refresh" href="{{updaterepo}}">
+                                <i class="icon-retweet icon-white"></i> {{#i}}Update Repository{{/i}}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{updateplugins}}">
+                                <i class="icon-globe icon-white"></i> {{#i}}Search Plugin Updates{{/i}}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{updatelocal}}" data-via-ajax="page">
+                                <i class="icon-refresh icon-white"></i> {{#i}}Refresh Local Plugins{{/i}}
+                            </a>
+                        </li>
+                        <li>
+                            <a id="menu-refresh" href="{{updatemenus}}">
+                                <i class="icon-list-alt icon-white"></i> {{#i}}Refresh Menus{{/i}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
             <div class="span5">
                 <form>
@@ -14,38 +40,33 @@
                 </form>
             </div>
             <div class="span3">
-                <a id="repo-refresh" href="{{updaterepo}}" class="btn btn-info"><i class="icon-retweet icon-white"></i></a>
-
-                <a href="{{updateplugins}}" class="btn btn-primary"><i class="icon-globe icon-white"></i></a>
             </div>
             <div class="span3"></div>
         </div>
     </div>
     <div class="plugin-repo">
         {{#RESULTS}}
-        <div class="row">
+        <div class="row old-bind">
             <div class="column span1">
-                <div>
-                    {{#installed}}
-                    <div class="label label-success">{{#i}}ready{{/i}}</div>
-                    {{/installed}}
+                {{#installed}}
+                <span class="label label-success">{{#i}}ready{{/i}}</span>
+                {{/installed}}
 
-                    {{^installed}}
-                        {{#repo}}
-                    <div class="label label-info">{{#i}}repo{{/i}}</div>
-                        {{/repo}}
-                    {{/installed}}
+                {{^installed}}
+                    {{#repo}}
+                <span class="label label-info">{{#i}}repo{{/i}}</span>
+                    {{/repo}}
+                {{/installed}}
 
-                    {{^installed}}
-                        {{#local}}
-                    <div class="label label-inverse">{{#i}}local{{/i}}</div>
-                        {{/local}}
-                    {{/installed}}
+                {{^installed}}
+                    {{#local}}
+                <span class="label label-inverse">{{#i}}local{{/i}}</span>
+                    {{/local}}
+                {{/installed}}
 
-                    {{#broken}}
-                    <div class="label label-important">{{#i}}broken{{/i}}</div>
-                    {{/broken}}
-                </div>
+                {{#broken}}
+                <span class="label label-important">{{#i}}broken{{/i}}</span>
+                {{/broken}}
             </div>
             <div class="column span5">
                 {{#installed}}
@@ -76,14 +97,14 @@
             <div class="column span3">
                 <div class="hide">
                     {{#installed}}
-                    <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
+                    <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
                     <button class="btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
                     <button class="btn btn"><i class="icon-off"></i></button>
                     {{/installed}}
 
                     {{^installed}}
                         {{^broken}}
-                    <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
+                    <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
                     <button class="btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
                             {{#local}}
                     <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
@@ -104,36 +125,99 @@
         </div>
         {{/RESULTS}}
     </div>
+    <div id="new-plugin-template" class="hide">
+        <div class="row new-bind">
+            <div class="column span1">
+                <span class="label label-info">{{#i}}repo{{/i}}</span>
+                <span class="label label-warning">{{#i}}new{{/i}}</span>
+            </div>
+            <div class="column span5">
+                <div class="plugin-name text-warning"></div>
+                <div class="plugin-short-description muted"></div>
+            </div>
+            <div class="column span3">
+                <div class="hide">
+                    <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
+                    <button class="btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
+                </div>
+            </div>
+            <div class="column span3"></div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div id="pluginInfo" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="pluginModalLabel">Modal header</h3>
+        </div>
+        <div class="modal-body">
+            <p>One fine body…</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">{{#i}}Close{{/i}}</button>
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript">
     $(document).ready(function () {
         $("#plugin-search").searchFilter("div.plugin-repo div.row");
-        $(".row").hover(
-            function() {
-                $("div.hide", this).fadeIn('fast');
-            },
-            function () {
-                $("div.hide", this).hide();
-            }
-        );
 
+        $(this).on('pluginsUpdated', function (event) {
+            bindNewPluginButtins(".new-bind");
+        });
+        bindNewPluginButtins(".old-bind");
         // Repository update.
         $("#repo-refresh").on("click", function() {
             requestPage();
             var url = $(this).attr("href");
             $.get(url, function (data, textStatus, request) {
-                if (data === 'true') {
-                    $.get(url, {'via-ajax': 'page'}, function (data, textStatus, request) {
-                        var root        = $(data);
-                        var repo        = root.find(".plugin-repo");
-                        $(".plugin-repo").replaceWith(repo);
+                if (data !== 'false') {
+                    var results  = $.parseJSON(data);
+                    var template = $('#new-plugin-template');
+                    $.each(results, function(i, item) {
+                        $(".plugin-name", template).text(i);
+                        $(".plugin-short-description", template).text(item.desc);
+                        var newplugin = template.html();
+                        $(".plugin-repo").prepend(newplugin);
                     });
+                    $(document).trigger('pluginsUpdated');
                 }
                 destroyPage();
             });
             return false;
         });
-
+        // Menu refresh after fresh plugin install.
+        $("#menu-refresh").on("click", function () {
+            var url = $(this).attr("href");
+            $.get(url, {"via-ajax": "light+mods"}, function (data, textStatus, request) {
+                var mainnav = $("#main-nav");
+                mainnav.slideUp('slow');
+                mainnav.html(data);
+                mainnav.slideDown('slow');
+            });
+            return false;
+        });
+        // Plugin get info.
+        $(".plugin-get-info").on("click", function() {
+            var plugin = $(this).data("plugin");
+            $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
+                var config = $.parseJSON(data);
+                $('#pluginInfo').modal();
+            });
+            return false;
+        });
     });
+
+    function bindNewPluginButtins (bind)
+    {
+        $(bind).hover(
+            function() {
+                $("div.hide", this).show();
+            },
+            function () {
+                $("div.hide", this).hide();
+            }
+        );
+    }
 </script>

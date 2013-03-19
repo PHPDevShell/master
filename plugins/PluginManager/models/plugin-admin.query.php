@@ -193,6 +193,84 @@ class PluginManager_currentPluginStatusQuery extends PHPDS_query
     }
 }
 
+class PluginManager_updateRepository extends PHPDS_query
+{
+    public function invoke($parameters = null)
+    {
+        $config  = $this->configuration;
+        $path    = $config['absolute_path'] . 'plugins';
+        $repo    = $path . '/repository.json';
+        $oldrepo = $this->readJsonRepo($repo);
+        $size    = filesize($repo);
+
+        $ch = curl_init($config['repository']);
+        $fp = fopen($repo, "w");
+
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+
+        $curl     = curl_exec($ch);
+        $sizecurl = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+        curl_close($ch);
+        fclose($fp);
+        $newrepo  = $this->readJsonRepo($repo);
+        if ($curl) {
+            if ($size == $sizecurl) {
+                $this->template->info(__('Repository was up to date.'));
+                return 'false';
+            } else {
+                $this->template->ok(__('New plugins added to repository.'));
+                $newplugins = array_diff_assoc($newrepo, $oldrepo);
+                if (! empty($newplugins))
+                    return json_encode($newplugins);
+                else
+                    return 'false';
+            }
+        } else {
+            return 'false';
+        }
+    }
+
+    private function readJsonRepo($repo)
+    {
+        $json      = file_get_contents($repo);
+        $repodata  = json_decode($json, true);
+        return $repodata['plugins'];
+    }
+}
+
+class PluginManager_getJsonInfo extends PHPDS_query
+{
+    public function invoke($parameters = null)
+    {
+        list($plugin) = $parameters;
+        $xmlcfgfile = $this->configuration['absolute_path'] . 'plugins/' . $plugin . '/config/plugin.config.xml';
+        if (file_exists($xmlcfgfile)) {
+            $xml = simplexml_load_file($xmlcfgfile);
+            $p['database_version'] = (int)$xml->install['version'];
+            $p['name']             = (string)$xml->name;
+            $p['version']          = (string)$xml->version;
+            $p['description']      = (string)$xml->description;
+            $p['versionurl']       = (string)$xml->versionurl;
+            $p['current']          = (string)$xml->versionurl['current'];
+            $p['founder']          = (string)$xml->founder;
+            $p['author']           = (string)$xml->author;
+            $p['email']            = (string)$xml->email;
+            $p['homepage']         = (string)$xml->homepage;
+            $p['date']             = (string)$xml->date;
+            $p['copyright']        = (string)$xml->copyright;
+            $p['license']          = (string)$xml->license;
+            $p['info']             = (string)$xml->info;
+            return json_encode($p);
+        } else {
+            return 'online';
+        }
+    }
+
+}
+
+
+
 class PHPDS_updateCheckPluginsQuery extends PHPDS_query
 {
     public function invoke($parameters = null)

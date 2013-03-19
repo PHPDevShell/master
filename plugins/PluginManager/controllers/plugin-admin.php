@@ -30,6 +30,7 @@ class PluginActivation extends PHPDS_controller
         $view->set('RESULTS', $RESULTS);
         $view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
         $view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
+        $view->set('updatemenus', $this->navigation->selfUrl('update=menus'));
         $view->set('updatelocal', $this->navigation->selfUrl());
         // $view->set('log', $log);
 
@@ -39,9 +40,19 @@ class PluginActivation extends PHPDS_controller
 
     public function viaAjax()
     {
-        // Attempt repo update.
+        // Repo update.
         if ($this->G('update') == 'repo') {
             return $this->updateRepository();
+        }
+
+        // Refresh menus.
+        if ($this->G('update') == 'menus') {
+            return $this->template->outputMenu();
+        }
+
+        // Read plugin config.
+        if ($this->G('info')) {
+            return $this->readPluginConfig($this->G('plugin'));
         }
 
         // Plugin activation starts.
@@ -85,7 +96,6 @@ class PluginActivation extends PHPDS_controller
         $path = $this->configuration['absolute_path'] . 'plugins';
         $repo = $path . '/repository.json';
 
-
         if (!is_writable($path)) {
             $this->template->critical(sprintf('Plugin manager cannot write to: %s', $path));
         } else {
@@ -116,32 +126,12 @@ class PluginActivation extends PHPDS_controller
 
     private function updateRepository()
     {
-        $config = $this->configuration;
-        $path   = $config['absolute_path'] . 'plugins';
-        $repo   = $path . '/repository.json';
-        $size   = filesize($repo);
+        return $this->db->invokeQuery('PluginManager_updateRepository');
+    }
 
-        $ch = curl_init($config['repository']);
-        $fp = fopen($repo, "w");
-
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-
-        $curl     = curl_exec($ch);
-        $sizecurl = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-        curl_close($ch);
-        fclose($fp);
-        if ($curl) {
-            if ($size == $sizecurl) {
-                $this->template->info(__('Repository was up to date.'));
-                return 'false';
-            } else {
-                $this->template->ok(__('Repository updated with plugins.'));
-                return 'true';
-            }
-        } else {
-            return 'false';
-        }
+    private function readPluginConfig($plugin)
+    {
+        return $this->db->invokeQuery('PluginManager_getJsonInfo', $plugin);
     }
 }
 
