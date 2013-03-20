@@ -8,7 +8,6 @@ class PluginManager_readRepository extends PHPDS_query
     {
         $this->availablePlugins = $this->db->invokeQuery('PluginManager_currentPluginStatusQuery');
         return $this->handleRepositoryData($this->readJsonRepo());
-
     }
 
     private function readJsonRepo()
@@ -135,7 +134,7 @@ class PluginManager_readRepository extends PHPDS_query
     }
 }
 
-class PHPDS_availableClassesQuery extends PHPDS_query
+class PluginManager_availableClassesQuery extends PHPDS_query
 {
     protected $sql = "
 		SELECT
@@ -247,26 +246,58 @@ class PluginManager_getJsonInfo extends PHPDS_query
         $xmlcfgfile = $this->configuration['absolute_path'] . 'plugins/' . $plugin . '/config/plugin.config.xml';
         if (file_exists($xmlcfgfile)) {
             $xml = simplexml_load_file($xmlcfgfile);
-            $p['database_version'] = (int)$xml->install['version'];
-            $p['name']             = (string)$xml->name;
-            $p['version']          = (string)$xml->version;
-            $p['description']      = (string)$xml->description;
-            $p['versionurl']       = (string)$xml->versionurl;
-            $p['current']          = (string)$xml->versionurl['current'];
-            $p['founder']          = (string)$xml->founder;
-            $p['author']           = (string)$xml->author;
-            $p['email']            = (string)$xml->email;
-            $p['homepage']         = (string)$xml->homepage;
-            $p['date']             = (string)$xml->date;
-            $p['copyright']        = (string)$xml->copyright;
-            $p['license']          = (string)$xml->license;
-            $p['info']             = (string)$xml->info;
+        $p['database_version']     = (empty($xml->install['version']))      ? 'na' : (int)$xml->install['version'];
+            $p['name']             = (empty($xml->name))                    ? 'na' : (string)$xml->name;
+            $p['version']          = (empty($xml->version))                 ? 'na' : (string)$xml->version;
+            $p['description']      = (empty($xml->description))             ? 'na' : (string)$xml->description;
+            $p['versionurl']       = (empty($xml->versionurl))              ? 'na' : (string)$xml->versionurl;
+            $p['current']          = (empty($xml->versionurl['current']))   ? 'na' : (string)$xml->versionurl['current'];
+            $p['founder']          = (empty($xml->founder))                 ? 'na' : (string)$xml->founder;
+            $p['author']           = (empty($xml->author))                  ? 'na' : (string)$xml->author;
+            $p['email']            = (empty($xml->email))                   ? 'na' : (string)$xml->email;
+            $p['homepage']         = (empty($xml->homepage))                ? 'na' : (string)$xml->homepage;
+            $p['date']             = (empty($xml->date))                    ? 'na' : (string)$xml->date;
+            $p['copyright']        = (empty($xml->copyright))               ? 'na' : (string)$xml->copyright;
+            $p['license']          = (empty($xml->license))                 ? 'na' : (string)$xml->license;
+            $p['info']             = (empty($xml->info))                    ? 'na' : (string)$xml->info;
+
+            if (! empty($xml->install->dependencies[0])) {
+                $p['dependency'] = $this->getDependenciesInfo($xml->install->dependencies[0]);
+            } else {
+                $p['dependency'] = '';
+            }
+
             return json_encode($p);
         } else {
             return 'online';
         }
     }
 
+    public function getDependenciesInfo ($da)
+    {
+        $installed_classes = $this->db->invokeQuery('PluginManager_availableClassesQuery');
+        $depends_on = array();
+        if (!empty($da)) {
+            // Lets find out what plugins this plugin depends on.
+            foreach ($da as $dependecy) {
+                // Assign plugin name.
+                $pl = (string)$dependecy['plugin'];
+                $cl = (string)$dependecy['class'];
+                // Create unique items only.
+                if (empty($unique_dependency[$cl])) {
+                    // Next we need to check what is installed and what not.
+                    if (!empty($installed_classes[$cl])) {
+                        $depends_on[] = array('ready'=>true,  'class' => $cl, 'plugin' => $installed_classes[$cl]);
+                        $unique_dependency[$cl] = true;
+                    } else {
+                        $depends_on[] = array('ready'=>false, 'class' => $cl, 'plugin' => $pl);
+                        $unique_dependency[$cl] = true;
+                    }
+                }
+            }
+        }
+        return $depends_on;
+    }
 }
 
 

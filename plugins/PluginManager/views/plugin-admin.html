@@ -149,9 +149,9 @@
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             <h3 id="plugin-modal-label">Modal header</h3>
+            <div id="config-description" class="muted"></div>
         </div>
         <div class="modal-body">
-            <p id="config-description" class="text-info"></p>
             <dl class="dl-horizontal">
                 <dt>{{#i}}Recource Author{{/i}}</dt>
                 <dd id="config-founder"></dd>
@@ -161,7 +161,7 @@
                 <dd id="config-email"></dd>
                 <dt>{{#i}}Plugin Homepage{{/i}}</dt>
                 <dd id="config-homepage"></dd>
-                <dt>{{#i}}Date Created{{/i}}</dt>
+                <dt>{{#i}}Date Released{{/i}}</dt>
                 <dd id="config-date"></dd>
                 <dt>{{#i}}Copyright{{/i}}</dt>
                 <dd id="config-copyright"></dd>
@@ -232,6 +232,9 @@
                 $("#config-copyright", template).text(config.copyright);
                 $("#config-license", template).text(config.license);
                 $("#config-info", template).html(config.info);
+                $.each(function() {
+
+                });
                 $('#plugin-info').modal();
             });
             return false;

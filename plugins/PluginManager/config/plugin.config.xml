@@ -7,8 +7,7 @@
 	<author>Jason Schoeman</author>
 	<email>titan@phpdevshell.org</email>
 	<homepage>http://www.phpdevshell.org</homepage>
-	<date>15 March 2013</date>
-	<copyright>Jason Schoeman (c)</copyright>
+	<copyright>Jason Schoeman (c) 2013</copyright>
 	<license>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU/LGPL</license>
 	<info>
 		<![CDATA[
@@ -23,6 +22,17 @@
 	</info>
 	<versionurl current="1000" />
 	<install version="1000">
+        <dependencies>
+            <dependence class="controlPanel" plugin="ControlPanel" />
+            <dependence class="views" plugin="Smarty"  />
+            <dependence class="fileManager" plugin="FileMan" />
+            <dependence class="imaging" plugin="PHPThumbs" />
+            <dependence class="mailer" plugin="PHPMailer" />
+            <dependence class="wysiwygEditor" plugin="TinyMCE" />
+            <dependence class="pagination" plugin="Pagination" />
+            <dependence class="crud" plugin="CRUD" />
+            <dependence class="botBlock" plugin="BotBlock" />
+        </dependencies>
 		<classes>
             <class name="pluginManager" alias="PHPDS_pluginmanager" plugin="PluginManager" rank="last" />
 		</classes>
