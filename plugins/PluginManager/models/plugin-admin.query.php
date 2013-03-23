@@ -276,7 +276,7 @@ class PluginManager_getJsonInfo extends PHPDS_query
     public function getDependenciesInfo ($da)
     {
         $installed_classes = $this->db->invokeQuery('PluginManager_availableClassesQuery');
-        $depends_on = array();
+        $depends_on = null;
         if (!empty($da)) {
             // Lets find out what plugins this plugin depends on.
             foreach ($da as $dependecy) {
@@ -286,13 +286,11 @@ class PluginManager_getJsonInfo extends PHPDS_query
                 // Create unique items only.
                 if (empty($unique_dependency[$cl])) {
                     // Next we need to check what is installed and what not.
-                    if (!empty($installed_classes[$cl])) {
-                        $depends_on[] = array('ready'=>true,  'class' => $cl, 'plugin' => $installed_classes[$cl]);
-                        $unique_dependency[$cl] = true;
-                    } else {
-                        $depends_on[] = array('ready'=>false, 'class' => $cl, 'plugin' => $pl);
-                        $unique_dependency[$cl] = true;
-                    }
+                    $depends_on[] = array(
+                        'ready'=> empty($installed_classes[$cl]) ? false : true,
+                        'class' => $cl,
+                        'plugin' => $pl);
+                    $unique_dependency[$cl] = true;
                 }
             }
         }

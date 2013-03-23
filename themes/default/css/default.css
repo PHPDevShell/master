@@ -1,7 +1,3 @@
-textarea, input, select {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-}
-
 /* Code basics */
 .tl {
     text-align: left !important;
@@ -53,6 +49,10 @@ h3 code {
     background-color: #F1F1F1;
     border-right: 4px #ccc solid;
     float: left;
+}
+
+.monospace {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 }
 
 #search-field-outer {
@@ -232,4 +232,11 @@ div.plugin-repo .alert {
 
 div.plugin-repo button {
     margin-bottom: 5px;
+}
+
+div#config-info.hero-unit {
+    padding: 10px !important;
+    font-weight: normal !important;
+    font-size: inherit !important;
+    line-height: normal !important;
 }

@@ -6,6 +6,7 @@
 	<founder>Jason Schoeman</founder>
 	<author>Jason Schoeman</author>
 	<email>titan@phpdevshell.org</email>
+	<date>15 March 2013</date>
 	<homepage>http://www.phpdevshell.org</homepage>
 	<copyright>Jason Schoeman (c) 2013</copyright>
 	<license>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU/LGPL</license>
@@ -24,6 +25,7 @@
 	<install version="1000">
         <dependencies>
             <dependence class="controlPanel" plugin="ControlPanel" />
+            <dependence plugin="controlPanel" class="whotolotigot" />
             <dependence class="views" plugin="Smarty"  />
             <dependence class="fileManager" plugin="FileMan" />
             <dependence class="imaging" plugin="PHPThumbs" />
