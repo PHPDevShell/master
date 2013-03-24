@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Manages plugin relations.
+ * Manages plugin relations write action.
  *
  */
-class pluginManager extends PHPDS_dependant
+class pluginFactory extends PHPDS_dependant
 {
     protected $plugin;
     protected $action;

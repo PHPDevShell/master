@@ -3,13 +3,20 @@
 class PluginActivation extends PHPDS_controller
 {
     /**
-     * @var pluginManager $pm
+     * @var pluginFactory $factory
      */
-    public $pm;
+    public $factory;
+
+    /**
+     * @var pluginRepository $repo
+     */
+    public $repo;
+
 
     public function onLoad()
     {
-        $this->pm = $this->factory('pluginManager');
+        $this->factory = $this->factory('pluginFactory');
+        $this->repo    = $this->factory('pluginRepository');
     }
 
     public function execute()
@@ -21,7 +28,7 @@ class PluginActivation extends PHPDS_controller
         // Call current plugins status from database. ///
         /////////////////////////////////////////////////
         // Read plugin directory.
-        $RESULTS = $this->db->invokeQuery('PluginManager_readRepository');
+        $RESULTS = $this->repo->read();
 
         // Load views.
         $view = $this->factory('views');
@@ -42,7 +49,7 @@ class PluginActivation extends PHPDS_controller
     {
         // Repo update.
         if ($this->G('update') == 'repo') {
-            return $this->updateRepository();
+            return $this->repo->updateRepository();
         }
 
         // Refresh menus.
@@ -52,7 +59,7 @@ class PluginActivation extends PHPDS_controller
 
         // Read plugin config.
         if ($this->G('info')) {
-            return $this->readPluginConfig($this->G('plugin'));
+            return $this->repo->readPluginConfig($this->G('plugin'));
         }
 
         // Plugin activation starts.
@@ -122,16 +129,6 @@ class PluginActivation extends PHPDS_controller
             }
         closedir($dir);
         return true;
-    }
-
-    private function updateRepository()
-    {
-        return $this->db->invokeQuery('PluginManager_updateRepository');
-    }
-
-    private function readPluginConfig($plugin)
-    {
-        return $this->db->invokeQuery('PluginManager_getJsonInfo', $plugin);
     }
 }
 
