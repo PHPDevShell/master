@@ -25,4 +25,9 @@ class pluginRepository extends PHPDS_dependant
     {
         return $this->db->invokeQuery('PluginManager_getJsonInfo', $plugin);
     }
+
+    static function someTest()
+    {
+        echo "Hello World";
+    }
 }
