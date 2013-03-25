@@ -144,44 +144,7 @@
             <div class="column span3"></div>
         </div>
     </div>
-    <!-- Modal -->
-    <div id="plugin-info" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="plugin-modal-label" aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3 id="plugin-modal-label"></h3>
-            <div id="config-description" class="muted"><strong></strong></div>
-        </div>
-        <div class="modal-body">
-            <div id="config-info" class="hero-unit"></div>
-            <hr>
-            <dl class="dl-horizontal">
-                <dt>{{#i}}Recource Author{{/i}}</dt>
-                <dd id="config-founder"></dd>
-                <dt>{{#i}}Plugin Author{{/i}}</dt>
-                <dd id="config-author"></dd>
-                <dt>{{#i}}Plugin Author Email{{/i}}</dt>
-                <dd id="config-email"></dd>
-                <dt>{{#i}}Plugin Homepage{{/i}}</dt>
-                <dd id="config-homepage"></dd>
-                <dt>{{#i}}Date Released{{/i}}</dt>
-                <dd id="config-date"></dd>
-                <dt>{{#i}}Copyright{{/i}}</dt>
-                <dd id="config-copyright"></dd>
-                <dt>{{#i}}License{{/i}}</dt>
-                <dd id="config-license"></dd>
-            </dl>
-            <hr>
-            <h5 class="muted">{{#i}}Plugin Dependency{{/i}}</h5>
-            <div id="dependency-info-none" class="text-success hide"><strong>{{#i}}NONE{{/i}}</strong></div>
-            <div id="dependency-info">
-                <dl class="dl-horizontal"></dl>
-            </div>
-            <hr>
-        </div>
-        <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">{{#i}}Close{{/i}}</button>
-        </div>
-    </div>
+    <div id="info-modal"></div>
 </div>
 
 <script type="text/javascript">
@@ -189,9 +152,9 @@
         $("#plugin-search").searchFilter("div.plugin-repo div.row");
 
         $(this).on('pluginsUpdated', function (event) {
-            bindNewPluginButtins(".new-bind");
+            bindNewPluginButtons(".new-bind");
         });
-        bindNewPluginButtins(".old-bind");
+        bindNewPluginButtons(".old-bind");
         // Repository update.
         $("#repo-refresh").on("click", function() {
             requestPage();
@@ -226,49 +189,16 @@
         // Plugin get info.
         $(".plugin-get-info").on("click", function() {
             var plugin        = $(this).data("plugin");
-            var template      = $("#plugin-info");
             $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
-                var config = $.parseJSON(data);
-                $("#plugin-modal-label", template).text(config.name + ' V ' + config['version']);
-                $("#config-description strong", template).text(config.description);
-                $("#config-founder", template).text(config.founder);
-                $("#config-author", template).text(config.author);
-                $("#config-email", template).text(config.email);
-                $("#config-homepage", template).text(config.homepage);
-                $("#config-date", template).text(config.date);
-                $("#config-copyright", template).text(config.copyright);
-                $("#config-license", template).text(config.license);
-                $("#config-info", template).html(config.info);
-                if (config.dependency == '') {
-                    $("#dependency-info dl", template).html('');
-                    $("#dependency-info-none", template).show();
-                } else {
-                    $("#dependency-info-none", template).hide();
-                    $(config.dependency).each(function (i, element) {
-                        if (element.ready == true) {
-                            var ok       = '<i class="icon-ok"></i>';
-                            var ok_class = 'badge-success';
-                        } else {
-                            var ok       = '<i class="icon-remove"></i>';
-                            var ok_class = 'badge-important';
-                        }
-                        $("#dependency-info dl", template).append(
-                                "<dt>" +
-                                '<span class="badge ' + ok_class + '">' + element.plugin + '</span>' +
-                                '&nbsp;<i class="icon-arrow-right"></i>' + ok +
-                                "</dt><dd>" +
-                                '<span class="badge badge-info">' + element.class + "</span>" +
-                                "</dd>"
-                        );
-                    });
-                }
-                $('#plugin-info').modal();
+                var modal  = $("#info-modal");
+                modal.html(data);
+                modal.modal();
             });
             return false;
         });
     });
 
-    function bindNewPluginButtins (bind)
+    function bindNewPluginButtons (bind)
     {
         $(bind).hover(
             function() {

@@ -33,7 +33,6 @@ class views extends PHPDS_dependant
     {
         $configuration = $this->configuration;
         $view_dir      = $this->tplBaseDir($plugin_override);
-        $domain        = $this->core->activePlugin();
 
         if (!is_object($this->template->view)) {
             require BASEPATH . 'plugins/Mustache/resources/src/Mustache/Autoloader.php';
@@ -43,13 +42,8 @@ class views extends PHPDS_dependant
                 'template_class_prefix' => '__view_',
                 'cache'                 => BASEPATH . $configuration['compile_path'],
                 'loader'                => $loader,
-                'helpers'               => array('i' => function ($text) {
-                    global $domain;
-                    return dgettext($domain, $text);
-                }),
-                'escape'                => function ($value) {
-                    return htmlspecialchars($value, ENT_COMPAT);
-                },
+                'helpers'               => array('i' => function ($text) { return __($text); }),
+                'escape'                => function ($value) { return htmlspecialchars($value, ENT_COMPAT); },
                 'charset'               => $configuration['charset']));
         } else {
             $this->view = $this->template->view;
@@ -78,6 +72,19 @@ class views extends PHPDS_dependant
     {
         $tpl = $this->getTpl($load_view);
         echo $this->view->render($tpl, $this->set);
+    }
+
+    /**
+     * Loads the default or custom template (tpl) file and returns it.
+     * Works well where blocks of html from ajax requests are wanted.
+     *
+     * @param string $load_view Load an alternative view directly.
+     * @return string
+     */
+    public function get($load_view = '')
+    {
+        $tpl = $this->getTpl($load_view);
+        return $this->view->render($tpl, $this->set);
     }
 
     public function tplBaseDir($load_view = '', $plugin_override = '')

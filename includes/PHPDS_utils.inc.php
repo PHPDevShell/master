@@ -782,6 +782,55 @@ function PU_SafeSubpath($path, $root)
     return $result;
 }
 
+/**
+ * Creates a "secret" version of the password
+ *
+ * @param string $password the clear password
+ * @return string the hashed password
+ */
+function PU_hashPassword($password = '')
+{
+    return empty($password) ? '*' : md5($password);
+}
+
+/**
+ * Encrypts a string with the configuration key provided.
+ *
+ * @param string $string
+ * @param string $key
+ * @return string
+ */
+function PU_encrypt($string, $key)
+{
+    $result = false;
+    for ($i = 0; $i < strlen($string); $i++) {
+        $char    = substr($string, $i, 1);
+        $keychar = substr($this->configuration['crypt_key'], ($i % strlen($key)) - 1, 1);
+        $char    = chr(ord($char) + ord($keychar));
+        $result .= $char;
+    }
+    return urlencode(base64_encode($result));
+}
+
+/**
+ * Decrypts a string with the configuration key provided.
+ *
+ * @param string $string
+ * @param string $key
+ * @return string
+ */
+function PU_decrypt($string, $key)
+{
+    $result = false;
+    $string = base64_decode(urldecode($string));
+    for ($i = 0; $i < strlen($string); $i++) {
+        $char    = substr($string, $i, 1);
+        $keychar = substr($this->configuration['crypt_key'], ($i % strlen($key)) - 1, 1);
+        $char    = chr(ord($char) - ord($keychar));
+        $result .= $char;
+    }
+    return $result;
+}
 
 /**
  * Returns the numerical value of the given value

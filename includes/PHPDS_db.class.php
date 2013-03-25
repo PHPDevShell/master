@@ -285,36 +285,12 @@ class PHPDS_db extends PHPDS_dependant
      */
     public $connection;
     /**
-     * Memcache object.
-     *
-     * @var object
-     */
-    public $memcache;
-    /**
-     * Array for log data to be written.
-     *
-     * @var string
-     */
-    public $logArray;
-    /**
      * Count amount of queries used by the system.
-     * Currently it is on -2, we are not counting Start and End transaction.
+     * Currently it is on 0, we are not counting Start and End transaction.
      *
      * @var integer
      */
-    public $countQueries = -2;
-    /**
-     * Contains array of all the plugins installed.
-     *
-     * @var array
-     */
-    public $pluginsInstalled;
-    /**
-     * Contains variable of logo.
-     *
-     * @var array
-     */
-    public $pluginLogo;
+    public $countQueries = 0;
     /**
      * Essential settings array.
      *
@@ -641,94 +617,6 @@ class PHPDS_db extends PHPDS_dependant
     }
 
     /**
-     * This method logs error and success entries to the database.
-     */
-    public function logThis()
-    {
-        $this->invokeQuery('DB_logThisQuery', $this->logArray);
-    }
-
-    /**
-     * Generates a prefix for plugin general settings.
-     *
-     * @param string $custom_prefix
-     * @return string Complete string with prefix.
-     */
-    public function settingsPrefix($custom_prefix = null)
-    {
-        // Create prefix.
-        if ($custom_prefix == false) {
-            // Get active plugin.
-            $active_plugin = $this->core->activePlugin();
-            if (!empty($active_plugin)) {
-                $prefix = $active_plugin . '_';
-            } else {
-                $prefix = '_db_';
-            }
-        } else {
-            $prefix = $custom_prefix . '_';
-        }
-        return $prefix;
-    }
-
-    /**
-     * Used to write general plugin settings to the database.
-     * Class will always use plugin name as prefix for settings if no custom prefix is provided.
-     *
-     * @param array  $write_settings This array should contain settings to write.
-     * @param string $custom_prefix  If you would like to have a custom prefix added to your settings.
-     * @param array  $notes          For adding notes about setting.
-     * @return boolean On success true will be returned.
-     * @author Jason Schoeman <titan@phpdevshell.org>
-     */
-    public function writeSettings($write_settings, $custom_prefix = '', $notes = array())
-    {
-        return $this->invokeQuery('DB_writeSettingsQuery', $write_settings, $custom_prefix, $notes);
-    }
-
-    /**
-     * Delete all settings stored by a given plugins name, is used when uninstalling a plugin.
-     *
-     * @param mixed  $settings_to_delete Use '*' to delete all settings for certain plugin.
-     * @param string $custom_prefix
-     * @return boolean
-     */
-    public function deleteSettings($settings_to_delete = null, $custom_prefix = null)
-    {
-        return $this->invokeQuery('DB_deleteSettingsQuery', $settings_to_delete, $custom_prefix);
-    }
-
-    /**
-     * Loads and returns required settings from database.
-     * Class will always use plugin name as prefix for settings if no custom prefix is provided.
-     *
-     * @param mixed  $settings_required
-     * @param string $custom_prefix This allows you to use a prefix value of your choice to select a setting from another plugin, otherwise PHPDevShell will be used.
-     * @return array An array will be returned containing all the values requested.
-     */
-    public function getSettings($settings_required = false, $custom_prefix = null)
-    {
-        return $this->invokeQuery('DB_getSettingsQuery', $settings_required, $custom_prefix);
-    }
-
-    /**
-     * Used to get all essential system settings from the database, preventing multiple queries.
-     *
-     * @return array Contains array with essential settings.
-     */
-    public function getEssentialSettings()
-    {
-        // Pull essential settings and assign it to essential_settings.
-        if ($this->cacheEmpty('essential_settings')) {
-            $this->essentialSettings = $this->getSettings($this->configuration['preloaded_settings'], 'AdminTools');
-            // Write essential settings data to cache.
-            $this->cacheWrite('essential_settings', $this->essentialSettings);
-        } else {
-            $this->essentialSettings = $this->cacheRead('essential_settings');
-        }
-    }
-
-    /**
      * Determines whether the specified search string already exists in the specified field within the supplied table.
      * Optional: Also looks at an id field (typically the primary key of a table) to make sure that the record you are working with
      * is NOT included in the search.
@@ -773,86 +661,4 @@ class PHPDS_db extends PHPDS_dependant
     {
         return $this->invokeQuery('DB_deleteQuickQuery', $from_table_name, $where_column_name, $is_equal_to_column_value, $return_column_value);
     }
-
-    /**
-     * Writes array of all the installed plugins on the system.
-     * @author Jason Schoeman <titan@phpdevshell.org>
-     */
-    public function installedPlugins()
-    {
-        $this->invokeQuery('DB_installedPluginsQuery');
-    }
-
-    /**
-     * Does the connection to the cache server.
-     */
-    public function connectCacheServer()
-    {
-        $configuration = $this->configuration;
-
-        // Get cache configuration.
-        $conf['cache_refresh_intervals'] = $configuration['cache_refresh_intervals'];
-
-        // Assign configuration arrays.
-        if ($configuration['cache_type'] != 'PHPDS_sessionCache') {
-            $conf['cache_host']           = $configuration['cache_host'];
-            $conf['cache_port']           = $configuration['cache_port'];
-            $conf['cache_persistent']     = $configuration['cache_persistent'];
-            $conf['cache_weight']         = $configuration['cache_weight'];
-            $conf['cache_timeout']        = $configuration['cache_timeout'];
-            $conf['cache_retry_interval'] = $configuration['cache_retry_interval'];
-            $conf['cache_status']         = $configuration['cache_status'];
-        }
-
-        // Load Cache Class.
-        require_once 'cache/' . $configuration['cache_type'] . '.inc.php';
-        $this->memcache = new $configuration['cache_type'];
-
-        // Check connection type.
-        $this->memcache->connectCacheServer($conf);
-    }
-
-    /**
-     * Writes new data to cache.
-     *
-     * @param string        $unique_key
-     * @param mixed         $cache_data
-     * @param boolean       $compress
-     * @param int|boolean   $timeout
-     */
-    public function cacheWrite($unique_key, $cache_data, $compress = false, $timeout = false)
-    {
-        // Check caching type.
-        $this->memcache->cacheWrite($unique_key, $cache_data, $compress, $timeout);
-    }
-
-    /**
-     * Return existing cache result to required item.
-     * @param mixed $unique_key
-     * @return mixed
-     */
-    public function cacheRead($unique_key)
-    {
-        return $this->memcache->cacheRead($unique_key);
-    }
-
-    /**
-     * Clear specific or all cache memory.
-     * @param mixed $unique_key
-     */
-    public function cacheClear($unique_key = false)
-    {
-        $this->memcache->cacheClear($unique_key);
-    }
-
-    /**
-     * Checks if we have an empty cache container.
-     * @param mixed $unique_key
-     * @return boolean
-     */
-    public function cacheEmpty($unique_key)
-    {
-        return $this->memcache->cacheEmpty($unique_key);
-    }
-
 }

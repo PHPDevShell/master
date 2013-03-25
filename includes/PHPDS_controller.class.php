@@ -78,12 +78,7 @@ class PHPDS_controller extends PHPDS_dependant
      */
     public function P($key = null, $default = null, $options = 0)
     {
-        if (!empty($key)) {
-            return (isset($this->security->post[$key])) ? $this->security->post[$key] : $default;
-        } else {
-            if (is_array($default)) return array_merge($default, $this->security->post);
-            else return $this->security->post;
-        }
+        return $this->POST($key, $default, $options);
     }
 
     /**
@@ -116,12 +111,7 @@ class PHPDS_controller extends PHPDS_dependant
      */
     public function G($key = null, $default = null, $options = 0)
     {
-        if (!empty($key)) {
-            return (isset($this->security->get[$key])) ? $this->security->get[$key] : $default;
-        } else {
-            if (is_array($default)) return array_merge($default, $this->security->get);
-            else return $this->security->get;
-        }
+        return $this->GET($key, $default, $options);
     }
 
     /**
@@ -131,7 +121,6 @@ class PHPDS_controller extends PHPDS_dependant
      */
     public function run()
     {
-        (is_object($this->security)) ? $this->security->securityIni() : exit('Access Denied!');
         $this->onLoad();
         $result = null;
         if ($this->core->ajaxType) {

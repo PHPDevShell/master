@@ -234,7 +234,7 @@ div.plugin-repo button {
     margin-bottom: 5px;
 }
 
-div#config-info.hero-unit {
+div.config-info.hero-unit {
     padding: 10px !important;
     font-weight: normal !important;
     font-size: inherit !important;

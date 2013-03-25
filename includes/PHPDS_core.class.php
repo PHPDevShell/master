@@ -35,7 +35,6 @@ class PHPDS_core extends PHPDS_dependant
      * @var array
      */
     public $skipLogin = false;
-
     /**
      * Execute theme structure according to node type.
      */
@@ -450,7 +449,7 @@ class PHPDS_core extends PHPDS_dependant
                     if (!$this->loadControllerFile($node_id)) {
                         $time_now = time();
                         // Update last execution.
-                        $this->db->invokeQuery('TEMPLATE_cronExecutionLogQuery', $time_now, $node_id);
+                        $this->db->invokeQuery('CORE_cronExecutionLogQuery', $time_now, $node_id);
                         // Always log manual touched cronjobs.
                         $this->template->ok(sprintf(___('Cronjob %s executed manually.'), $navigation[$node_id]['node_name']));
                     }
@@ -476,7 +475,7 @@ class PHPDS_core extends PHPDS_dependant
 
         if (isset($this->haltController)) {
             // Roll back current transaction.
-            $this->db->invokeQuery('TEMPLATE_rollbackQuery');
+            $this->db->invokeQuery('CORE_rollbackQuery');
             switch ($this->haltController['type']) {
                 case 'auth':
                     throw new PHPDS_securityException($this->haltController['message']);
@@ -699,7 +698,7 @@ class PHPDS_core extends PHPDS_dependant
     public function loadNodeLanguage()
     {
         // Lets loop the installed plugins.
-        foreach ($this->db->pluginsInstalled as $installed_plugins_array) {
+        foreach ($this->config->pluginsInstalled as $installed_plugins_array) {
             $plugin_folder = $installed_plugins_array['plugin_folder'];
             $this->loadTranslation("plugins/$plugin_folder/language/", "$plugin_folder.mo", "$plugin_folder");
         }
@@ -775,7 +774,6 @@ class PHPDS_core extends PHPDS_dependant
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
         $db            = $this->db;
-        $security      = $this->security;
 
         if (empty($path)) throw new PHPDS_exception('Trying to load a file with an empty path.');
 

@@ -14,6 +14,12 @@ class PHPDS_user extends PHPDS_dependant
      * @var array
      */
     public $groupsArray;
+    /**
+     * Array for log data to be written.
+     *
+     * @var string
+     */
+    public $logArray;
 
     /**
      * Return roles id for a given user id,
@@ -220,5 +226,13 @@ class PHPDS_user extends PHPDS_dependant
             $this->factory('StandardLogin')->controlLogin();
         }
         $this->userConfig();
+    }
+
+    /**
+     * This method logs error and success entries to the database.
+     */
+    public function logThis()
+    {
+        $this->db->invokeQuery('USER_logThisQuery', $this->logArray);
     }
 }

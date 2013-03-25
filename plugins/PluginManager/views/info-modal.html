@@ -1,0 +1,61 @@
+<div class="plugin-info modal hide fade" tabindex="-1" role="dialog" aria-labelledby="plugin-modal-label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>{{p.name}} {{p.version}}</h3>
+        <div class="muted"><strong>{{p.description}}</strong></div>
+    </div>
+    <div class="modal-body">
+        <div class="config-info hero-unit">{{{p.info}}}</div>
+        <hr>
+        <dl class="dl-horizontal">
+            <dt>{{#i}}Recource Author{{/i}}</dt>
+            <dd>{{p.founder}}</dd>
+            <dt>{{#i}}Plugin Author{{/i}}</dt>
+            <dd>{{p.author}}</dd>
+            <dt>{{#i}}Plugin Author Email{{/i}}</dt>
+            <dd>{{p.email}}</dd>
+            <dt>{{#i}}Plugin Homepage{{/i}}</dt>
+            <dd><a href="{{p.homepage}}">{{p.homepage}}</a></dd>
+            <dt>{{#i}}Date Released{{/i}}</dt>
+            <dd>{{p.date}}</dd>
+            <dt>{{#i}}Copyright{{/i}}</dt>
+            <dd>{{p.copyright}}</dd>
+            <dt>{{#i}}License{{/i}}</dt>
+            <dd>{{p.license}}</dd>
+        </dl>
+        <hr>
+        <h5 class="muted">{{#i}}Plugin Dependency{{/i}}</h5>
+        {{^p.dependency}}
+        <div class="text-success hide"><strong>{{#i}}NONE{{/i}}</strong></div>
+        {{/p.dependency}}
+        <div>
+            <dl class="dl-horizontal">
+                {{#p.dependency}}
+                    {{#ready}}
+                    <dt>
+                        <span class="badge badge-success">{{plugin}}</span>&nbsp;
+                        <i class="icon-arrow-right"></i><i class="icon-ok"></i>
+                    </dt>
+                    <dd>
+                        <span class="badge badge-info">{{class}}</span>
+                    </dd>
+                    {{/ready}}
+
+                    {{^ready}}
+                    <dt>
+                        <span class="badge badge-important">{{plugin}}</span>&nbsp;
+                        <i class="icon-arrow-right"></i><i class="icon-remove"></i>
+                    </dt>
+                    <dd>
+                        <span class="badge badge-info">{{class}}</span>
+                    </dd>
+                    {{/ready}}
+                {{/p.dependency}}
+            </dl>
+        </div>
+        <hr>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">{{#i}}Close{{/i}}</button>
+    </div>
+</div>
