@@ -1,6 +1,6 @@
 <?php
 
-class TEMPLATE_cronExecutionLogQuery extends PHPDS_query
+class CORE_cronExecutionLogQuery extends PHPDS_query
 {
     protected $sql = "
 		UPDATE
@@ -12,7 +12,7 @@ class TEMPLATE_cronExecutionLogQuery extends PHPDS_query
 	";
 }
 
-class TEMPLATE_rollbackQuery extends PHPDS_query
+class CORE_rollbackQuery extends PHPDS_query
 {
     protected $sql = "ROLLBACK";
 }

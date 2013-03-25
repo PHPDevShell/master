@@ -983,7 +983,7 @@ class PHPDS_template extends PHPDS_dependant
             ///////////////////////////////////
             $log_type = 2; ////////////////////
             // Log the event //////////////////
-            $this->db->logArray[] = array('log_type' => $log_type, 'log_description' => $warning);
+            $this->user->logArray[] = array('log_type' => $log_type, 'log_description' => $warning);
         }
         // Return or print to browser.
         if ($return === 'print' || $return == false) {
@@ -1013,7 +1013,7 @@ class PHPDS_template extends PHPDS_dependant
             ///////////////////////////////////
             $log_type = 1; ////////////////////
             // Log the event //////////////////
-            $this->db->logArray[] = array('log_type' => $log_type, 'log_description' => $ok);
+            $this->user->logArray[] = array('log_type' => $log_type, 'log_description' => $ok);
         }
         // Create HTML.
 
@@ -1046,7 +1046,7 @@ class PHPDS_template extends PHPDS_dependant
             ///////////////////////////////////
             $log_type = 6; ////////////////////
             // Log the event //////////////////
-            $this->db->logArray[] = array('log_type' => $log_type, 'log_description' => $error);
+            $this->user->logArray[] = array('log_type' => $log_type, 'log_description' => $error);
         }
         // Return or print to browser.
         if ($return === 'print' || $return == false) {
@@ -1078,7 +1078,7 @@ class PHPDS_template extends PHPDS_dependant
             ///////////////////////////////////
             $log_type = 3; ////////////////////
             // Log the event //////////////////
-            $this->db->logArray[] = array('log_type' => $log_type, 'log_description' => $critical);
+            $this->user->logArray[] = array('log_type' => $log_type, 'log_description' => $critical);
         }
         // Check if we need to email admin.
         if ($this->configuration['email_critical']) {
@@ -1398,5 +1398,41 @@ class PHPDS_template extends PHPDS_dependant
     {
         // Decode characters.
         return html_entity_decode($string_to_decode, ENT_QUOTES, $this->configuration['charset']);
+    }
+
+    /**
+     * Use inside your form brackets to send through a token validation to limit $this->post received from external pages.
+     *
+     * @return string Returns hidden input field.
+     */
+    public function postValidation()
+    {
+        return $this->validatePost();
+    }
+
+    /**
+     * Use inside your form brackets to send through a token validation to limit $this->post received from external pages.
+     *
+     * @return string Returns hidden input field.
+     */
+    public function validatePost()
+    {
+        $token                              = md5(uniqid(rand(), true));
+        $key                                = md5($this->configuration['crypt_key']);
+        $_SESSION['token_validation'][$key] = $token;
+        return $this->template->mod->securityToken($token);
+    }
+
+    /**
+     * This is used in the search filter to validate $this->post made by the search form.
+     *
+     * @return string Returns hidden input field.
+     */
+    public function searchFormValidation()
+    {
+        $search_token                              = md5(uniqid(rand(), true));
+        $search_key                                = md5(sha1($this->configuration['crypt_key']));
+        $_SESSION['token_validation'][$search_key] = $search_token;
+        return $this->template->mod->searchToken($search_token);
     }
 }

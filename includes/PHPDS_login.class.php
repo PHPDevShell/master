@@ -228,7 +228,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
     public function setLogin($select_user_array, $persistent = false)
     {
         $conf = $this->configuration;
-        $db   = $this->db;
+        $user = $this->user;
 
         $user_name_db          = $select_user_array['user_name'];
         $user_display_name_db  = $select_user_array['user_display_name'];
@@ -273,13 +273,13 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
         if (!empty($this->configuration['m'])) {
 
             if (!$persistent) {
-                $db->logArray[] = array('log_type' => 4, 'user_id' => $user_id_db, 'logged_by' => $user_display_name_db, 'log_description' => ___('Logged-in'));
+                $user->logArray[] = array('log_type' => 4, 'user_id' => $user_id_db, 'logged_by' => $user_display_name_db, 'log_description' => ___('Logged-in'));
             } else {
-                $db->logArray[] = array('log_type' => 4, 'user_id' => $user_id_db, 'logged_by' => $user_display_name_db, 'log_description' => $persistent);
+                $user->logArray[] = array('log_type' => 4, 'user_id' => $user_id_db, 'logged_by' => $user_display_name_db, 'log_description' => $persistent);
             }
         }
 
-        $this->db->cacheClear();
+        $this->cache->cacheClear();
     }
 
     /**
@@ -288,11 +288,11 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      */
     public function clearLogin($set_guest = true)
     {
-        $db = $this->db;
+        $user = $this->user;
 
         $this->clearUserCookie($_SESSION['user_id']);
 
-        $db->logArray[] = array('log_type' => 5, 'log_description' => ___('Logged-out'));
+        $user->logArray[] = array('log_type' => 5, 'log_description' => ___('Logged-out'));
 
         unset($_SESSION['user_email']);
         unset($_SESSION['user_id']);
@@ -305,7 +305,7 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
         unset($_SESSION['user_region']);
         unset($_SESSION['user_locale']);
 
-        $db->cacheClear();
+        $this->cache->cacheClear();
 
         $_SESSION = array();
 
@@ -322,10 +322,9 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
     public function setGuest()
     {
         $conf = $this->configuration;
-        $db   = $this->db;
 
         if (empty($_SESSION['user_name'])) {
-            $settings_array = $db->essentialSettings;
+            $settings_array = $this->config->essentialSettings;
 
             if (!empty($conf['system_timezone'])) {
                 $user_timezone = $conf['system_timezone'];

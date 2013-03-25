@@ -28,12 +28,12 @@ class StandardLogin extends PHPDS_login
      * Loads the username & password html template form.
      *
      * @param boolean $return
+     * @return string
      */
     public function loginForm($return = false)
     {
-        $settings      = $this->db->essentialSettings;
+        $settings      = $this->config->essentialSettings;
         $navigation    = $this->navigation;
-        $security      = $this->security;
         $template      = $this->template;
         $configuration = $this->configuration;
         $redirect_page = '';
@@ -68,7 +68,7 @@ class StandardLogin extends PHPDS_login
                 $remember = false;
             }
             // Create HTML login field.
-            return $template->mod->loginForm($post_login_url, ___('Username or Email'), ___('Password'), $redirect_page, $navigation->buildURL($this->lostPasswordPageId), ___('Lost Password?'), $registration, ___('Not registered yet?'), $remember, $security->postValidation(), ___('Account Detail'), $user_name, __('Submit'));
+            return $template->mod->loginForm($post_login_url, ___('Username or Email'), ___('Password'), $redirect_page, $navigation->buildURL($this->lostPasswordPageId), ___('Lost Password?'), $registration, ___('Not registered yet?'), $remember, $template->postValidation(), ___('Account Detail'), $user_name, __('Submit'));
         }
     }
 
@@ -77,9 +77,7 @@ class StandardLogin extends PHPDS_login
      *
      * @param string $username
      * @param string $password
-     * @date 20100204 greg: split into pieces
-     * @version    1.1
-     * @author     jason, greg
+     * @return void
      */
     public function processLogin($username, $password)
     {
@@ -93,7 +91,7 @@ class StandardLogin extends PHPDS_login
                 // Check if we have a login to process.
                 if (!empty($user_array)) {
                     $this->setLogin($user_array);
-                    if ($this->db->essentialSettings['allow_remember'] && isset($_POST['user_remember'])) {
+                    if ($this->config->essentialSettings['allow_remember'] && isset($_POST['user_remember'])) {
                         $this->setUserCookie($user_array['user_id']);
                     }
                 } else {
@@ -123,7 +121,7 @@ class StandardLogin extends PHPDS_login
      */
     public function lookupUser($username, $password = '')
     {
-        $password = is_null($password) ? '*' : $this->security->hashPassword($password);
+        $password = is_null($password) ? '*' : PU_hashPassword($password);
         return $this->db->invokeQuery('LOGIN_selectUserQuery', $username, $password);
     }
 
@@ -131,8 +129,7 @@ class StandardLogin extends PHPDS_login
      * Check if the username exists.
      *
      * @param string $username
-     * @version 1.0.0
-     * @author  jason
+     * @return string
      */
     public function lookupUsername($username)
     {

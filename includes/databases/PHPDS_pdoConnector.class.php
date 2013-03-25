@@ -74,7 +74,7 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      *
      * @date 20130223 (1.0) (greg) added
      *
-     * @author greg <greg@phpdevshell.org>
+     * @author  greg <greg@phpdevshell.org>
      *
      * @param string|array|null $db_config data to specify how to connect to the database
      * @return null
@@ -95,23 +95,23 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      *
      * Also returns "true" if there is no connection to close
      *
-     * @version 2.0
+     * @version       2.0
      *
      * @date 20120321 (1.0) (don) added
      * @date 20130223 (2.0) (greg) complete rewrite
      *
      * @author        Don Schoeman
-     * @author greg <greg@phpdevshell.org>
+     * @author        greg <greg@phpdevshell.org>
      *
      * @return boolean, TRUE on success or FALSE on failure
      *
-     * @see includes/PHPDS_db_connector#free()
+     * @see           includes/PHPDS_db_connector#free()
      */
     public function free()
     {
         $result = true;
         if (!empty($this->result)) {
-            $result = $this->result->closeCursor();
+            $result       = $this->result->closeCursor();
             $this->result = null;
         }
         return $result;
@@ -131,15 +131,15 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      * @param string|array|null $db_config data to specify how to connect to the database
      * @return null
      *
-     * @throw PHPDS_DatabaseException
+     * @throw         PHPDS_DatabaseException
      *
-     * @version 2.0
+     * @version       2.0
      *
      * @date 20120321 (1.0) (don) added
      * @date 20130223 (2.0) (greg) complete rewrite
      *
      * @author        Don Schoeman
-     * @author greg <greg@phpdevshell.org>
+     * @author        greg <greg@phpdevshell.org>
      */
     public function applyConfig($db_config = null)
     {
@@ -158,10 +158,10 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      * @date 20130223 (2.0) rewrite for PHPDevShell 4.0
      *
      * @version        2.0
-     * @author        don schoeman
-     * @author greg <greg@phpdevshell.org>
+     * @author         don schoeman
+     * @author         greg <greg@phpdevshell.org>
      *
-     * @throw PHPDS_databaseException
+     * @throw          PHPDS_databaseException
      *
      * @param string|array $db_config if the connection is already up, disconnect it and reconnect with the new settings
      */
@@ -214,11 +214,12 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
     /**
      * Executes a query the old fashioned way. Each query is automatically prepared.
      *
-     * @date        20120321
-     * @version        1.0
-     * @author        don schoeman
-     * @param     $sql string, the actual sql query
-     * @return PDOStatement|boolean, the resulting resource, false on error, true for a successful query with no result
+     * @version  1.0
+     * @author   don schoeman
+     * @param    $sql string, the actual sql query
+     * @param    $parameters string
+     * @return   PDOStatement|boolean, the resulting resource, false on error, true for a successful query with no result
+     * @throws   PHPDS_databaseException
      */
     public function query($sql, $parameters = null)
     {
@@ -242,12 +243,12 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
                 $statement = $this->link->query($sql);
 
                 if ($statement->columnCount() == 0) {
-                    $this->result = $statement;
+                    $this->result       = $statement;
                     $this->affectedRows = $statement->rowCount();
                     $this->selectedRows = -1;
                     return true; // This was an INSERT/UPDATE/DELETE query
                 } else {
-                    $this->result = $statement;
+                    $this->result       = $statement;
                     $this->affectedRows = -1;
                     $this->selectedRows = $statement->rowCount();
                     return $this->result; // This was a SELECT query, we need to return the result set
@@ -262,17 +263,17 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
     }
 
     /**
-     * Protect a string from SQL injection. This function shouldn't really be used since preparing a statement
+     * Protect a string from SQL injection. This function should'nt really be used since preparing a statement
      * will protect any parameters passed to the statement automatically within PDO. This function simulates
      * the mysql_real_escape_string() function since it is not available within PDO.
      *
-     * TODO: Modify all phpds code to run prepared statements together with parameterised queries to
+     * TODO: Modify all phpds code to run prepared statements together with parameters queries to
      * protect the query from SQL injection instead of using protect()
      *
-     * @date            20120321
+     * @date    20120321
      * @version 1.0
-     * @author    don schoeman
-     * @param    $param        string, the parameter to escape
+     * @author  don schoeman
+     * @param   $param string, the parameter to escape
      * @return string, the escaped string
      */
     public function protect($param)
@@ -283,11 +284,11 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
     /**
      * Return the next line as an associative array
      *
-     * @date            20100216
+     * @date    20100216
      * @version 1.0
-     * @author    greg
+     * @author  greg
      * @return array, the resulting line (or false is nothing is found)
-     * @see includes/PHPDS_db_connector#fetch_assoc()
+     * @see     includes/PHPDS_db_connector#fetch_assoc()
      */
     public function fetchAssoc()
     {
@@ -297,12 +298,9 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
     /**
      * Move the internal pointer to the asked line. Not available for PDO connections, will raise an exception if called.
      *
-     * @date            20100216
-     * @version 1.0
-     * @author    greg
-     * @param    $row_number        integer, the line number
+     * @param  $row_number integer, the line number
      * @return boolean, TRUE on success or FALSE on failure
-     * @see includes/PHPDS_db_connector#seek()
+     * @throws PHPDS_exception
      */
     public function seek($row_number)
     {
@@ -313,10 +311,10 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      * Return the number of rows in the result of the query
      *
      * @date            20100216
-     * @version 1.0
+     * @version   1.0
      * @author    greg
      * @return integer, the number of rows
-     * @see includes/PHPDS_db_connector#numrows()
+     * @see       includes/PHPDS_db_connector#numrows()
      */
     public function numrows()
     {
@@ -327,10 +325,10 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      * Return the number of affected rows in the result of the query
      *
      * @date 20101103
-     * @version 1.0
+     * @version   1.0
      * @author    Jason
      * @return integer, the number of affected rows
-     * @see includes/PHPDS_db_connector#affectedRows()
+     * @see       includes/PHPDS_db_connector#affectedRows()
      */
     public function affectedRows()
     {
@@ -346,11 +344,11 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      * @return string
      * @version 1.0.1
      * @date 20100329 prevent an exception if display_sql_on_error is not set
-     * @author don schoeman
+     * @author  don schoeman
      */
     public function returnSqlError($query)
     {
-        $error = $this->link->errorInfo();
+        $error  = $this->link->errorInfo();
         $result = '[unknown error]';
         if (empty($this->displaySqlOnError) && !empty($error[0])) {
             $result = $error[0] . ": " . $error[2] . ' [' . $error[1] . '] <br />' . $query;
@@ -361,7 +359,8 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
     /**
      * Debugging Instance.
      *
-     * @return debug object
+     * @param string
+     * @return object
      */
     public function debugInstance($ignored = null)
     {
@@ -373,7 +372,7 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      *
      * @date 20100610 (greg) (v1.0.1) added $this->link
      * @version 1.0.1
-     * @author jason
+     * @author  jason
      * @return int
      */
     public function lastId()
@@ -385,9 +384,9 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
      * Will return a single row as a string depending on what column was selected.
      *
      * @date 17062010 (jason)
-     * @version 1.0
-     * @author jason
+     * @param $row int
      * @return string
+     * @throws PHPDS_exception
      */
     public function rowResults($row = 0)
     {
@@ -405,7 +404,7 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
     /**
      * Ends SQL transaction.
      *
-     * @param <type> $commit
+     * @param boolean $commit
      */
     public function endTransaction($commit = true)
     {
@@ -419,13 +418,14 @@ class PHPDS_pdoConnector extends PHPDS_dependant implements iPHPDS_dbConnector
     /**
      * magic method to get read-only access to various data
      *
-     * @since 4.0
+     * @since   4.0
      * @version 1.0
-     * @author greg <greg@phpdevshell.org>
+     * @author  greg <greg@phpdevshell.org>
      *
      * @date 20130224 (v1.0) (greg) added
      *
      * @param string $name name for the parameter to get (ie. "DSN", "Charset", "Host", ...)
+     * @return mixed
      */
     public function __get($name)
     {

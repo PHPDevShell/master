@@ -27,23 +27,29 @@ class PHPDS
      */
     protected $db;
     /**
+     * Core config object.
+     *
+     * @var object
+     */
+    protected $config;
+    /**
      * Core object.
      *
      * @var object
      */
     protected $core;
     /**
+     * Core cache object.
+     *
+     * @var object
+     */
+    protected $cache;
+    /**
      * Core user object.
      *
      * @var object
      */
     protected $user;
-    /**
-     * Core security object.
-     *
-     * @var object
-     */
-    protected $security;
     /**
      * Core navigation object.
      *
@@ -117,7 +123,7 @@ class PHPDS
         $this->objectCache = new PHPDS_array;
         $this->basepath    = realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..') . DIRECTORY_SEPARATOR;
         try {
-            $this->config();
+            $this->factorConfig();
         } catch (Exception $e) {
             $this->PHPDS_errorHandler()->doHandleException($e);
         }
@@ -298,7 +304,6 @@ class PHPDS
 
     /**
      * Deal with database access configuration. Also makes the first master connection to the database.
-     * Fix: The database and connector classes will load their own configuration.
      *
      * @return $this the current instance
      */
@@ -306,7 +311,6 @@ class PHPDS
     {
         $db = $this->PHPDS_db();
         $db->connect();
-        $db->connectCacheServer();
 
         return $this; // to allow fluent interface
     }
@@ -319,7 +323,7 @@ class PHPDS
      */
     protected function copySettings($settings, $type = null)
     {
-        $this->copyArray($this->PHPDS_db()->essentialSettings, $this->configuration, $settings, $type);
+        $this->copyArray($this->PHPDS_config()->essentialSettings, $this->configuration, $settings, $type);
     }
 
     /**
@@ -401,7 +405,7 @@ class PHPDS
      * After that, everything is ready to run.
      * all config_*() methods are meant to be called only at startup time by config()
      */
-    protected function config()
+    protected function factorConfig()
     {
         // Loads available plugins from database. /////////////////////////////
         $this->classes = $this->PHPDS_classFactory();
@@ -418,12 +422,14 @@ class PHPDS
 
         // Init main debug instance. //////////////////////////////////////////
         $this->PHPDS_debug(); /////////////////////////////////////////////////
-
         // Various init subroutines. //////////////////////////////////////////
         $this->configSession()->configDb(); ///////////////////////////////////
 
-        // Loads important settings from db enabling system to run correctly. /
-        $this->db->getEssentialSettings(); ////////////////////////////////////
+        // Connects cache server. /////////////////////////////////////////////
+        $this->PHPDS_cache()->connectCacheServer(); ///////////////////////////
+
+        // Starts config class. ///////////////////////////////////////////////
+        $this->PHPDS_config()->getEssentialSettings(); ////////////////////////
 
         $this->classes->loadRegistry();
 
@@ -431,7 +437,7 @@ class PHPDS
         $this->configCoreSettings(); //////////////////////////////////////////
 
         // Checks which plugins is installed.  ////////////////////////////////
-        $this->db->installedPlugins(); ////////////////////////////////////////
+        $this->config->installedPlugins(); ////////////////////////////////////
 
         // Loads node language translation engine. ////////////////////////////
         $this->PHPDS_core()->loadNodeLanguage(); //////////////////////////////
@@ -448,8 +454,10 @@ class PHPDS
         $this->PHPDS_core()->loadCoreLanguage(); //////////////////////////////
 
         // Set user session discription settings //////////////////////////////
-        $this->configuration['user_display_name'] = !isset($_SESSION['user_display_name']) ? '' : $_SESSION['user_display_name'];
-        $this->configuration['user_role_name']    = !isset($_SESSION['user_role_name']) ? '' : $_SESSION['user_role_name'];
+        $this->configuration['user_display_name'] =
+            !isset($_SESSION['user_display_name']) ? '' : $_SESSION['user_display_name'];
+        $this->configuration['user_role_name']    =
+            !isset($_SESSION['user_role_name']) ? '' : $_SESSION['user_role_name'];
 
         // Set default plugin language files //////////////////////////////////
         $this->PHPDS_core()->loadDefaultPluginLanguage(); /////////////////////
@@ -466,7 +474,7 @@ class PHPDS
             // Run template as required.
             $this->PHPDS_core()->startController();
             // Write collected logs to database.
-            $this->PHPDS_db()->logThis();
+            $this->PHPDS_user()->logThis();
         } catch (Exception $e) {
             $this->PHPDS_errorHandler()->doHandleException($e);
         }
@@ -509,7 +517,6 @@ class PHPDS
     /**
      * Custom Error Handler.
      * One is created if necessary.
-     * You can override to use you own core subsystem
      *
      * @return PHPDS_errorHandler
      */
@@ -524,7 +531,6 @@ class PHPDS
     /**
      * Allow access to the global core subsystem
      * One is created if necessary.
-     * You can override to use you own core subsystem
      *
      * @return PHPDS_core
      */
@@ -537,9 +543,36 @@ class PHPDS
     }
 
     /**
-     * Provides a variety of user functions.
+     * Allow access to the global config subsystem
      * One is created if necessary.
-     * You can override to use you own core subsystem
+     *
+     * @return PHPDS_config
+     */
+    public function PHPDS_config()
+    {
+        if (empty($this->config)) {
+            $this->config = $this->_factory('PHPDS_config');
+        }
+        return $this->config;
+    }
+
+    /**
+     * Allow access to the global cache subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_cache
+     */
+    public function PHPDS_cache()
+    {
+        if (empty($this->cache)) {
+            $this->cache = $this->_factory('PHPDS_cache');
+        }
+        return $this->cache;
+    }
+
+    /**
+     * Allow access to the global user subsystem
+     * One is created if necessary.
      *
      * @return PHPDS_user
      */
@@ -554,7 +587,6 @@ class PHPDS
     /**
      * Allow access to the global debugging subsystem
      * One is created if necessary.
-     * You can override to use you own core subsystem
      *
      * @return PHPDS_debug instance
      */
@@ -570,7 +602,6 @@ class PHPDS
     /**
      * Allow access to the global navigation subsystem
      * One is created if necessary.
-     * You can override to use you own navigation subsystem
      *
      * @return PHPDS_navigation
      */
@@ -583,23 +614,8 @@ class PHPDS
     }
 
     /**
-     * Send info data to the debug subsystem (console, firebug, ...)
-     * The goal of this function is to be called all throughout the code to be able to track bugs.
-     *
-     * @param string $data
-     */
-    public function log($data)
-    {
-        if (!empty($this->debug)) $this->PHPDS_debug()->debug($data);
-        else {
-            if (!empty($GLOBALS['early_debug'])) error_log('EARLY INFO: ' . $data);
-        }
-    }
-
-    /**
-     * Allow access to the (formerly) global database subsystem
+     * Allow access to the global database subsystem
      * One is created if necessary.
-     * You can override to use you own database subsystem
      *
      * @return PHPDS_db
      */
@@ -612,24 +628,8 @@ class PHPDS
     }
 
     /**
-     * Allow access to the (formerly) global security subsystem
-     * One is created if necessary.
-     * You can override to use you own security subsystem
-     *
-     * @return PHPDS_security
-     */
-    public function PHPDS_security()
-    {
-        if (empty($this->security)) {
-            $this->security = $this->_factory('PHPDS_security');
-        }
-        return $this->security;
-    }
-
-    /**
      * Allow access to the class factory
      * One is created if necessary.
-     * You can override to use you own class factory
      *
      * @return PHPDS_classFactory
      */
@@ -644,7 +644,6 @@ class PHPDS
     /**
      * Allow access to the global templating subsystem
      * One is created if necessary
-     * You can override to use you own templating subsystem
      *
      * @param boolean $lazy if true (default) the template is created if wasn't before
      *
@@ -662,7 +661,6 @@ class PHPDS
     /**
      * Allow access to the tagging subsystem
      * One is created if necessary.
-     * You can override to use you own tagging subsystem
      *
      * @return PHPDS_tagger
      */
@@ -677,7 +675,6 @@ class PHPDS
     /**
      * Allow access to the asynchronous notifications subsystem
      * One is created if necessary.
-     * You can override to use you own tagging subsystem
      *
      * @return PHPDS_notif
      */
@@ -692,7 +689,6 @@ class PHPDS
     /**
      * Allow access to the global templating subsystem
      * One is created if necessary.
-     * You can override to use you own templating subsystem
      *
      * @return self
      */
@@ -702,6 +698,20 @@ class PHPDS
             $this->lang = new PHPDS_array();
         }
         return $this->lang;
+    }
+
+    /**
+     * Send info data to the debug subsystem (console, firebug, ...)
+     * The goal of this function is to be called all throughout the code to be able to track bugs.
+     *
+     * @param string $data
+     */
+    public function log($data)
+    {
+        if (!empty($this->debug)) $this->PHPDS_debug()->debug($data);
+        else {
+            if (!empty($GLOBALS['early_debug'])) error_log('EARLY INFO: ' . $data);
+        }
     }
 
     /**
@@ -859,9 +869,10 @@ class PHPDS
  * It allows dependency injection and dependency fetching; also mimics multiple inheritance;
  *
  * @property PHPDS_core       $core
+ * @property PHPDS_config     $config
+ * @property PHPDS_cache      $cache
  * @property PHPDS_navigation $navigation
  * @property PHPDS_db         $db
- * @property PHPDS_security   $security
  * @property PHPDS_template   $template
  * @property PHPDS_tagger     $tagger
  * @property PHPDS_user       $user
@@ -1233,7 +1244,6 @@ class PHPDS_classFactory extends PHPDS_dependant
         }
     }
 
-
     /**
      * Loads the registry stored in the database into memory
      * Deals with cache
@@ -1250,10 +1260,11 @@ class PHPDS_classFactory extends PHPDS_dependant
      */
     public function loadRegistry()
     {
-        $db = $this->db;
+        $cache = $this->cache;
+        $db    = $this->db;
 
-        if ($db->cacheEmpty('PluginClasses')) {
-            $pluginR = $db->invokeQuery('DB_readPluginClassRegistryQuery');
+        if ($cache->cacheEmpty('PluginClasses')) {
+            $pluginR = $this->config->readClassRegistry();
             if (!empty($pluginR)) {
                 foreach ($pluginR as $p) {
                     $fileName  = '';
@@ -1265,15 +1276,15 @@ class PHPDS_classFactory extends PHPDS_dependant
                     }
                     $this->registerClass($classname, $p['alias'], $p['plugin_folder'], $fileName);
                 }
-                $db->cacheWrite('PluginClasses', $this->PluginClasses);
+                $cache->cacheWrite('PluginClasses', $this->PluginClasses);
             }
         } else {
             if (!empty($this->PluginClasses)) {
-                $PluginClasses       = $db->cacheRead('PluginClasses');
+                $PluginClasses       = $cache->cacheRead('PluginClasses');
                 $this->PluginClasses = array_merge($PluginClasses, $this->PluginClasses);
-                $db->cacheWrite('PluginClasses', $this->PluginClasses);
+                $cache->cacheWrite('PluginClasses', $this->PluginClasses);
             } else {
-                $this->PluginClasses = $db->cacheRead('PluginClasses');
+                $this->PluginClasses = $cache->cacheRead('PluginClasses');
             }
         }
 
@@ -1284,10 +1295,10 @@ class PHPDS_classFactory extends PHPDS_dependant
      * Create a new instance of the given class and link it as dependant (arguments as an array)
      *
      * As a special case, if the classname starts with an ampersand ('&'), the class is considered as singleton,
-     * and therefore a cached version will be returned after the first instanciation
+     * and therefore a cached version will be returned after the first instantiation
      *
      * @param PHPDS|PHPDS_dependant $dependancy
-     * @param string|array          $classname name of the class to instanciate, or parameter array
+     * @param string|array          $classname name of the class to instantiation, or parameter array
      * @param array                 $params    class specific parameters to feed the object's constructor
      *
      * May throw a PHPDS_exception

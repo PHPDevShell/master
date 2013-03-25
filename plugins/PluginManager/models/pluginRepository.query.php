@@ -3,135 +3,6 @@
 class PluginManager_readRepository extends PHPDS_query
 {
     private $availablePlugins;
-
-    public function invoke($parameters = null)
-    {
-        $this->availablePlugins = $this->db->invokeQuery('PluginManager_currentPluginStatusQuery');
-        return $this->handleRepositoryData($this->readJsonRepo());
-    }
-
-    private function readJsonRepo()
-    {
-        $config = $this->configuration;
-
-        $jsonfile = $config['absolute_path'] . 'plugins/repository.json';
-        if (file_exists($jsonfile)) {
-            $json      = file_get_contents($jsonfile);
-            $repoarray = json_decode($json, true);
-            if (is_array($repoarray) && !empty($repoarray)) {
-                return $repoarray;
-            } else {
-                throw new PHPDS_exception('Local repository plugins/repository.json file empty?');
-            }
-        } else {
-            throw new PHPDS_exception('Local repository file missing or unreadable in plugins/repository.json');
-        }
-    }
-
-    private function handleRepositoryData($repoarray)
-    {
-        $remote = array();
-
-        // Plugins available in repository.
-        foreach ($repoarray['plugins'] as $name => $data) {
-            $remote[$name] = array(
-                'name'      => $name,
-                'desc'      => $data['desc'],
-                'repo'      => $data['repo'],
-                'installed' => $this->isPluginInstalled($name)
-            );
-        }
-
-        // Check plugins that exists locally.
-        $local     = $this->localAvailablePlugins($remote);
-        $allpugins = $this->sortPluginByName($remote, $local);
-
-        return $allpugins;
-    }
-
-    private function localAvailablePlugins($remote)
-    {
-        // Plugins available locally.
-        $directory      = $this->configuration['absolute_path'] . 'plugins';
-        $base           = $directory . '/';
-        $subdirectories = opendir($base);
-        $local          = array();
-
-        while (false !== ($object = readdir($subdirectories))) {
-            if (ctype_alnum($object)) {
-                if (empty($remote[$object])) {
-                    $local[$object] = $this->getLocalPluginInfo($base, $object);
-                } else {
-                    $local[$object] = $this->getLocalPluginInfo($base, $object, $remote[$object]);
-                }
-            }
-        }
-
-        return $local;
-    }
-
-    private function getLocalPluginInfo($directory, $plugin, $remote = array())
-    {
-        if (empty($remote)) {
-            $installed = $this->isPluginInstalled($plugin);
-            $repo      = '';
-        } else {
-            $installed = $remote['installed'];
-            $repo      = $remote['repo'];
-        }
-        // get local plugins with config files, ignore the rest.f
-        $xmlconfig = $directory . $plugin . '/config/plugin.config.xml';
-        $localxml  = @simplexml_load_file($xmlconfig);
-        if (!empty($localxml) && !empty($localxml->name)) {
-            $local = array(
-                'name'      => (string)$localxml->name,
-                'desc'      => rtrim((string)$localxml->description, '.'),
-                'repo'      => $repo,
-                'local'     => true,
-                'installed' => $installed
-            );
-        } else {
-            $local = array(
-                'name'      => $plugin,
-                'desc'      => '',
-                'repo'      => $repo,
-                'cfgerror'  => $xmlconfig,
-                'broken'    => true,
-                'local'     => true,
-                'installed' => $installed
-            );
-        }
-
-        return $local;
-    }
-
-    private function sortPluginByName($remote, $local)
-    {
-        $reposorted = array();
-        $repo       = array_merge($remote, $local);
-        ksort($repo);
-        foreach ($repo as $value) {
-            $reposorted[] = $value;
-        }
-        return $reposorted;
-    }
-
-    private function isPluginInstalled($plugin)
-    {
-        $p         = $this->availablePlugins;
-        $installed = false;
-        if (!empty($p[$plugin]['status'])) {
-            switch ($p[$plugin]['status']) {
-                case 'install':
-                    $installed = true;
-                    break;
-                default:
-                    $installed = false;
-                    break;
-            }
-        }
-        return $installed;
-    }
 }
 
 class PluginManager_availableClassesQuery extends PHPDS_query
@@ -264,10 +135,13 @@ class PluginManager_getJsonInfo extends PHPDS_query
             } else {
                 $p['dependency'] = '';
             }
-            return json_encode($p);
         } else {
-            return 'online';
+            //return 'online';
         }
+
+        $view = $this->factory('views');
+        $view->set('p', $p);
+        return $view->get('info-modal.html');
     }
 
     public function getDependenciesInfo($da)

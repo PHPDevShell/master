@@ -45,19 +45,19 @@ class PHPDS_navigation extends PHPDS_dependant
     {
         $db             = $this->db;
         $all_user_roles = $this->user->getRoles($this->configuration['user_id']);
-        if ($db->cacheEmpty('navigation')) {
+        if ($db->cache->cacheEmpty('navigation')) {
             if (empty($this->navigation)) $this->navigation = array();
             if (empty($this->child)) $this->child = array();
             if (empty($this->navAlias)) $this->navAlias = array();
             $db->invokeQuery('NAVIGATION_extractNodeQuery', $all_user_roles);
 
-            $db->cacheWrite('navigation', $this->navigation);
-            $db->cacheWrite('child_navigation', $this->child);
-            $db->cacheWrite('nav_alias', $this->navAlias);
+            $db->cache->cacheWrite('navigation', $this->navigation);
+            $db->cache->cacheWrite('child_navigation', $this->child);
+            $db->cache->cacheWrite('nav_alias', $this->navAlias);
         } else {
-            $this->navigation = $db->cacheRead('navigation');
-            $this->child      = $db->cacheRead('child_navigation');
-            $this->navAlias   = $db->cacheRead('nav_alias');
+            $this->navigation = $db->cache->cacheRead('navigation');
+            $this->child      = $db->cache->cacheRead('child_navigation');
+            $this->navAlias   = $db->cache->cacheRead('nav_alias');
         }
         return $this;
     }
