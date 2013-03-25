@@ -176,24 +176,4 @@ class CONFIG_installedPluginsQuery extends PHPDS_query
 		FROM
 			_db_core_plugin_activation
 	";
-
-    public function invoke($parameters = null)
-    {
-        if ($this->cache->cacheEmpty('plugins_installed')) {
-            $installed_plugins_db = parent::invoke();
-
-            foreach ($installed_plugins_db as $installed_plugins_array) {
-                $plugins_installed[$installed_plugins_array['plugin_folder']] = array(
-                    'plugin_folder' => $installed_plugins_array['plugin_folder'],
-                    'status'        => $installed_plugins_array['status'],
-                    'version'       => $installed_plugins_array['version']
-                );
-            }
-            $this->config->pluginsInstalled = $plugins_installed;
-
-            $this->cache->cacheWrite('plugins_installed', $plugins_installed);
-        } else {
-            $this->config->pluginsInstalled = $this->cache->cacheRead('plugins_installed');
-        }
-    }
 }

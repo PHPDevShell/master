@@ -13,6 +13,74 @@ class PHPDS_config extends PHPDS_dependant
      * @var array
      */
     public $pluginsInstalled;
+    /**
+     * Contains array of all registered classes to plugins.
+     *
+     * @var array
+     */
+    public $registeredClasses;
+
+    /**
+     * Stores registered classed into cache and public registry variable.
+     *
+     * @return array|mixed
+     */
+    public function classRegistry()
+    {
+        $cache = $this->cache;
+
+        if ($cache->cacheEmpty('registeredClasses')) {
+            $pluginR = $this->config->readClassRegistry();
+            if (!empty($pluginR)) {
+                foreach ($pluginR as $p) {
+                    $fileName  = '';
+                    $classname = $p['class_name'];
+                    $pos       = strpos($classname, '@');
+                    if ($pos) {
+                        $fileName  = substr($classname, $pos + 1);
+                        $classname = substr($classname, 0, $pos);
+                    }
+                    $this->registerClass($classname, $p['alias'], $p['plugin_folder'], $fileName);
+                }
+                $cache->cacheWrite('registeredClasses', $this->registeredClasses);
+            }
+        } else {
+            if (!empty($this->registeredClasses)) {
+                $registeredClasses       = $cache->cacheRead('registeredClasses');
+                $this->registeredClasses = array_merge($registeredClasses, $this->registeredClasses);
+                $cache->cacheWrite('registeredClasses', $this->registeredClasses);
+            } else {
+                $this->registeredClasses = $cache->cacheRead('registeredClasses');
+            }
+        }
+
+        return $this->registeredClasses;
+    }
+
+    /**
+     * Add a class to the registry.
+     *
+     * @param string $className    the name of the PHP class to register
+     * @param string $classAlias   an altername name for this class
+     * @param string $pluginFolder the name/folder of the plugin this class belongs to
+     * @param string $fileName     (optional) a file where to load the class from, instead of the default name based on the class name
+     */
+    public function registerClass($className, $classAlias, $pluginFolder, $fileName = null)
+    {
+        $this->registeredClasses[$className] = array(
+            'class_name'    => $className,
+            'alias'         => $classAlias,
+            'plugin_folder' => $pluginFolder,
+            'file_name'     => $fileName
+        );
+        if (!empty($classAlias)) {
+            $this->registeredClasses[$classAlias] = array(
+                'class_name'    => $className,
+                'plugin_folder' => $pluginFolder,
+                'file_name'     => $fileName
+            );
+        }
+    }
 
     /**
      * Gets all registered database classes.
@@ -83,11 +151,25 @@ class PHPDS_config extends PHPDS_dependant
 
     /**
      * Writes array of all the installed plugins on the system.
-     * @author Jason Schoeman <titan@phpdevshell.org>
      */
     public function installedPlugins()
     {
-        $this->db->invokeQuery('CONFIG_installedPluginsQuery');
+        if ($this->cache->cacheEmpty('plugins_installed')) {
+            $installed_plugins_db = $this->db->invokeQuery('CONFIG_installedPluginsQuery');
+
+            foreach ($installed_plugins_db as $installed_plugins_array) {
+                $plugins_installed[$installed_plugins_array['plugin_folder']] = array(
+                    'plugin_folder' => $installed_plugins_array['plugin_folder'],
+                    'status'        => $installed_plugins_array['status'],
+                    'version'       => $installed_plugins_array['version']
+                );
+            }
+            $this->pluginsInstalled = $plugins_installed;
+
+            $this->cache->cacheWrite('plugins_installed', $plugins_installed);
+        } else {
+            $this->pluginsInstalled = $this->cache->cacheRead('plugins_installed');
+        }
     }
 
     /**
