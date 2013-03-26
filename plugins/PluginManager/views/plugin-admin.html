@@ -2,7 +2,7 @@
     <div class="plugin-manager">
         <div class="row">
             <div class="span1">
-                <div class="btn-group">
+                <div id="plugin-tools" class="btn-group">
                     <button class="btn btn-inverse"><i class="icon-wrench icon-white"></i></button>
                     <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
                         <span class="caret"></span>
@@ -144,7 +144,6 @@
             <div class="column span3"></div>
         </div>
     </div>
-    <div id="info-modal"></div>
 </div>
 
 <script type="text/javascript">
@@ -153,9 +152,6 @@
 
         $(this).on('pluginsUpdated', function (event) {
             bindNewPluginButtons(".new-bind");
-        });
-        $(this).on('infoRequested', function (event) {
-            $("#info-modal").modal();
         });
         bindNewPluginButtons(".old-bind");
         // Repository update.
@@ -193,8 +189,7 @@
         $(".plugin-get-info").on("click", function() {
             var plugin        = $(this).data("plugin");
             $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
-                $("#info-modal").html(data);
-                $(document).trigger("infoRequested");
+                $(data).modal();
             });
             return false;
         });

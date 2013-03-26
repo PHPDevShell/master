@@ -1203,46 +1203,13 @@ class PHPDS_classFactory extends PHPDS_dependant
      *
      * @var array
      */
-    protected $PluginClasses = array();
+    protected $pluginClasses = array();
     /**
      * a cache array for singletons
      *
      * @var array
      */
     protected $objectCache;
-
-    /**
-     * Add a class to the registry
-     * Note that classes added "on the fly" superseed the registry stored in the database
-     *
-     * @version 1.1
-     * @since   3.1.2
-     * @author  greg <greg@phpdevshell.org>
-     *
-     * @date 20120113 (v1.0) (greg) added
-     * @date 20120606 (v1.1) (greg) added support for fileName parameter
-     *
-     * @param string $className    the name of the PHP class to register
-     * @param string $classAlias   an altername name for this class
-     * @param string $pluginFolder the name/folder of the plugin this class belongs to
-     * @param string $fileName     (optional) a file where to load the class from, instead of the default name based on the class name
-     */
-    public function registerClass($className, $classAlias, $pluginFolder, $fileName = null)
-    {
-        $this->PluginClasses[$className] = array(
-            'class_name'    => $className,
-            'alias'         => $classAlias,
-            'plugin_folder' => $pluginFolder,
-            'file_name'     => $fileName
-        );
-        if (!empty($classAlias)) {
-            $this->PluginClasses[$classAlias] = array(
-                'class_name'    => $className,
-                'plugin_folder' => $pluginFolder,
-                'file_name'     => $fileName
-            );
-        }
-    }
 
     /**
      * Loads the registry stored in the database into memory
@@ -1260,36 +1227,8 @@ class PHPDS_classFactory extends PHPDS_dependant
      */
     public function loadRegistry()
     {
-        $cache = $this->cache;
-        $db    = $this->db;
-
-        if ($cache->cacheEmpty('PluginClasses')) {
-            $pluginR = $this->config->readClassRegistry();
-            if (!empty($pluginR)) {
-                foreach ($pluginR as $p) {
-                    $fileName  = '';
-                    $classname = $p['class_name'];
-                    $pos       = strpos($classname, '@');
-                    if ($pos) {
-                        $fileName  = substr($classname, $pos + 1);
-                        $classname = substr($classname, 0, $pos);
-                    }
-                    $this->registerClass($classname, $p['alias'], $p['plugin_folder'], $fileName);
-                }
-                $cache->cacheWrite('PluginClasses', $this->PluginClasses);
-            }
-        } else {
-            if (!empty($this->PluginClasses)) {
-                $PluginClasses       = $cache->cacheRead('PluginClasses');
-                $this->PluginClasses = array_merge($PluginClasses, $this->PluginClasses);
-                $cache->cacheWrite('PluginClasses', $this->PluginClasses);
-            } else {
-                $this->PluginClasses = $cache->cacheRead('PluginClasses');
-            }
-        }
-
+        $this->pluginClasses = $this->config->classRegistry();
     }
-
 
     /**
      * Create a new instance of the given class and link it as dependant (arguments as an array)
@@ -1330,8 +1269,8 @@ class PHPDS_classFactory extends PHPDS_dependant
 
         try {
             // support for plugin aliasing
-            if (!empty($this->PluginClasses[$classname]['class_name'])) {
-                $classname = $this->PluginClasses[$classname]['class_name'];
+            if (!empty($this->pluginClasses[$classname]['class_name'])) {
+                $classname = $this->pluginClasses[$classname]['class_name'];
             }
 
             if (('singleton' == $my_parameters['factor']) && isset($this->objectCache[$classname])) {
@@ -1376,10 +1315,10 @@ class PHPDS_classFactory extends PHPDS_dependant
      */
     public function classParams($class_name)
     {
-        if (empty($this->PluginClasses[$class_name])) {
+        if (empty($this->pluginClasses[$class_name])) {
             return false;
         }
-        return $this->PluginClasses[$class_name];
+        return $this->pluginClasses[$class_name];
     }
 
     /**

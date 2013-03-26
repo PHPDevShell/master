@@ -24,11 +24,15 @@ class PluginActivation extends PHPDS_controller
         // Pre-checks.
         $this->canPluginManagerWork();
 
+        $d = $this->db->invokeQuery('PluginManager_availableClassesQuery');
+        PU_printr($d);
+        $c = $this->config->registeredClasses;
+        PU_printr($c);
         /////////////////////////////////////////////////
         // Call current plugins status from database. ///
         /////////////////////////////////////////////////
         // Read plugin directory.
-        $RESULTS = $this->repo->read();
+        $RESULTS = $this->repo->initiateRepository();
 
         // Load views.
         $view = $this->factory('views');
@@ -59,7 +63,7 @@ class PluginActivation extends PHPDS_controller
 
         // Read plugin config.
         if ($this->G('info')) {
-            return $this->repo->readPluginConfig($this->G('plugin'));
+            return $this->repo->pluginModalInfo($this->G('plugin'));
         }
 
         // Plugin activation starts.
