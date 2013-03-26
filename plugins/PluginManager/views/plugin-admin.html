@@ -154,6 +154,9 @@
         $(this).on('pluginsUpdated', function (event) {
             bindNewPluginButtons(".new-bind");
         });
+        $(this).on('infoRequested', function (event) {
+            $("#info-modal").modal();
+        });
         bindNewPluginButtons(".old-bind");
         // Repository update.
         $("#repo-refresh").on("click", function() {
@@ -190,9 +193,8 @@
         $(".plugin-get-info").on("click", function() {
             var plugin        = $(this).data("plugin");
             $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
-                var modal  = $("#info-modal");
-                modal.html(data);
-                modal.modal();
+                $("#info-modal").html(data);
+                $(document).trigger("infoRequested");
             });
             return false;
         });
