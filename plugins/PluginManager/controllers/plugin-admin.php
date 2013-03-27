@@ -22,12 +22,8 @@ class PluginActivation extends PHPDS_controller
     public function execute()
     {
         // Pre-checks.
-        $this->canPluginManagerWork();
+        $this->repo->canPluginManagerWork();
 
-        $d = $this->db->invokeQuery('PluginManager_availableClassesQuery');
-        PU_printr($d);
-        $c = $this->config->registeredClasses;
-        PU_printr($c);
         /////////////////////////////////////////////////
         // Call current plugins status from database. ///
         /////////////////////////////////////////////////
@@ -63,7 +59,17 @@ class PluginActivation extends PHPDS_controller
 
         // Read plugin config.
         if ($this->G('info')) {
-            return $this->repo->pluginModalInfo($this->G('plugin'));
+            $modal =  $this->repo->pluginModalInfo($this->G('plugin'));
+            if (is_array($modal)) {
+                $view = $this->factory('views');
+                $view->set('p', $modal);
+                return $view->get('info-modal.html');
+            } else if ($modal) {
+                return $modal;
+            } else {
+                $this->template->warning(sprintf(__('No info available for %s'), $this->G('plugin')));
+                return 'false';
+            }
         }
 
         // Plugin activation starts.
@@ -100,39 +106,6 @@ class PluginActivation extends PHPDS_controller
             // End save is submitted... /////////////////////////////////////////
             /////////////////////////////////////////////////////////////////////
         }
-    }
-
-    public function canPluginManagerWork()
-    {
-        $path = $this->configuration['absolute_path'] . 'plugins';
-        $repo = $path . '/repository.json';
-
-        if (!is_writable($path)) {
-            $this->template->critical(sprintf('Plugin manager cannot write to: %s', $path));
-        } else {
-            if (!is_writable($repo)) {
-                $this->template->critical(sprintf('Plugin manager cannot write to repository: %s', $repo));
-            }
-        }
-
-        if (!function_exists('curl_init')) {
-            $this->template->critical('Plugin manager required the cURL PHP Extention to work.');
-        }
-    }
-
-    private function isWritable($dir)
-    {
-        $folder = opendir($dir);
-        while ($file = readdir($folder))
-            if ($file != '.' && $file != '..' &&
-                (!is_writable($dir . "/" . $file) ||
-                    (is_dir($dir . "/" . $file) && !$this->isWritable($dir . "/" . $file)))
-            ) {
-                closedir($dir);
-                return false;
-            }
-        closedir($dir);
-        return true;
     }
 }
 

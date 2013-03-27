@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <config type="plugin">
 	<name>PluginManager</name>
-	<version>4.0.0</version>
+	<version>4.0.0-beta-1</version>
 	<description>Easy to use UI to manage PHPDevShell plugins from.</description>
 	<founder>Jason Schoeman</founder>
 	<author>Jason Schoeman</author>
@@ -21,7 +21,6 @@
 			</p>
 		]]>
 	</info>
-	<versionurl current="1000" />
 	<install version="1000">
         <dependencies>
             <dependence class="controlPanel" plugin="ControlPanel" />
