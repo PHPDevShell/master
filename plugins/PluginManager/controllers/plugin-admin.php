@@ -54,25 +54,21 @@ class PluginActivation extends PHPDS_controller
 
         // Refresh menus.
         if ($this->G('update') == 'menus') {
-            return $this->template->outputMenu();
+            $this->template->outputMenu();
         }
 
         // Read plugin config.
         if ($this->G('info')) {
-            $modal =  $this->repo->pluginModalInfo($this->G('plugin'));
-            if (is_array($modal)) {
-                $view = $this->factory('views');
-                $view->set('p', $modal);
-                return $view->get('info-modal.html');
-            } else if ($modal) {
-                return $modal;
-            } else {
-                $this->template->warning(sprintf(__('No info available for %s'), $this->G('plugin')));
-                return 'false';
-            }
+            return $this->repo->pluginModalInfo($this->G('plugin'));
+        }
+
+        // Check for updates online for installed plugins.
+        if ($this->P('update') == 'check') {
+            //return $this->repo->checkOnlineUpdates();
         }
 
         // Plugin activation starts.
+        /**
         if ($this->P() && $this->user->isRoot()) {
             $plugin = $this->security->post['plugin'];
             /////////////////////////////////////////////////////////////////////
@@ -106,6 +102,7 @@ class PluginActivation extends PHPDS_controller
             // End save is submitted... /////////////////////////////////////////
             /////////////////////////////////////////////////////////////////////
         }
+       */
     }
 }
 

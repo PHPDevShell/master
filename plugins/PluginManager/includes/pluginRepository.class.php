@@ -184,6 +184,7 @@ class pluginRepository extends PHPDS_dependant
 
         $curl     = curl_exec($ch);
         $sizecurl = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+        if (!$this->generateCurlResponse($ch, $config['repository'])) return false;
         curl_close($ch);
         fclose($fp);
         $newrepo = $this->readJsonRepoFile($repo);
@@ -214,17 +215,27 @@ class pluginRepository extends PHPDS_dependant
         $xmlcfgfile = $this->configuration['absolute_path'] . 'plugins/' . $plugin . '/config/plugin.config.xml';
 
         if (file_exists($xmlcfgfile)) {
-            $infopage = $this->modalInfoLocal($xmlcfgfile);
+            $modal = $this->modalInfoLocal($xmlcfgfile);
         } else {
-            $infopage = $this->modalInfoRemote($plugin);
+            $modal = $this->modalInfoRemote($plugin);
         }
 
-        return $infopage;
+        if (is_array($modal)) {
+            $view = $this->factory('views');
+            $view->set('p', $modal);
+            return $view->get('info-modal.html');
+        } else {
+            return false;
+        }
     }
 
     private function modalInfoLocal($xmlcfgfile)
     {
-        $xml = simplexml_load_file($xmlcfgfile);
+        $xml = @simplexml_load_file($xmlcfgfile);
+        if (!is_array($xml)) {
+            $this->template->warning(sprintf(__('No info available looked in %s'), $xmlcfgfile));
+            return false;
+        }
         return $this->xmlPluginConfigToArray($xml);
     }
 
@@ -235,6 +246,8 @@ class pluginRepository extends PHPDS_dependant
 
         if (! empty($remote_repo['plugins'][$plugin]['repo'])) {
             $repo_url = $remote_repo['plugins'][$plugin]['repo'];
+            if (! empty($remote_repo['plugins'][$plugin]['branch']))
+                $this->githubbranch = $remote_repo['plugins'][$plugin]['branch'];
             if (filter_var($repo_url, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED)) {
                 if ($this->repotype == 'github') {
                     $repo_raw_xml = $this->prepGithubRawConfigUrl($repo_url);
@@ -243,21 +256,38 @@ class pluginRepository extends PHPDS_dependant
                 }
                 $ch = curl_init($repo_raw_xml);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, $this->timeout);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->timeout);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
                 $data = curl_exec($ch);
+                if (!$this->generateCurlResponse($ch, $repo_raw_xml)) return false;
                 curl_close($ch);
-                $curl_error = curl_errno($ch);
-                if (curl_errno($ch) != CURLE_OK) {
-                    $this->template->warning(sprintf(__('cURL error : %s'), $curl_error));
-                    return false;
-                }
             }
         }
         if(!empty($data)) {
-            $xml = simplexml_load_string($data);
+            $xml = @simplexml_load_string($data);
             return $this->xmlPluginConfigToArray($xml);
         }
         return false;
+    }
+
+    private function generateCurlResponse ($ch, $url)
+    {
+        $curl_errornr = curl_errno($ch);
+        $curl_error   = curl_error($ch);
+        $http_code    = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if ($curl_errornr != CURLE_OK || $http_code != 200) {
+            if ($http_code == 200) {
+                $this->template->critical(sprintf('cURL Error : %s (%s)', $curl_error, $url));
+            } else {
+                $this->template->critical(sprintf('HTTP Response Error : %s (%s)', $http_code, $url));
+            }
+            curl_close($ch);
+            PU_silentHeaderStatus($http_code);
+            return false;
+        }
+
+        return true;
     }
 
     private function prepGithubRawConfigUrl($repo_url)

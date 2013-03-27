@@ -201,38 +201,31 @@ class PHPDS_core extends PHPDS_dependant
                 $logger = $this->factory('PHPDS_debug', 'PHPDS_accessException');
                 $url    = $this->configuration['absolute_url'] . $_SERVER['REQUEST_URI'];
 
+                PU_silentHeaderStatus($e->HTTPcode);
+
                 switch ($e->HTTPcode) {
                     case 401:
                         if (!PU_isAJAX()) {
                             $this->themeFile = 'login.php';
                         }
-                        PU_silentHeader("HTTP/1.1 401 Unauthorized");
-                        PU_silentHeader("Status: 401");
                         $logger->error('URL unauthorized: ' . $url, '401');
                         break;
                     case 404:
                         if (!PU_isAJAX()) {
                             $this->themeFile = '404.php';
                         }
-                        PU_silentHeader("HTTP/1.1 404 Not Found");
-                        PU_silentHeader("Status: 404");
                         $logger->error('URL not found: ' . $url, '404');
                         break;
                     case 403:
                         if (!PU_isAJAX()) {
                             $this->themeFile = '403.php';
                         }
-                        PU_silentHeader("HTTP/1.1 403 Forbidden");
-                        PU_silentHeader("Status: 403");
                         $logger->error('URL forbidden ' . $url, '403');
                         break;
                     case 418:
-                        sleep(30); // don't make spambot life live in the fast lane
                         if (!PU_isAJAX()) {
                             $this->themeFile = '418.php';
                         }
-                        PU_silentHeader("HTTP/1.1 418 I'm a teapot and you're a spambot");
-                        PU_silentHeader("Status: 418");
                         $logger->error('Spambot for ' . $url, '418');
                         break;
                     default:

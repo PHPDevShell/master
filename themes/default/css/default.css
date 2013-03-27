@@ -142,6 +142,11 @@ li .login-actions:after {
     z-index: 9999;
 }
 
+#ajax-loader-art .bar {
+    width: 100%;
+    font-weight: bold;
+}
+
 #wrap-loader {
 
 }

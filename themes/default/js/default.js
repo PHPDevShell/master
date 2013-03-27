@@ -66,8 +66,7 @@ function PHPDS_documentReady(root) {
             throw new Error('Login Required');
         }
         if (jqXHR.status == 404) {
-            location.href = url;
-            throw new Error('Page not found');
+            //location.href = url;
         }
         if (jqXHR.status == 418) {
             location.href = url;
@@ -88,19 +87,24 @@ function PHPDS_documentReady(root) {
     });
 }
 
-function destroyPage() {
-    jQuery("#ajax-loader-art").hide();
-    jQuery("#bg").stop().fadeTo('slow', 1);
-}
+var ajaxRequestBusy;
 
 function initPage() {
 
 }
 
 function requestPage() {
+    ajaxRequestBusy = true;
     jQuery("#bg").stop().fadeTo('slow', 0.2, function () {
         jQuery("#ajax-loader-art").fadeIn('slow');
     });
+}
+
+function destroyPage() {
+    jQuery("#ajax-loader-art").hide();
+    var bg = jQuery("#bg");
+    bg.stop().fadeTo('slow', 1);
+    ajaxRequestBusy = false;
 }
 
 (function (jQuery) {
@@ -269,10 +273,10 @@ function ajaxMessage(request, delaytime, fadeout) {
     var json = request.getResponseHeader('ajaxResponseMessage');
     if (json) {
         var mobj = jQuery.parseJSON(json);
+        var notifyjq = jQuery('#notify');
         for (var i = 0; i < mobj.length; i++) {
             if (mobj[i].type) {
                 var notify_type;
-                var kill = true;
                 switch (mobj[i].type) {
                     case "ok":
                         notify_type = 'alert-success';
@@ -283,27 +287,33 @@ function ajaxMessage(request, delaytime, fadeout) {
                         break;
 
                     case "warning":
+                        notify_type = 'alert-notice';
+                        delaytime = 3800;
+                        break;
+
                     case "error":
                         notify_type = 'alert-error';
                         break;
 
                     case "critical":
                         notify_type = 'alert-error';
-                        kill = false;
                         break;
 
                     default:
                         notify_type = 'alert-notice';
-                        kill = false;
                 }
-                var notifyjq = jQuery('#notify');
                 notifyjq.append('<div class="alert ' + notify_type + ' fade in"><button type="button" class="close" data-dismiss="alert">&times;</button>' + mobj[i].message + '</div>');
-                if (kill) {
+                if (notify_type !== 'alert-error') {
                     $('.' + notify_type, notifyjq).delay(delaytime).fadeOut(fadeout);
                 }
             }
         }
     }
+}
+
+function errorMessage()
+{
+
 }
 
 (function (jQuery) {

@@ -15,7 +15,7 @@
                         </li>
                         <li>
                             <a href="{{updateplugins}}">
-                                <i class="icon-globe icon-white"></i> {{#i}}Search Plugin Updates{{/i}}
+                                <i class="icon-globe icon-white"></i> {{#i}}Remote Plugin Updates{{/i}}
                             </a>
                         </li>
                         <li>
@@ -152,10 +152,12 @@
 
         $(this).on('pluginsUpdated', function (event) {
             bindNewPluginButtons(".new-bind");
+            $("#plugin-tools").removeClass("open");
         });
         bindNewPluginButtons(".old-bind");
         // Repository update.
         $("#repo-refresh").on("click", function() {
+            if (ajaxRequestBusy) return false;
             requestPage();
             var url = $(this).attr("href");
             $.get(url, function (data, textStatus, request) {
@@ -187,11 +189,14 @@
         });
         // Plugin get info.
         $(".plugin-get-info").on("click", function() {
+            if (ajaxRequestBusy) return false;
+            requestPage();
             var plugin        = $(this).data("plugin");
             $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
                 if (data !== false) {
                     $(data).modal();
                 }
+                destroyPage();
             });
             return false;
         });

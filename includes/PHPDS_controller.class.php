@@ -241,8 +241,12 @@ class PHPDS_controller extends PHPDS_dependant
             } else {
                 $core->themeFile = '';
                 if (false === $raw_data) { //  we consider it's an error
+                    // IMPORTANT (DON'T REMOVE): Also send false to response
+                    $core->data = 'false';
                     return false;
                 } elseif (true === $raw_data) { // controller handled output
+                    // IMPORTANT (DON'T REMOVE): Also send true to response
+                    $core->data = 'true';
                     return true;
                 } elseif (is_string($raw_data)) { // bare data, using empty template
                     $core->data = $raw_data;

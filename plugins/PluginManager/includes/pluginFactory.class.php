@@ -16,15 +16,15 @@ class pluginFactory extends PHPDS_dependant
     /**
      * Runs all necesary queries to enter a plugin and its node items into the database.
      *
-     * @param string Folder and unique name where plugin is copied.
-     * @param string Action taken to manipulate plugin.
-     * @param string Version of the current installed plugin.
+     * @param string $plugin_folder Folder and unique name where plugin is copied.
+     * @param string $action Action taken to manipulate plugin.
+     * @param int    $version Version of the current installed plugin.
      */
-    public function setPlugin($plugin_folder, $action, $version = false)
+    public function setPlugin($plugin_folder, $action, $version = null)
     {
         // Include global variables.
         $configuration = $this->configuration;
-        $db            = $this->db;
+        $cache         = $this->cache;
         // First include the configuration file for processing.
         $xml = simplexml_load_file($configuration['absolute_path'] . "/plugins/$plugin_folder/config/plugin.config.xml");
         // Set plugin array.
@@ -32,6 +32,7 @@ class pluginFactory extends PHPDS_dependant
         $this->action = $action;
         // Extra class required.
         $this->nodeStructure = $this->factory('nodeStructure');
+
         /////////////////////////////////////////////////////////
         ///////////////////// INSTALL ///////////////////////////
         /////////////////////////////////////////////////////////
@@ -53,153 +54,83 @@ class pluginFactory extends PHPDS_dependant
             // Write the node structure.
             $this->nodeStructure->writeNodeStructure();
             // Clear old cache.
-            $db->cacheClear();
-        } else //////////////////////////////////////////////////
-            ///////////////////// UNINSTALL /////////////////////////
-            /////////////////////////////////////////////////////////
-            // Complete Uninstall
-            if ($action == 'uninstall') {
-                // Remove node items from database.
-                $this->uninstallNodes($plugin_folder);
-                // Remove plugin settings if any.
-                $this->uninstallSettings($plugin_folder);
-                // Remove plugin classes if any.
-                $this->uninstallClasses($plugin_folder);
-                // Remove database.
-                $this->uninstallQueries($plugin_folder);
-                // Remove plugin from registry.
-                $this->uninstallVersion($plugin_folder);
-                // Write the node structure.
-                $this->nodeStructure->writeNodeStructure();
-                // Clear old cache.
-                $db->cacheClear();
-            } else //////////////////////////////////////////////////
-                ///////////////////// REINSTALL /////////////////////////
-                /////////////////////////////////////////////////////////
-                // Complete Re-Install Node Items.
-                if ($action == 'reinstall') {
-                    // Install node items to database.
-                    $this->installNodes($plugin_folder, true);
-                    // Before we install anything lets first clear old hooks to this plugin.
-                    // Write the node structure.
-                    $this->nodeStructure->writeNodeStructure();
-                    // Clear old Cache.
-                    $db->cacheClear();
-                } else //////////////////////////////////////////////////
-                    ///////////////////// UPGRADE ///////////////////////////
-                    /////////////////////////////////////////////////////////
-                    // Complete Upgrade
-                    if ($action == 'upgrade') {
-                        // Upgrade custom database query.
-                        $this->upgradeQueries($plugin_folder, $version);
-                        // Install node items to database.
-                        $this->installNodes($plugin_folder, true);
-                        // Before we install anything lets first clear old classes to this plugin.
-                        $this->uninstallClasses($plugin_folder);
-                        // Install classes.
-                        $this->installClasses($plugin_folder);
-                        // Write database string.
-                        $this->upgradeDatabase($plugin_folder, 'install');
-                        // Write the node structure.
-                        $this->nodeStructure->writeNodeStructure();
-                        // Clear old Cache.
-                        $db->cacheClear();
-                    } else //////////////////////////////////////////////////
-                        ///////////////////// SET LOGO //////////////////////////
-                        /////////////////////////////////////////////////////////
-                        // Set applications logo to plugin logo.
-                        if ($action == 'set_logo') {
-                            // Set the default logo to this plugins logo.
-                            $this->pluginSetLogo($plugin_folder);
-                            // Clear old cache.
-                            $db->cacheClear('plugins_installed');
-                        } else //////////////////////////////////////////////////
-                            ///////////////////// AUTO UPGRADE //////////////////////
-                            /////////////////////////////////////////////////////////
-                            // Set applications logo to plugin logo.
-                            if ($action == 'auto_upgrade') {
-                                // Set the default logo to this plugins logo.
-                                $this->pluginAutoUpgrade($plugin_folder);
-                            }
+            $cache->cacheClear();
+
+        }
+
+        /////////////////////////////////////////////////////////
+        ///////////////////// UNINSTALL /////////////////////////
+        /////////////////////////////////////////////////////////
+        // Complete Uninstall
+        if ($action == 'uninstall') {
+            // Remove node items from database.
+            $this->uninstallNodes($plugin_folder);
+            // Remove plugin settings if any.
+            $this->uninstallSettings($plugin_folder);
+            // Remove plugin classes if any.
+            $this->uninstallClasses($plugin_folder);
+            // Remove database.
+            $this->uninstallQueries($plugin_folder);
+            // Remove plugin from registry.
+            $this->uninstallVersion($plugin_folder);
+            // Write the node structure.
+            $this->nodeStructure->writeNodeStructure();
+            // Clear old cache.
+            $cache->cacheClear();
+
+        }
+
+        /////////////////////////////////////////////////////////
+        ///////////////////// REINSTALL /////////////////////////
+        /////////////////////////////////////////////////////////
+        // Complete Re-Install Node Items.
+        if ($action == 'reinstall') {
+            // Install node items to database.
+            $this->installNodes($plugin_folder, true);
+            // Before we install anything lets first clear old hooks to this plugin.
+            // Write the node structure.
+            $this->nodeStructure->writeNodeStructure();
+            // Clear old Cache.
+            $cache->cacheClear();
+        }
+
+        /////////////////////////////////////////////////////////
+        ///////////////////// AUTO UPGRADE //////////////////////
+        /////////////////////////////////////////////////////////
+        // Complete Upgrade.
+        if ($action == 'upgrade') {
+            // Upgrade custom database query.
+            $this->upgradeQueries($plugin_folder, $version);
+            // Install node items to database.
+            $this->installNodes($plugin_folder, true);
+            // Before we install anything lets first clear old classes to this plugin.
+            $this->uninstallClasses($plugin_folder);
+            // Install classes.
+            $this->installClasses($plugin_folder);
+            // Write database string.
+            $this->upgradeDatabase($plugin_folder, 'install');
+            // Write the node structure.
+            $this->nodeStructure->writeNodeStructure();
+            // Clear old Cache.
+            $cache->cacheClear();
+        }
+
+        /////////////////////////////////////////////////////////
+        ///////////////////// AUTO UPGRADE //////////////////////
+        /////////////////////////////////////////////////////////
+        if ($action == 'auto_upgrade') {
+            $this->pluginAutoUpgrade($plugin_folder);
+        }
     }
 
     /**
-     * This private method is used to attemp copying the newly downloaded plugin.
+     * Download and copy plugin to its correct location, then attempts to install.
      * @param $plugin_folder
      * @return void
      */
     private function pluginAutoUpgrade($plugin_folder)
     {
-        $security      = $this->security;
-        $template      = $this->template;
-        $configuration = $this->configuration;
 
-        // Initiate filemanager.
-        $filemanager = $this->factory('fileManager');
-        $a_path      = $configuration['absolute_path'];
-
-        // Set download url.
-        $download_url = $security->post['download_url'];
-
-        // Check if we have the upgrade url.
-        if (empty($download_url)) {
-            // First warning...
-            $template->warning(__('The download URL is empty, cannot do anything now.', 'AdminTools'));
-            return false;
-        } else {
-            try {
-                // Good we have a download url, lets attempt to download file.
-                $tmp_zip    = $a_path . $configuration['tmp_path'] . $plugin_folder . '.zip';
-                $tmp_folder = $a_path . $configuration['tmp_path'];
-                $url_exists = @fopen($download_url, 'r');
-                if ($url_exists !== false) {
-                    $downloaded_to = $filemanager->downloadFile($download_url, $tmp_zip);
-                    $template->ok(sprintf(__('Success, file was downloaded to %s', 'AdminTools'), $downloaded_to));
-                    // So far so good, next lets attemt to extract our zip.
-                    if ($filemanager->zipExtract($downloaded_to, $tmp_folder)) {
-                        $template->ok(sprintf(__('Success, file was extracted to %s', 'AdminTools'), $tmp_folder . $plugin_folder));
-                        // Now we need to connect to the ftp server and try and copy the data over.
-                        if ($ftp_resource = $filemanager->establishFtp()) {
-                            $template->ok(__('Success, FTP server accepted connection.', 'AdminTools'));
-                            // Can we goto the root folder.
-                            if (ftp_size($ftp_resource, 'includes/PHPDS.inc.php') > 2) {
-                                $template->template->ok(sprintf(__('Success, FTP servers working root directory is correct : %s'), ftp_pwd($ftp_resource)));
-
-                                // Ok lets start to copy.
-                                if ($filemanager->ftpRcopy($ftp_resource, $configuration['tmp_path'] . $plugin_folder, 'plugins/' . $plugin_folder)) {
-                                    $dir_c = '';
-                                    foreach ($filemanager->uploadHistory as $directories_copied) {
-                                        $dir_c .= '<br />' . $directories_copied['from'] . ' --> ' . $directories_copied['to'];
-                                    }
-                                    $template->ok(sprintf(__('The required files have been copied from %s to %s. Please check if there are any database upgrades available for %s.%s', 'AdminTools'), $configuration['tmp_path'] . $plugin_folder, 'plugins', $plugin_folder, $dir_c));
-                                }
-
-                                // Last but not least, delete temp install files.
-                                if (@unlink($a_path . $configuration['tmp_path'] . $plugin_folder . '.zip') && $filemanager->deleteDir($a_path . $configuration['tmp_path'] . $plugin_folder)) {
-                                    $template->ok(__('Temporary install directories and files deleted.', 'AdminTools'));
-                                } else {
-                                    $template->warning(__('Temporary install directories and files could NOT be deleted.', 'AdminTools'));
-                                }
-                            } else {
-                                $template->template->notice(sprintf(__('FTP connection was ok, but the root directory listing failed. Working directory is %s which is wrong.'), ftp_pwd($ftp_resource)));
-                                return false;
-                            }
-                        } else {
-                            $template->warning(__('Failed connecting to the local FTP server.', 'AdminTools'));
-                            return false;
-                        }
-                    } else {
-                        $template->warning(sprintf(__('Could not extract %s.', 'AdminTools'), $tmp_zip));
-                        return false;
-                    }
-                } else {
-                    $template->warning(sprintf(__('Could not download file to %s, make sure the file (%s) exists and is readable.', 'AdminTools'), $tmp_zip, $download_url));
-                    return false;
-                }
-            } catch (Exception $e) {
-                $template->error($e->getMessage());
-            }
-        }
     }
 
     /**
@@ -214,10 +145,11 @@ class pluginFactory extends PHPDS_dependant
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
         $db            = $this->db;
+        $config        = $this->config;
         $security      = $this->security;
 
         // Get default and empty template id's.
-        $templates_array = $db->getSettings(array('default_template_id', 'empty_template_id'), 'AdminTools');
+        $templates_array = $config->getSettings(array('default_template_id', 'empty_template_id'), 'AdminTools');
         // Assign nodes q to install.
         $nodes_array = $this->plugin->install->nodes;
         // Define.
@@ -241,7 +173,7 @@ class pluginFactory extends PHPDS_dependant
                         $node_id = $node['nodeid'];
                     }
 
-                    // Check if node is not just an update, we dont want to override custom settings.
+                    // Check if node is not just an update, we don't want to override custom settings.
                     if ($update == true) {
                         if ($db->invokeQuery('PHPDS_doesNodeExist', $node_id)) {
                             // Before we continue, update the link incase it changed.
