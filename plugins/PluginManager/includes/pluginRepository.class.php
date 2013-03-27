@@ -5,11 +5,12 @@
  */
 class pluginRepository extends PHPDS_dependant
 {
-    private $githubsub    = 'https://raw.';
-    private $githubcfg    = '/%s/config/';
-    private $githubbranch = 'master';
-    private $repotype     = 'github';
-    private $timeout      = 10;
+    private $githubsub     = 'https://raw.';
+    private $githubcfg     = '/%s/config/';
+    private $githubbranch  = 'master';
+    private $githubarchive = 'archive';
+    private $repotype      = 'github';
+    private $timeout       = 30;
 
     public function canPluginManagerWork()
     {
@@ -184,7 +185,15 @@ class pluginRepository extends PHPDS_dependant
 
         $curl     = curl_exec($ch);
         $sizecurl = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-        if (!$this->generateCurlResponse($ch, $config['repository'])) return false;
+        if (!$this->generateCurlResponse($ch, $config['repository'])) {
+            fclose($fp);
+            // Recover repository else its going to be empty.
+            $fprevert = fopen($repo, "w");
+            fwrite($fprevert, json_encode(array('plugins' => $oldrepo),
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            fclose($fprevert);
+            return false;
+        }
         curl_close($ch);
         fclose($fp);
         $newrepo = $this->readJsonRepoFile($repo);
@@ -212,18 +221,29 @@ class pluginRepository extends PHPDS_dependant
 
     public function pluginModalInfo($plugin)
     {
-        $xmlcfgfile = $this->configuration['absolute_path'] . 'plugins/' . $plugin . '/config/plugin.config.xml';
+        $plugin_exists = $this->pluginExistsLocally($plugin);
 
-        if (file_exists($xmlcfgfile)) {
-            $modal = $this->modalInfoLocal($xmlcfgfile);
+        if ($plugin_exists) {
+            $modal = $this->modalInfoLocal($plugin_exists);
         } else {
-            $modal = $this->modalInfoRemote($plugin);
+            $modal = $this->modalInfoGithubRemote($plugin);
         }
 
         if (is_array($modal)) {
             $view = $this->factory('views');
             $view->set('p', $modal);
             return $view->get('info-modal.html');
+        } else {
+            return false;
+        }
+    }
+
+    private function pluginExistsLocally($plugin)
+    {
+        $xmlcfgfile = $this->configuration['absolute_path'] . 'plugins/' . $plugin . '/config/plugin.config.xml';
+
+        if (file_exists($xmlcfgfile)) {
+            return $xmlcfgfile;
         } else {
             return false;
         }
@@ -239,7 +259,7 @@ class pluginRepository extends PHPDS_dependant
         return $this->xmlPluginConfigToArray($xml);
     }
 
-    private function modalInfoRemote($plugin)
+    private function modalInfoGithubRemote($plugin)
     {
         $remote_repo = $this->readOriginalJsonRepo();
         $data        = false;
@@ -348,13 +368,66 @@ class pluginRepository extends PHPDS_dependant
         return $depends_on;
     }
 
+    public function pluginPrepare($plugin)
+    {
+        if ($this->pluginExistsLocally($plugin)) {
+            return $this->pluginPrepareReadyLocally();
+        } else {
+            return $this->pluginPrepareNeedDownload();
+        }
+    }
+
+    private function pluginPrepareReadyLocally()
+    {
+        return json_encode(array('status' => 'install', 'message' => __('Continuing install...')));
+    }
+
+    private function pluginPrepareNeedDownload()
+    {
+        return json_encode(array('status' => 'download', 'message' => __('Attempting download...')));
+    }
+
+    public function pluginPrepareDownload($plugin)
+    {
+        $repo = $this->readOriginalJsonRepo();
+        if (! empty($repo['plugins'][$plugin]['repo'])) {
+            return $this->pluginAttemptGithubDownload($plugin, $repo['plugins'][$plugin]['repo']);
+        }
+    }
+
+    private function pluginAttemptGithubDownload($plugin, $repo)
+    {
+        $config      = $this->configuration;
+        $archive_url = $repo . '/' . $this->githubarchive . '/' . $this->githubbranch . '.zip';
+        $zip_file    = $plugin . '_' . time() . '.zip';
+        $zip_path    = $config['absolute_path'] . $config['tmp_path'] . $zip_file;
+
+        $ch = curl_init($archive_url);
+        $fp = fopen($zip_path, "w");
+
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->timeout);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+
+        $curl = curl_exec($ch);
+        if (!$this->generateCurlResponse($ch, $archive_url)) return false;
+        curl_close($ch);
+        fclose($fp);
+        if ($curl) {
+            return json_encode(array('status' => 'extract', 'message' => __('Extracting...')));
+        } else {
+            return false;
+        }
+    }
+
     private function isWritable($dir)
     {
         $folder = opendir($dir);
         while ($file = readdir($folder))
             if ($file != '.' && $file != '..' &&
                 (!is_writable($dir . "/" . $file) ||
-                    (is_dir($dir . "/" . $file) && !$this->isWritable($dir . "/" . $file)))
+                (is_dir($dir . "/" . $file) && !$this->isWritable($dir . "/" . $file)))
             ) {
                 closedir($dir);
                 return false;

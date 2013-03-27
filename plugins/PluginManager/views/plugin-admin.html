@@ -98,14 +98,14 @@
                 <div class="hide">
                     {{#installed}}
                     <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
-                    <button class="btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
+                    <button data-plugin="{{name}}" class="plugin-get-install btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
                     <button class="btn btn"><i class="icon-off"></i></button>
                     {{/installed}}
 
                     {{^installed}}
                         {{^broken}}
                     <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
-                    <button class="btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
+                    <button data-plugin="{{name}}" class="plugin-get-install btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
                             {{#local}}
                     <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
                             {{/local}}
@@ -197,6 +197,33 @@
                     $(data).modal();
                 }
                 destroyPage();
+            });
+            return false;
+        });
+        // Plugin download+install.
+        $(".plugin-get-install").on("click", function () {
+            if (ajaxRequestBusy) return false;
+            requestPage();
+            var plugin = $(this).data("plugin")
+            // Phase 1: Does plugin need downloading?
+            $.post(null, {"action": "prepare", "plugin": plugin}, function (data, textStatus, request) {
+                if (data != false) {
+                    var phase1 = $.parseJSON(data);
+                    $("#progress-bar").text(phase1.message);
+                    $.post(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
+                        if (data != false) {
+                            $("#progress-bar").text(phase2.message);
+                            var phase2 = $.parseJSON(data);
+                            $.post(null, {"action": phase2.status, "plugin": plugin}, function (data, textStatus, request) {
+
+                            });
+                        } else {
+                            destroyPage();
+                        }
+                    });
+                } else {
+                    destroyPage();
+                }
             });
             return false;
         });

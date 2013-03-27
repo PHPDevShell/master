@@ -1,41 +1,40 @@
 {
-    "compatibility-version":4,
     "plugins": {
         "NewPlugin": {
-            "desc":"Empty plugin to get you started",
-            "repo":"https://github.com/PHPDevShell/NewPlugin"
+            "desc": "Empty plugin to get you started",
+            "repo": "https://github.com/PHPDevShell/NewPlugin"
         },
         "Mustache": {
-            "desc":"Light and fast template Engine",
-            "repo":""
+            "desc": "Light and fast template Engine",
+            "repo": ""
         },
         "PluginManager": {
-            "desc":"Easy to use UI to manage plugins",
-            "repo":""
+            "desc": "Easy to use UI to manage plugins",
+            "repo": ""
         },
         "StandardLogin": {
-            "desc":"The default login mechanism",
-            "repo":"todo"
+            "desc": "The default login mechanism",
+            "repo": "todo"
         },
         "About": {
-            "desc":"Introduction page",
-            "repo":"todo"
+            "desc": "Introduction page",
+            "repo": "todo"
         },
         "RepoTest": {
-            "desc":"This is a cURL repo download test",
-            "repo":"todo"
+            "desc": "This is a cURL repo download test",
+            "repo": "todo"
         },
         "RepoTest2": {
-            "desc":"This is a cURL repo download test2",
-            "repo":"todo2"
+            "desc": "This is a cURL repo download test2",
+            "repo": "todo2"
         },
         "RepoTester333": {
-            "desc":"Just another awesome repo update test, and guess what, it works!",
-            "repo":"todo2"
+            "desc": "Just another awesome repo update test, and guess what, it works!",
+            "repo": "todo2"
         },
         "BrandNewPlugin": {
-            "desc":"Enough with the examples already.",
-            "repo":"todo2"
+            "desc": "Enough with the examples already.",
+            "repo": "todo2"
         }
     }
 }
