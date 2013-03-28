@@ -26,10 +26,11 @@ class pluginFactory extends PHPDS_dependant
         $configuration = $this->configuration;
         $cache         = $this->cache;
         // First include the configuration file for processing.
-        $xml = simplexml_load_file($configuration['absolute_path'] . "/plugins/$plugin_folder/config/plugin.config.xml");
+        $xml           = simplexml_load_file(
+            $configuration['absolute_path'] . "/plugins/$plugin_folder/config/plugin.config.xml");
         // Set plugin array.
-        $this->plugin = $xml;
-        $this->action = $action;
+        $this->plugin  = $xml;
+        $this->action  = $action;
         // Extra class required.
         $this->nodeStructure = $this->factory('nodeStructure');
 
@@ -55,7 +56,6 @@ class pluginFactory extends PHPDS_dependant
             $this->nodeStructure->writeNodeStructure();
             // Clear old cache.
             $cache->cacheClear();
-
         }
 
         /////////////////////////////////////////////////////////
@@ -77,7 +77,6 @@ class pluginFactory extends PHPDS_dependant
             $this->nodeStructure->writeNodeStructure();
             // Clear old cache.
             $cache->cacheClear();
-
         }
 
         /////////////////////////////////////////////////////////
@@ -161,7 +160,6 @@ class pluginFactory extends PHPDS_dependant
             if (count($nodes_array) > 0) {
                 // Insert new node items into database.
                 foreach ($nodes_array as $ranking => $node) {
-
                     // Create node link.
                     $node_link = (string)$node['link'];
 
@@ -172,7 +170,6 @@ class pluginFactory extends PHPDS_dependant
                     } else {
                         $node_id = $node['nodeid'];
                     }
-
                     // Check if node is not just an update, we don't want to override custom settings.
                     if ($update == true) {
                         if ($db->invokeQuery('PHPDS_doesNodeExist', $node_id)) {
@@ -675,25 +672,6 @@ class pluginFactory extends PHPDS_dependant
                 // Show execution.
                 $template->ok(sprintf(__("Upgraded plugin %s database to version %s.", 'AdminTools'), $plugin_folder, $this->pluginUpgraded));
             }
-        }
-    }
-
-    /**
-     * Set to use plugin logo as default logo for your system.
-     *
-     * @param string $plugin_folder
-     */
-    private function pluginSetLogo($plugin_folder)
-    {
-        $db       = $this->db;
-        $template = $this->template;
-        // We first need to set the current default logo to empty.
-        $db->invokeQuery('PHPDS_unsetLogoQuery');
-
-        // Now we can update the plugin database and set logo to 1.
-        if ($db->invokeQuery('PHPDS_setDefaultLogoQuery', $plugin_folder)) {
-            // Show execution.
-            $template->ok(sprintf(__("Set logo for plugin %s.", 'AdminTools'), $plugin_folder));
         }
     }
 }

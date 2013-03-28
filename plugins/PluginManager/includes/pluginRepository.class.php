@@ -379,12 +379,12 @@ class pluginRepository extends PHPDS_dependant
 
     private function pluginPrepareReadyLocally()
     {
-        return json_encode(array('status' => 'install', 'message' => __('Continuing install...')));
+        return json_encode(array('status' => 'install', 'message' => __('Installing...')));
     }
 
     private function pluginPrepareNeedDownload()
     {
-        return json_encode(array('status' => 'download', 'message' => __('Attempting download...')));
+        return json_encode(array('status' => 'download', 'message' => __('Downloading...')));
     }
 
     public function pluginPrepareDownload($plugin)
@@ -393,13 +393,14 @@ class pluginRepository extends PHPDS_dependant
         if (! empty($repo['plugins'][$plugin]['repo'])) {
             return $this->pluginAttemptGithubDownload($plugin, $repo['plugins'][$plugin]['repo']);
         }
+        return false;
     }
 
     private function pluginAttemptGithubDownload($plugin, $repo)
     {
         $config      = $this->configuration;
         $archive_url = $repo . '/' . $this->githubarchive . '/' . $this->githubbranch . '.zip';
-        $zip_file    = $plugin . '_' . time() . '.zip';
+        $zip_file    = $plugin . '_' . time() . '_' . rand(1, 9999) . '.zip';
         $zip_path    = $config['absolute_path'] . $config['tmp_path'] . $zip_file;
 
         $ch = curl_init($archive_url);
@@ -415,10 +416,42 @@ class pluginRepository extends PHPDS_dependant
         curl_close($ch);
         fclose($fp);
         if ($curl) {
-            return json_encode(array('status' => 'extract', 'message' => __('Extracting...')));
+            return json_encode(array('status' => 'extract', 'message' => __('Extracting...'), 'zip' => $zip_path));
         } else {
             return false;
         }
+    }
+
+    public function pluginExtraction($plugin, $zip)
+    {
+        $plugin_folder = $this->configuration['absolute_path'] . 'plugins';
+
+        if (file_exists($zip)) {
+            $archive   = new ZipArchive();
+            $container = $archive->open($zip);
+            if ($container === true) {
+                $results         = $archive->extractTo($plugin_folder);
+                $old_folder_name = trim($archive->getNameIndex(0), "/");
+                $archive->close();
+
+                // Folder will most probably be incorrect, rename.
+                $wrong_name = $plugin_folder . '/' . $old_folder_name;
+                $new_name   = $plugin_folder . '/' . $plugin;
+                if (file_exists($wrong_name))
+                    if (!rename($wrong_name, $new_name)) return false;
+                if (!file_exists($new_name)) {
+                    throw new PHPDS_exception(sprintf("There was a problem creating plugin in %s", $new_name));
+                }
+                if ($results) {
+                    return $this->pluginPrepareReadyLocally();
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     private function isWritable($dir)

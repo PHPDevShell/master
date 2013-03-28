@@ -63,14 +63,25 @@ class PluginActivation extends PHPDS_controller
         }
 
         // This set of actions is normally runs in sequence once after the other as required.
-        if ($this->P('action')) {
-            switch ($this->P('action')) {
+        if ($this->G('action')) {
+            switch ($this->G('action')) {
                 // Will download and move to plugin folder if required.
                 case 'prepare':
-                    return $this->repo->pluginPrepare($this->P('plugin'));
+                    return $this->repo->pluginPrepare($this->G('plugin'));
                     break;
                 case 'download':
-                    return $this->repo->pluginPrepareDownload($this->P('plugin'));
+                    return $this->repo->pluginPrepareDownload($this->G('plugin'));
+                    break;
+            }
+        }
+
+        if ($this->P('action')) {
+            switch ($this->P('action')) {
+                case 'extract':
+                    return $this->repo->pluginExtraction($this->P('plugin'), $this->P('zip'));
+                    break;
+                case 'install':
+                    return $this->pm->setPlugin($this->P('plugin'), 'install');
                     break;
             }
         }

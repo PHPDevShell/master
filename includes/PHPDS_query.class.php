@@ -209,7 +209,6 @@ class PHPDS_query extends PHPDS_dependant
      */
     public function query($parameters = null)
     {
-
         $sql = $this->build($parameters);
         return $this->querySQL($sql);
     }
@@ -321,7 +320,6 @@ class PHPDS_query extends PHPDS_dependant
                 if (is_scalar($parameters)) {
                     $parameters = array($parameters);
                 }
-
                 if (is_array($parameters)) {
                     if ($this->autoProtect) {
                         $parameters = $this->protectArray($parameters, $this->autoQuote);

@@ -204,23 +204,45 @@
         $(".plugin-get-install").on("click", function () {
             if (ajaxRequestBusy) return false;
             requestPage();
-            var plugin = $(this).data("plugin")
-            // Phase 1: Does plugin need downloading?
-            $.post(null, {"action": "prepare", "plugin": plugin}, function (data, textStatus, request) {
+            var plugin = $(this).data("plugin");
+            // Phase 0: Does plugin need downloading?
+            $.get(null, {"action": "prepare", "plugin": plugin}, function (data, textStatus, request) {
                 if (data != false) {
                     var phase1 = $.parseJSON(data);
                     $("#progress-bar").text(phase1.message);
-                    $.post(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
-                        if (data != false) {
-                            $("#progress-bar").text(phase2.message);
-                            var phase2 = $.parseJSON(data);
-                            $.post(null, {"action": phase2.status, "plugin": plugin}, function (data, textStatus, request) {
-
-                            });
-                        } else {
+                    // Phase 1 : Plugins needs downloading.
+                    if (phase1.status == 'download') {
+                        $.get(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
+                            if (data != false) {
+                                // Phase 2 : Plugin needs extraction.
+                                var phase2 = $.parseJSON(data);
+                                $("#progress-bar").text(phase2.message);
+                                if (phase2.status == 'extract') {
+                                    $.post(null, {"action": phase2.status, "plugin": plugin, "zip": phase2.zip}, function (data, textStatus, request) {
+                                        if (data != false) {
+                                            // Phase 3 : Installing.
+                                            var phase3 = $.parseJSON(data);
+                                            $("#progress-bar").text(phase3.message);
+                                            if (phase3.status == 'install') {
+                                                $.post(null, {"action": phase3.status, "plugin": plugin}, function (data, textStatus, request) {
+                                                    destroyPage();
+                                                });
+                                            }
+                                        } else {
+                                            destroyPage();
+                                        }
+                                    });
+                                }
+                            } else {
+                                destroyPage();
+                            }
+                        });
+                        // Phase 3 : Installing.
+                    } else if (phase1.status == 'install') {
+                        $.post(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
                             destroyPage();
-                        }
-                    });
+                        });
+                    }
                 } else {
                     destroyPage();
                 }
