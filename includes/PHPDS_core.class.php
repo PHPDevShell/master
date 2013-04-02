@@ -8,11 +8,6 @@ class PHPDS_core extends PHPDS_dependant
      */
     public $data;
     /**
-     * Used as a bridge between controller to view data.
-     * @var mixed
-     */
-    public $toView;
-    /**
      * This variable is used to activate a stop script command, it will be used to end a script immediately while still finishing compiling the template.
      *
      * @var array
@@ -405,7 +400,7 @@ class PHPDS_core extends PHPDS_dependant
             switch ($node_case) {
                 // Plugin Script.
                 case 1:
-                    $this->loadControllerFile($node_id);
+                    $this->mvcNodeStructure($node_id);
                     break;
                 // Link, Jump, Placeholder.
                 case 2:
@@ -415,7 +410,7 @@ class PHPDS_core extends PHPDS_dependant
                         // Get correct frontpage id.
                         ($this->user->isLoggedIn()) ? $node_id = $configuration['front_page_id_in'] : $node_id = $configuration['front_page_id'];
                     }
-                    $this->loadControllerFile($node_id);
+                    $this->mvcNodeStructure($node_id);
                     break;
                 // External File.
                 case 4:
@@ -439,7 +434,7 @@ class PHPDS_core extends PHPDS_dependant
                 // Cronjob.
                 case 8:
                     // Require script.
-                    if (!$this->loadControllerFile($node_id)) {
+                    if (!$this->mvcNodeStructure($node_id)) {
                         $time_now = time();
                         // Update last execution.
                         $this->db->invokeQuery('CORE_cronExecutionLogQuery', $time_now, $node_id);
@@ -449,19 +444,19 @@ class PHPDS_core extends PHPDS_dependant
                     break;
                 // HTML Ajax Widget.
                 case 9:
-                    $this->loadControllerFile($node_id);
+                    $this->mvcNodeStructure($node_id);
                     break;
                 // HTML Ajax.
                 case 10:
-                    $this->loadControllerFile($node_id);
+                    $this->mvcNodeStructure($node_id);
                     break;
                 // HTML Ajax Lightbox.
                 case 11:
-                    $this->loadControllerFile($node_id);
+                    $this->mvcNodeStructure($node_id);
                     break;
                 // HTML Ajax Lightbox.
                 case 12:
-                    $this->loadControllerFile($node_id);
+                    $this->mvcNodeStructure($node_id);
                     break;
             }
         }
@@ -494,61 +489,81 @@ class PHPDS_core extends PHPDS_dependant
     }
 
     /**
-     * Will attempt to load controller file from various locations.
-     *
-     * @version 1.0.2
-     *
-     * @date 20100917 (v1.0) (Jason)
-     * @date 20110308 (v1.0.1) (greg) loadFile returns an exact false when the file is not found
-     * @date 20120606 (v1.0.2) (greg) add the "includes/" folder of the plugin in the include path
+     * Will attempt to load controller file from specific node locations and create its MVC structure.
      *
      * @param int   $node_id
-     * @param mixed $include_model |boolean $include_model if set, load the model file before the controller is run (either a prefix or true for default "query" prefix) - default is not to
-     * @param mixed $include_view  |boolean $include_view if set, run the view file after the controller is run (a prefix) ; default is the "view" prefix)
+     * @param string $include_query if set, load the query file before the controller is run (either a prefix or true for default "query" prefix) - default is not to
+     * @param string $include_view  if set, run the view file after the controller is run (a prefix) ; default is the "view" prefix)
+     * @param string $include_model  |boolean $include_view if set, run the view file after the controller is run (a prefix) ; default is the "view" prefix)
      *
      * @throws PHPDS_exception
      * @return string
      */
-    public function loadControllerFile($node_id, $include_model = false, $include_view = 'view')
+    public function mvcNodeStructure($node_id, $include_query = 'query', $include_view = 'view', $include_model = 'model')
     {
         $navigation = $this->navigation->navigation;
-        $result_    = false;
+        $control_   = null;
+        $model      = null;
+        $view       = null;
 
         if (!empty($navigation[$node_id])) {
             $plugin_folder    = $navigation[$node_id]['plugin_folder'];
             $old_include_path = PU_addIncludePath($plugin_folder . '/includes/');
+            $node_link        = $navigation[$node_id]['node_link'];
 
+            // Query
+            if ($include_query) {
+                $this->loadFile($plugin_folder . 'models/' . preg_replace(
+                    "/.php/",
+                    '.' . $include_query . '.php',
+                    $node_link)
+                );
+            }
+
+            // Model
             if ($include_model) {
-                if ($include_model === true) $include_model = 'query';
-                $this->loadFile($plugin_folder . 'models/' . preg_replace("/.php/", '.' . $include_model . '.php', $navigation[$node_id]['node_link']));
+                $model_ = $this->loadFile($plugin_folder . 'models/' . preg_replace(
+                    "/.php/",
+                    '.' . $include_model . '.php',
+                    $node_link))
+                ;
+                if (is_string($model_) && class_exists($model_)) {
+                    $model = $this->factory($model_);
+                }
             }
 
-            $active_dir = $plugin_folder . '%s' . $navigation[$node_id]['node_link'];
-            $result_    = $this->loadFile(sprintf($active_dir, 'controllers/'));
-            if ($result_ === false) {
-                $result_ = $this->loadFile(sprintf($active_dir, ''));
+            // View
+            if ($include_view && !empty($this->themeFile)) {
+                $view_ = $this->loadFile($plugin_folder . 'views/' . preg_replace(
+                    "/.php/",
+                    '.' . $include_view . '.php',
+                    $node_link)
+                );
+                if (is_string($view_) && class_exists($view_)) {
+                    $view = $this->factory($view_);
+                }
             }
 
-            if (is_string($result_) && class_exists($result_)) {
-                $controller = $this->factory($result_);
+            // Controller
+            $active_dir = $plugin_folder . '%s' . $node_link;
+            $control_    = $this->loadFile(sprintf($active_dir, 'controllers/'));
+            if ($control_ === false) {
+                $control_ = $this->loadFile(sprintf($active_dir, ''));
+            }
+
+            if (is_string($control_) && class_exists($control_)) {
+                $controller         = $this->factory($control_);
+                $controller->model  = $model;
+                $controller->view   = $view;
                 $controller->run();
             }
 
-            // Load view class.
-            if ($include_view && !empty($this->themeFile)) {
-                $load_view   = preg_replace("/.php/", '.' . $include_view . '.php', $navigation[$node_id]['node_link']);
-                $view_result = $this->loadFile($plugin_folder . 'views/' . $load_view);
-                if (is_string($view_result) && class_exists($view_result)) {
-                    $view = $this->factory($view_result);
-                    $view->run();
-                }
-            }
             set_include_path($old_include_path);
         }
-        if ($result_ === false && empty($this->haltController)) {
+        if ($control_ === false && empty($this->haltController)) {
             throw new PHPDS_exception(sprintf(___('The controller of node id %d could not be found after trying to execute filename : "%s"'), $node_id, sprintf($active_dir, '{controllers/}')));
         }
-        return $result_;
+        return $control_;
     }
 
     /**

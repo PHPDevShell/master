@@ -21,12 +21,6 @@ class PHPDS_template extends PHPDS_dependant
      */
     public $HTML = '';
     /**
-     * Contains script HOOK data.
-     *
-     * @var string
-     */
-    public $HOOK = '';
-    /**
      * Use to manage the view class.
      *
      * @var object
@@ -104,15 +98,9 @@ class PHPDS_template extends PHPDS_dependant
     public $modifyOutputController = false;
     /**
      * Check if lightbox headers should be added for lightbox node.
-     * @var type
+     * @var boolean
      */
     public $lightbox = false;
-    /**
-     * Use this to have global available variables throughout scripts. For instance in hooks.
-     *
-     * @var array
-     */
-    public $global;
     /**
      * Sends a message to login form.
      * @var string

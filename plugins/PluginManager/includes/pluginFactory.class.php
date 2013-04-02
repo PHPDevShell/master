@@ -32,7 +32,7 @@ class pluginFactory extends PHPDS_dependant
         $this->plugin  = $xml;
         $this->action  = $action;
         // Extra class required.
-        $this->nodeStructure = $this->factory('nodeStructure');
+        $this->nodeStructure = $this->factory('nodeHelper');
 
         /////////////////////////////////////////////////////////
         ///////////////////// INSTALL ///////////////////////////

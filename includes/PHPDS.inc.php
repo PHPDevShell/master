@@ -805,7 +805,7 @@ class PHPDS
         }
 
         // Engine classes default directories
-        $includes = array('includes/local', 'includes', 'includes/databases');
+        $includes = array('includes/local', 'includes', 'includes/db-connectors');
         foreach ($includes as $path) {
             $engine_include_path = $absolute_path . $path . '/' . $class_name . '.class.php';
             if ($this->sneakClass($class_name, $engine_include_path)) {
@@ -920,8 +920,8 @@ class PHPDS_dependant
     }
 
     /**
-     * Empty function called by the actual constructor; meant to be overriden
-     * Supposed to return false (exactly) in case of error, otherwise return the object itself
+     * Empty function called by the actual constructor; meant to be overridden.
+     * Supposed to return false (exactly) in case of error, otherwise return the object itself.
      *
      * @return boolean or object
      */

@@ -10,6 +10,11 @@ class PHPDS_view extends PHPDS_dependant
     public $theme;
 
     /**
+     * @var object
+     */
+    protected $viewPlugin;
+
+    /**
      * Constructor
      *
      * @return parent
@@ -18,6 +23,49 @@ class PHPDS_view extends PHPDS_dependant
     {
         $this->theme = $this->core->activeTemplate();
         return parent::construct();
+    }
+
+    /**
+     * Class loads an active view plugin, this class can be overwritten.
+     */
+    public function plugin()
+    {
+        $this->viewPlugin = $this->factory('views');
+    }
+
+    /**
+     * Sets mustache variables to be passed to it.
+     *
+     * @param mixed $var
+     * @param mixed $value
+     */
+    public function set($var, $value)
+    {
+        $this->viewPlugin->set[$var] = $value;
+    }
+
+    /**
+     * Loads the default or custom template (tpl) file and prints it out.
+     * Enter the template file for appropriate script here.
+     *
+     * @param string $load_view Load an alternative view directly.
+     * @return string
+     */
+    public function show($load_view = '')
+    {
+        echo $this->viewPlugin->show($load_view);
+    }
+
+    /**
+     * Loads the default or custom template (tpl) file and returns it.
+     * Works well where blocks of html from ajax requests are wanted.
+     *
+     * @param string $load_view Load an alternative view directly.
+     * @return string
+     */
+    public function getView($load_view = '')
+    {
+        return $this->viewPlugin->getView($load_view);
     }
 
     /**

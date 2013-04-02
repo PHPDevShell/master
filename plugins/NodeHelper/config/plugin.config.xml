@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<config type="plugin">
+	<name>NodeHelper</name>
+	<version>1.0.0-Beta-1</version>
+	<description>Helps with storing a node correctly in structure.</description>
+	<founder>Jason Schoeman</founder>
+	<author>Jason Schoeman</author>
+	<email>titan@phpdevshell.org</email>
+	<homepage>http://www.phpdevshell.org</homepage>
+	<date>2 April 2013</date>
+	<copyright>Jason Schoeman (c)</copyright>
+	<license>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU/LGPL</license>
+	<info>
+		<![CDATA[
+			<p>
+				This plugin is used to help support other plugins in dealing with nodes and their structure.
+			</p>
+		]]>
+	</info>
+	<install version="1000">
+		<queries>
+		</queries>
+		<menus>
+		</menus>
+		<dependencies>
+		</dependencies>
+		<classes>
+		</classes>
+	</install>
+	<uninstall>
+		<queries>
+		</queries>
+	</uninstall>
+</config>

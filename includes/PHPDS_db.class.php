@@ -462,7 +462,7 @@ class PHPDS_db extends PHPDS_dependant
     }
 
     /**
-     * Locates the query class of the given name, loads it, intantiate it, and returns the query object
+     * Locates the query class of the given name, loads it, instantiate it, and returns the query object
      *
      * @param string $query_name the name of the query class (descendant of PHPDS_query)
      * @return object the query object

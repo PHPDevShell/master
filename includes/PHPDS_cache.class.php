@@ -26,7 +26,7 @@ class PHPDS_cache extends PHPDS_dependant
         }
 
         // Load Cache Class.
-        require_once 'cache/' . $configuration['cache_type'] . '.inc.php';
+        require_once 'cache-connectors/' . $configuration['cache_type'] . '.inc.php';
         $this->connector = new $configuration['cache_type'];
 
         // Check connection type.

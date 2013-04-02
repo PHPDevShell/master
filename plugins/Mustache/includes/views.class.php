@@ -81,13 +81,20 @@ class views extends PHPDS_dependant
      * @param string $load_view Load an alternative view directly.
      * @return string
      */
-    public function get($load_view = '')
+    public function getView($load_view = '')
     {
         $tpl = $this->getTpl($load_view);
         return $this->view->render($tpl, $this->set);
     }
 
-    public function tplBaseDir($load_view = '', $plugin_override = '')
+    /**
+     * Base directory where view file is suppose to sit in.
+     *
+     * @param string $load_view
+     * @param string $plugin_override
+     * @return string
+     */
+    private function tplBaseDir($load_view = '', $plugin_override = '')
     {
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
@@ -129,7 +136,7 @@ class views extends PHPDS_dependant
      * @throws PHPDS_exception
      * @return string
      */
-    public function getTpl($load_view = '')
+    private function getTpl($load_view = '')
     {
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
@@ -155,7 +162,7 @@ class views extends PHPDS_dependant
 
     /**
      * Returns the first part of a string after last needle is found.
-     * @example: PU_ReverseStrrchr('some/stupid/dir/example.php', '/', 0); returns some/stupid/dir
+     * @example: reverseStrrchr('some/stupid/dir/example.php', '/', 0); returns some/stupid/dir
      *
      * @param $haystack
      * @param $needle
@@ -163,7 +170,7 @@ class views extends PHPDS_dependant
      *
      * @return string
      */
-    public function reverseStrrchr($haystack, $needle, $trail)
+    private function reverseStrrchr($haystack, $needle, $trail)
     {
         return strrpos($haystack, $needle) ? substr($haystack, 0, strrpos($haystack, $needle) + $trail) : '';
     }

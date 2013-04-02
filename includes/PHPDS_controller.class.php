@@ -14,6 +14,18 @@ class PHPDS_controller extends PHPDS_dependant
     protected $_GET;
 
     /**
+     * Contains view object if it exists.
+     * @var object
+     */
+    public $view;
+
+    /**
+     * Contains model object if it exists.
+     * @var object
+     */
+    public $model;
+
+    /**
      * General construction.
      *
      * @return object
@@ -28,6 +40,16 @@ class PHPDS_controller extends PHPDS_dependant
         $this->_GET  = empty($_GET) ? array() : $_GET;
 
         return parent::construct();
+    }
+
+    public function model()
+    {
+
+    }
+
+    public function view()
+    {
+
     }
 
     /**

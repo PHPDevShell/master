@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Interface a plugin must implement to be used in authentification
+ * Interface a plugin must implement to be used in authentication
  */
 interface iBaseLogin
 {
