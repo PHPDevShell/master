@@ -12,19 +12,28 @@ class PHPDS_controller extends PHPDS_dependant
      * @var array
      */
     protected $_GET;
-
     /**
      * Contains view object if it exists.
      * @var object
      */
     public $view;
-
+    /**
+     * The views plugin that should be supporting controller view,
+     * can be overwritten to only use other plugin view or php.
+     * @var string
+     */
+    public $viewPlugin = 'views';
     /**
      * Contains model object if it exists.
      * @var object
      */
     public $model;
-
+    /**
+     * The model plugin that should be supporting controller model,
+     * can be overwritten to only use other plugin view or php.
+     * @var string
+     */
+    public $modelPlugin = 'models';
     /**
      * General construction.
      *
@@ -37,36 +46,30 @@ class PHPDS_controller extends PHPDS_dependant
         unset($_GET['_SESSION']);
 
         $this->_POST = empty($_POST) ? array() : $_POST;
-        $this->_GET  = empty($_GET) ? array() : $_GET;
+        $this->_GET  = empty($_GET)  ? array() : $_GET;
 
         return parent::construct();
     }
 
+    /**
+     * Creates model instance with a defined plugin.
+     * @throws PHPDS_exception
+     */
     public function model()
     {
-
-    }
-
-    public function view()
-    {
-
+        if (is_string($this->modelPlugin) && class_exists($this->modelPlugin) && is_object($this->model)) {
+            $this->model->model = $this->factory($this->modelPlugin);
+        }
     }
 
     /**
-     * Set data for availability in view class.
-     *
-     * @param string $name
-     * @param mixed  $value
+     * Creates view instance with a defined plugin.
+     * @throws PHPDS_exception
      */
-    public function set($name, $value = null)
+    public function view()
     {
-        if (is_string($name)) {
-            if (is_object($value)) {
-                $this->core->toView          = new stdClass();
-                $this->core->toView->{$name} = $value;
-            } else {
-                $this->core->toView[$name] = $value;
-            }
+        if (is_string($this->viewPlugin) && class_exists($this->viewPlugin) && is_object($this->view)) {
+            $this->view->view = $this->factory($this->viewPlugin);
         }
     }
 
@@ -143,6 +146,8 @@ class PHPDS_controller extends PHPDS_dependant
      */
     public function run()
     {
+        $this->model();
+        $this->view();
         $this->onLoad();
         $result = null;
         if ($this->core->ajaxType) {

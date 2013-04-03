@@ -85,6 +85,7 @@ CREATE TABLE `_db_core_plugin_activation` (
 
 -- Insert available default plugins.;
 INSERT INTO `_db_core_plugin_activation` VALUES ('Mustache', 'install', '1000', '0');
+INSERT INTO `_db_core_plugin_activation` VALUES ('LightModels', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('PluginManager', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('About', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('StandardLogin', 'install', '1000', '0');
@@ -105,6 +106,7 @@ CREATE TABLE `_db_core_plugin_classes` (
 
 -- Insert classes available from default plugins.;
 INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('views', 'PHPDS_views', 'Mustache', '1', '1');
+INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('models', 'LightModels_models', 'LightModels', '1', '1');
 INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('pluginManager', 'PHPDS_pluginmanager', 'PluginManager', '1', '1');
 INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('StandardLogin', 'PHPDS_login', 'StandardLogin', '1', '1');
 

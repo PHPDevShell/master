@@ -1,9 +1,5 @@
 <?php
 
-/**
- * Contains methods to handle templates.
- * @author Jason Schoeman
- */
 class views extends PHPDS_dependant
 {
     /**
@@ -34,20 +30,16 @@ class views extends PHPDS_dependant
         $configuration = $this->configuration;
         $view_dir      = $this->tplBaseDir($plugin_override);
 
-        if (!is_object($this->template->view)) {
-            require BASEPATH . 'plugins/Mustache/resources/src/Mustache/Autoloader.php';
-            Mustache_Autoloader::register();
-            $loader     = new Mustache_Loader_FilesystemLoader($view_dir, array('extension' => $this->extension));
-            $this->view = new Mustache_Engine(array(
-                'template_class_prefix' => '__view_',
-                'cache'                 => BASEPATH . $configuration['compile_path'],
-                'loader'                => $loader,
-                'helpers'               => array('i' => function ($text) { return __($text); }),
-                'escape'                => function ($value) { return htmlspecialchars($value, ENT_COMPAT); },
-                'charset'               => $configuration['charset']));
-        } else {
-            $this->view = $this->template->view;
-        }
+        require BASEPATH . 'plugins/Mustache/resources/src/Mustache/Autoloader.php';
+        Mustache_Autoloader::register();
+        $loader     = new Mustache_Loader_FilesystemLoader($view_dir, array('extension' => $this->extension));
+        $this->view = new Mustache_Engine(array(
+            'template_class_prefix' => '__view_',
+            'cache'                 => BASEPATH . $configuration['compile_path'],
+            'loader'                => $loader,
+            'helpers'               => array('i' => function ($text) { return __($text); }),
+            'escape'                => function ($value) { return htmlspecialchars($value, ENT_COMPAT); },
+            'charset'               => $configuration['charset']));
     }
 
     /**

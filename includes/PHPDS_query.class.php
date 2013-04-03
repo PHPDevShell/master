@@ -246,8 +246,12 @@ class PHPDS_query extends PHPDS_dependant
         if ($debug->enable() && $firephp && !headers_sent()) {
 
             $flags =
-                ($this->singleRow ? ' singleRow' : '') . ($this->singleValue ? ' singleValue' : '') . ($this->noEmptyRow ? ' noEmptyRow ' : '')
-                    . (empty($this->focus) ? '' : ' focus=' . $this->focus) . (empty($this->keyField) ? '' : ' keyField=' . $this->keyField) . (empty($this->typeCast) ? '' : ' typeCast=' . $this->typeCast);
+                ($this->singleRow ? ' singleRow' : '') .
+                ($this->singleValue ? ' singleValue' : '') .
+                ($this->noEmptyRow ? ' noEmptyRow ' : '') .
+                (empty($this->focus) ? '' : ' focus=' . $this->focus) .
+                (empty($this->keyField) ? '' : ' keyField=' . $this->keyField) .
+                (empty($this->typeCast) ? '' : ' typeCast=' . $this->typeCast);
 
             $table   = array();
             $table[] = array('', '');

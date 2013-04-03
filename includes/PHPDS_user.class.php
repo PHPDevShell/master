@@ -60,7 +60,7 @@ class PHPDS_user extends PHPDS_dependant
      * This is meant to be used inside an existing role query.
      *
      * @param string $query_request      Normal query to be returned if user is not a root user.
-     * @param string $query_root_request If you want a query to be processed for a root user seperately.
+     * @param string $query_root_request If you want a query to be processed for a root user separately.
      * @return string|bool
      */
     public function setRoleQuery($query_request, $query_root_request = null)

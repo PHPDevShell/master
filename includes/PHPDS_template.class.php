@@ -21,12 +21,6 @@ class PHPDS_template extends PHPDS_dependant
      */
     public $HTML = '';
     /**
-     * Use to manage the view class.
-     *
-     * @var object
-     */
-    public $view;
-    /**
      * Adds content to head of page.
      * @var string
      */
@@ -96,11 +90,6 @@ class PHPDS_template extends PHPDS_dependant
      * @var mixed
      */
     public $modifyOutputController = false;
-    /**
-     * Check if lightbox headers should be added for lightbox node.
-     * @var boolean
-     */
-    public $lightbox = false;
     /**
      * Sends a message to login form.
      * @var string
@@ -1212,8 +1201,6 @@ class PHPDS_template extends PHPDS_dependant
     {
         $HTML    = '';
         $message = '';
-        //if (! empty($this->loginMessage))
-        //	$message = $this->notice(___($this->loginMessage), 'return');
 
         // Create headings for login.
         if (!empty($this->core->haltController)) {

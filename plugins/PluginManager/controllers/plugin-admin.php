@@ -30,19 +30,16 @@ class PluginActivation extends PHPDS_controller
         // Read plugin directory.
         $RESULTS = $this->repo->initiateRepository();
 
-        // Load views.
-        $view = $this->factory('views');
-
         // Set Array.
-        $view->set('RESULTS', $RESULTS);
-        $view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
-        $view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
-        $view->set('updatemenus', $this->navigation->selfUrl('update=menus'));
-        $view->set('updatelocal', $this->navigation->selfUrl());
+        $this->view->set('RESULTS', $RESULTS);
+        $this->view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
+        $this->view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
+        $this->view->set('updatemenus', $this->navigation->selfUrl('update=menus'));
+        $this->view->set('updatelocal', $this->navigation->selfUrl());
         // $view->set('log', $log);
 
         // Output Template.
-        $view->show();
+        $this->view->show();
     }
 
     public function viaAjax()
@@ -59,7 +56,11 @@ class PluginActivation extends PHPDS_controller
 
         // Read plugin config.
         if ($this->G('info')) {
-            return $this->repo->pluginModalInfo($this->G('plugin'));
+            $modalinfo = $this->repo->pluginModalInfo($this->G('plugin'));
+            if ($modalinfo) {
+                $this->view->set('p', $modalinfo);
+                return $this->view->getView('info-modal.html');
+            }
         }
 
         // This set of actions is normally runs in sequence once after the other as required.

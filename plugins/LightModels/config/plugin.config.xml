@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<config type="plugin">
+    <name>LightModels</name>
+    <version>1.0.0-Alpha</version>
+    <description>LightModels provides a simple to use, light and fast model Engine for PHPDevShell.</description>
+    <founder>Jason Schoeman</founder>
+    <author>Jason Schoeman</author>
+    <email>titan@phpdevshell.org</email>
+    <homepage>http://www.phpdevshell.org</homepage>
+    <date>03 April 2013</date>
+    <copyright>Jason Schoeman (c)</copyright>
+    <license>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU/LGPL</license>
+    <info>
+        <![CDATA[
+			<p>
+				LightModels provides simple to use model capabilities to make data flow easy to read and write.
+            </p>
+		]]>
+    </info>
+    <install>
+        <classes>
+            <class name="LightModels" alias="LightModels_models" plugin="LightModels" rank="last"/>
+        </classes>
+    </install>
+    <uninstall>
+    </uninstall>
+</config>

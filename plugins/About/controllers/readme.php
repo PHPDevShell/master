@@ -7,7 +7,6 @@
  */
 class ReadMe extends PHPDS_controller
 {
-
     /**
      * Execute Controller
      * @author Jason Schoeman
@@ -15,8 +14,6 @@ class ReadMe extends PHPDS_controller
     public function execute()
     {
         $this->template->heading(__('Starting with PHPDevShell'));
-
-        echo $this->model->helloWorld();
 
         // Testing Notification Boxes.
         $warning = $this->template->warning('This is a sample warning message, this can be written in log.', 'return', 'nolog');

@@ -18,6 +18,7 @@ host.config.php
 *.file.*.tpl.*
 sess_*
 nbproject
+write/tmp/*
 write/upload/*
 write/logs/*.log
 write/logs/*.html

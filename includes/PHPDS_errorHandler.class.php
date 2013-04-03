@@ -212,8 +212,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
 
             ///// WRITING TO A LOG FILE
             if ($this->file) {
-                $dir = realpath(BASEPATH . $this->file) . DIRECTORY_SEPARATOR;
-
+                $dir = realpath(BASEPATH . $this->file);
                 if ($dir) {
                     $prefix   = 'error.' . date('Y-m-d');
                     $filepath = $dir . $prefix . '.log';

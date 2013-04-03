@@ -3,45 +3,55 @@
 class PHPDS_view extends PHPDS_dependant
 {
     /**
-     * Contains the current active theme.
-     *
-     * @var string
-     */
-    public $theme;
-
-    /**
+     * Contains the active plugin view object.
      * @var object
      */
-    protected $viewPlugin;
+    public $view;
 
     /**
-     * Constructor
-     *
-     * @return parent
+     * Array of mixed values to be used in php view class.
+     * @var mixed
      */
-    public function construct()
-    {
-        $this->theme = $this->core->activeTemplate();
-        return parent::construct();
-    }
+    public $set;
 
     /**
-     * Class loads an active view plugin, this class can be overwritten.
+     * Checks if main class is extended, if not, disable master set property.
+     * @var bool
      */
-    public function plugin()
-    {
-        $this->viewPlugin = $this->factory('views');
-    }
+    public $extends = false;
 
     /**
      * Sets mustache variables to be passed to it.
      *
-     * @param mixed $var
+     * @param mixed $name
      * @param mixed $value
      */
-    public function set($var, $value)
+    public function set($name, $value)
     {
-        $this->viewPlugin->set[$var] = $value;
+        if ($this->extends && is_string($name)) {
+            if (is_object($value)) {
+                $this->set          = new stdClass();
+                $this->set->{$name} = $value;
+            } else {
+                $this->set[$name] = $value;
+            }
+        }
+        if (is_object($this->view))
+            $this->view->set[$name] = $value;
+    }
+
+    /**
+     * Looks up and returns data assigned to it in controller with $this->set();
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function get($name)
+    {
+        if (!empty($this->set->{$name}))
+            return $this->set->{$name};
+        else
+            return $this->set[$name];
     }
 
     /**
@@ -53,7 +63,10 @@ class PHPDS_view extends PHPDS_dependant
      */
     public function show($load_view = '')
     {
-        echo $this->viewPlugin->show($load_view);
+        if (is_object($this->view))
+            echo $this->view->show($load_view);
+        else
+            echo $this->execute();
     }
 
     /**
@@ -65,21 +78,10 @@ class PHPDS_view extends PHPDS_dependant
      */
     public function getView($load_view = '')
     {
-        return $this->viewPlugin->getView($load_view);
-    }
-
-    /**
-     * Looks up and returns data assigned to it in controller with $this->set();
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function get($name)
-    {
-        if (!empty($this->core->toView->{$name}))
-            return $this->core->toView->{$name};
+        if (is_object($this->view))
+            return $this->view->getView($load_view);
         else
-            return $this->core->toView[$name];
+            return $this->execute();
     }
 
     /**

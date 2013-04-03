@@ -454,7 +454,7 @@ class PHPDS_core extends PHPDS_dependant
                 case 11:
                     $this->mvcNodeStructure($node_id);
                     break;
-                // HTML Ajax Lightbox.
+                // Raw Ajax.
                 case 12:
                     $this->mvcNodeStructure($node_id);
                     break;
@@ -529,11 +529,14 @@ class PHPDS_core extends PHPDS_dependant
                 ;
                 if (is_string($model_) && class_exists($model_)) {
                     $model = $this->factory($model_);
+                    $model->extends = true;
+                } else {
+                    $model = $this->factory('PHPDS_model');
                 }
             }
 
             // View
-            if ($include_view && !empty($this->themeFile)) {
+            if ($include_view) {
                 $view_ = $this->loadFile($plugin_folder . 'views/' . preg_replace(
                     "/.php/",
                     '.' . $include_view . '.php',
@@ -541,6 +544,9 @@ class PHPDS_core extends PHPDS_dependant
                 );
                 if (is_string($view_) && class_exists($view_)) {
                     $view = $this->factory($view_);
+                    $view->extends = true;
+                } else {
+                    $view = $this->factory('PHPDS_view');
                 }
             }
 

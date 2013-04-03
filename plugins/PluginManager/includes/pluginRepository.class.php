@@ -229,10 +229,8 @@ class pluginRepository extends PHPDS_dependant
             $modal = $this->modalInfoGithubRemote($plugin);
         }
 
-        if (is_array($modal)) {
-            $view = $this->factory('views');
-            $view->set('p', $modal);
-            return $view->get('info-modal.html');
+        if (isset($modal) && is_array($modal)) {
+            return $modal;
         } else {
             return false;
         }
@@ -252,7 +250,7 @@ class pluginRepository extends PHPDS_dependant
     private function modalInfoLocal($xmlcfgfile)
     {
         $xml = @simplexml_load_file($xmlcfgfile);
-        if (!is_array($xml)) {
+        if (!isset($xml) && !is_array($xml)) {
             $this->template->warning(sprintf(__('No info available looked in %s'), $xmlcfgfile));
             return false;
         }
