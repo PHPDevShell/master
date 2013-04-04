@@ -19,11 +19,11 @@ class CONFIG_getSettingsQuery extends PHPDS_query
 {
     protected $sql = "
 		SELECT SQL_CACHE
-			setting_description, setting_value
+			setting_id, setting_value
 		FROM
 			_db_core_settings
 		WHERE
-			setting_description	%s
+			setting_id	%s
 	";
 
     public function invoke($parameters = null)
@@ -60,7 +60,7 @@ class CONFIG_getSettingsQuery extends PHPDS_query
         if (!empty($settings_db) && is_array($settings_db)) {
 
             foreach ($settings_db as $fetch_setting_array) {
-                $description = $fetch_setting_array['setting_description'];
+                $description = $fetch_setting_array['setting_id'];
                 $value       = $fetch_setting_array['setting_value'];
 
                 $description = preg_replace("/$prefix/", '', $description);
@@ -79,7 +79,7 @@ class CONFIG_writeSettingsQuery extends PHPDS_query
 {
     protected $sql = "
 		REPLACE INTO
-			_db_core_settings (setting_description, setting_value, note)
+			_db_core_settings (setting_id, setting_value, note)
 		VALUES
 			%s
 	";
@@ -131,7 +131,7 @@ class CONFIG_deleteSettingsQuery extends PHPDS_query
 		DELETE FROM
 			_db_core_settings
 		WHERE
-			setting_description %s
+			setting_id %s
 	";
 
     public function invoke($parameters = null)

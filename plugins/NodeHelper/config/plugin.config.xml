@@ -25,6 +25,7 @@
 		<dependencies>
 		</dependencies>
 		<classes>
+            <class name="nodeHelper" alias="NodeHelper_nodeHelper" plugin="NodeHelper" rank="last" />
 		</classes>
 	</install>
 	<uninstall>

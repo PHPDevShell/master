@@ -448,7 +448,7 @@ class PHPDS
         $this->PHPDS_navigation()->extractNode()->parseRequestString(); ///////
 
         // Template Folder ////////////////////////////////////////////////////
-        $this->configuration['template_folder'] = $this->PHPDS_core()->activeTemplate();
+        $this->configuration['theme_folder'] = $this->PHPDS_core()->activeTemplate();
 
         // Set core language files. ///////////////////////////////////////////
         $this->PHPDS_core()->loadCoreLanguage(); //////////////////////////////

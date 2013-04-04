@@ -82,7 +82,7 @@ class PluginActivation extends PHPDS_controller
                     return $this->repo->pluginExtraction($this->P('plugin'), $this->P('zip'));
                     break;
                 case 'install':
-                    return $this->pm->setPlugin($this->P('plugin'), 'install');
+                    return $this->factory->setPlugin($this->P('plugin'), 'install');
                     break;
             }
         }

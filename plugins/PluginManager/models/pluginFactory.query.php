@@ -36,11 +36,11 @@ class PHPDS_readMinNodesRankQuery extends PHPDS_query
  * Plugin Manager - Create template.
  * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
  */
-class PHPDS_createTemplateQuery extends PHPDS_query
+class PHPDS_createThemeQuery extends PHPDS_query
 {
     protected $sql = "
 		REPLACE INTO
-			_db_core_templates (template_id, template_folder)
+			_db_core_themes (theme_id, theme_folder)
 		VALUES
 			('%s', '%s')
     ";
@@ -84,7 +84,7 @@ class PHPDS_writeNodePluginQuery extends PHPDS_query
 {
     protected $sql = "
 		REPLACE INTO
-			_db_core_node_items (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window, rank, hide, template_id, alias, layout, params)
+			_db_core_node_items (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window, rank, hide, theme_id, alias, layout, params)
 		VALUES
 			('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     ";
@@ -181,9 +181,9 @@ class PHPDS_writePluginVersionQuery extends PHPDS_query
 {
     protected $sql = "
 		INSERT INTO
-			_db_core_plugin_activation (plugin_folder, status, version, use_logo)
+			_db_core_plugin_activation (plugin_folder, status, version, persistent)
 		VALUES
-			('%s', '%s', '%s', '0')
+			('%s', '%s', '%s', null)
 	";
 }
 
@@ -227,36 +227,6 @@ class PHPDS_upgradeVersionQuery extends PHPDS_query
 		SET
 			status        = '%s',
 			version       = '%s'
-		WHERE
-			plugin_folder = '%s'
-	";
-}
-
-/**
- * Plugin Manager - Unset all used logos.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
-class PHPDS_unsetLogoQuery extends PHPDS_query
-{
-    protected $sql = "
-		UPDATE
-			_db_core_plugin_activation
-		SET
-			use_logo = 0
-	";
-}
-
-/**
- * Plugin Manager - Set default logo.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
-class PHPDS_setDefaultLogoQuery extends PHPDS_query
-{
-    protected $sql = "
-		UPDATE
-			_db_core_plugin_activation
-		SET
-			use_logo = 1
 		WHERE
 			plugin_folder = '%s'
 	";

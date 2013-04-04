@@ -18,6 +18,11 @@ class PHPDS_controller extends PHPDS_dependant
      */
     public $view;
     /**
+     * Direct instance to model plugin.
+     * @var object
+     */
+    public $views;
+    /**
      * The views plugin that should be supporting controller view,
      * can be overwritten to only use other plugin view or php.
      * @var string
@@ -28,6 +33,11 @@ class PHPDS_controller extends PHPDS_dependant
      * @var object
      */
     public $model;
+    /**
+     * Direct link to model plugin.
+     * @var object
+     */
+    public $models;
     /**
      * The model plugin that should be supporting controller model,
      * can be overwritten to only use other plugin view or php.
@@ -58,7 +68,9 @@ class PHPDS_controller extends PHPDS_dependant
     public function model()
     {
         if (is_string($this->modelPlugin) && class_exists($this->modelPlugin) && is_object($this->model)) {
-            $this->model->model = $this->factory($this->modelPlugin);
+            $this->model->instance = $this->factory($this->modelPlugin);
+            // Shorter version for direct plugin access.
+            $this->models =& $this->model->instance;
         }
     }
 
@@ -69,7 +81,9 @@ class PHPDS_controller extends PHPDS_dependant
     public function view()
     {
         if (is_string($this->viewPlugin) && class_exists($this->viewPlugin) && is_object($this->view)) {
-            $this->view->view = $this->factory($this->viewPlugin);
+            $this->view->instance = $this->factory($this->viewPlugin);
+            // Shorter version for direct plugin access.
+            $this->views =& $this->view->instance;
         }
     }
 

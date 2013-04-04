@@ -25,7 +25,7 @@
     </info>
     <install version="1000">
         <classes>
-            <class name="Mustache" alias="Mustache_views" plugin="Mustache" rank="last"/>
+            <class name="views" alias="Mustache_views" plugin="Mustache" rank="last"/>
         </classes>
     </install>
     <uninstall>

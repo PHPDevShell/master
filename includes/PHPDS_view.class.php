@@ -6,7 +6,7 @@ class PHPDS_view extends PHPDS_dependant
      * Contains the active plugin view object.
      * @var object
      */
-    public $view;
+    public $instance;
 
     /**
      * Array of mixed values to be used in php view class.
@@ -36,8 +36,8 @@ class PHPDS_view extends PHPDS_dependant
                 $this->set[$name] = $value;
             }
         }
-        if (is_object($this->view))
-            $this->view->set[$name] = $value;
+        if (isset($this->instance) && is_object($this->instance))
+            $this->instance->set[$name] = $value;
     }
 
     /**
@@ -63,8 +63,8 @@ class PHPDS_view extends PHPDS_dependant
      */
     public function show($load_view = '')
     {
-        if (is_object($this->view))
-            echo $this->view->show($load_view);
+        if (isset($this->instance) && is_object($this->instance))
+            echo $this->instance->show($load_view);
         else
             echo $this->execute();
     }
@@ -78,8 +78,8 @@ class PHPDS_view extends PHPDS_dependant
      */
     public function getView($load_view = '')
     {
-        if (is_object($this->view))
-            return $this->view->getView($load_view);
+        if (isset($this->instance) && is_object($this->instance))
+            return $this->instance->getView($load_view);
         else
             return $this->execute();
     }

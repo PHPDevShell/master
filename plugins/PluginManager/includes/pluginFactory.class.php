@@ -8,17 +8,21 @@ class pluginFactory extends PHPDS_dependant
 {
     protected $plugin;
     protected $action;
-    protected $nodeStructure;
+    /**
+     * @var nodeHelper $nodeHelper
+     */
+    protected $nodeHelper;
     protected $node;
     protected $pluginUpgraded;
     public $log;
 
     /**
-     * Runs all necesary queries to enter a plugin and its node items into the database.
+     * Runs all necessary queries to enter a plugin and its node items into the database.
      *
      * @param string $plugin_folder Folder and unique name where plugin is copied.
-     * @param string $action Action taken to manipulate plugin.
-     * @param int    $version Version of the current installed plugin.
+     * @param string $action        Action taken to manipulate plugin.
+     * @param int    $version       Version of the current installed plugin.
+     * @return bool
      */
     public function setPlugin($plugin_folder, $action, $version = null)
     {
@@ -26,13 +30,14 @@ class pluginFactory extends PHPDS_dependant
         $configuration = $this->configuration;
         $cache         = $this->cache;
         // First include the configuration file for processing.
-        $xml           = simplexml_load_file(
-            $configuration['absolute_path'] . "/plugins/$plugin_folder/config/plugin.config.xml");
+        $xml = simplexml_load_file(
+            $configuration['absolute_path'] . "/plugins/$plugin_folder/config/plugin.config.xml"
+        );
         // Set plugin array.
-        $this->plugin  = $xml;
-        $this->action  = $action;
+        $this->plugin = $xml;
+        $this->action = $action;
         // Extra class required.
-        $this->nodeStructure = $this->factory('nodeHelper');
+        $this->nodeHelper = $this->factory('nodeHelper');
 
         /////////////////////////////////////////////////////////
         ///////////////////// INSTALL ///////////////////////////
@@ -53,9 +58,11 @@ class pluginFactory extends PHPDS_dependant
             // Write installed plugin.
             $this->installVersion($plugin_folder, 'install');
             // Write the node structure.
-            $this->nodeStructure->writeNodeStructure();
+            $this->nodeHelper->writeNodeStructure();
             // Clear old cache.
             $cache->cacheClear();
+
+            return 'installed';
         }
 
         /////////////////////////////////////////////////////////
@@ -74,7 +81,7 @@ class pluginFactory extends PHPDS_dependant
             // Remove plugin from registry.
             $this->uninstallVersion($plugin_folder);
             // Write the node structure.
-            $this->nodeStructure->writeNodeStructure();
+            $this->nodeHelper->writeNodeStructure();
             // Clear old cache.
             $cache->cacheClear();
         }
@@ -88,7 +95,7 @@ class pluginFactory extends PHPDS_dependant
             $this->installNodes($plugin_folder, true);
             // Before we install anything lets first clear old hooks to this plugin.
             // Write the node structure.
-            $this->nodeStructure->writeNodeStructure();
+            $this->nodeHelper->writeNodeStructure();
             // Clear old Cache.
             $cache->cacheClear();
         }
@@ -109,7 +116,7 @@ class pluginFactory extends PHPDS_dependant
             // Write database string.
             $this->upgradeDatabase($plugin_folder, 'install');
             // Write the node structure.
-            $this->nodeStructure->writeNodeStructure();
+            $this->nodeHelper->writeNodeStructure();
             // Clear old Cache.
             $cache->cacheClear();
         }
@@ -133,26 +140,25 @@ class pluginFactory extends PHPDS_dependant
     }
 
     /**
-     * Runs all necesary queries to install a plugins nodes.
+     * Runs all necessary actions to install a plugins nodes.
      *
-     * @param string Folder and unique name where plugin was copied.
+     * @param string $plugin_folder Folder and unique name where plugin was copied.
+     * @param bool   $update
      */
     private function installNodes($plugin_folder, $update = false)
     {
         $core          = $this->core;
-        $template      = $this->template;
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
         $db            = $this->db;
         $config        = $this->config;
-        $security      = $this->security;
 
-        // Get default and empty template id's.
-        $templates_array = $config->getSettings(array('default_template_id', 'empty_template_id'), 'AdminTools');
+        // Get default and empty theme id's.
+        $themes_array = $config->getSettings(array('default_theme_id', 'empty_theme_id'), 'PluginManager');
         // Assign nodes q to install.
         $nodes_array = $this->plugin->install->nodes;
         // Define.
-        $last_node_template_insert = false;
+        $last_node_theme_insert = false;
         // Execute installation of node items.
         if (!empty($nodes_array)) {
             $this->installNodesDigger($nodes_array);
@@ -166,17 +172,17 @@ class pluginFactory extends PHPDS_dependant
                     // Provide your own node id... not a problem.
                     if (empty($node['nodeid'])) {
                         // Create master node_id.
-                        $node_id = $this->nodeStructure->createNodeId($plugin_folder, $node_link);
+                        $node_id = $this->nodeHelper->createNodeId($plugin_folder, $node_link);
                     } else {
                         $node_id = $node['nodeid'];
                     }
                     // Check if node is not just an update, we don't want to override custom settings.
                     if ($update == true) {
                         if ($db->invokeQuery('PHPDS_doesNodeExist', $node_id)) {
-                            // Before we continue, update the link incase it changed.
+                            // Before we continue, update the link in-case it changed.
                             $db->invokeQuery('PHPDS_updateNodeLink', $node_link, $node_id);
-
-                            $this->log .= $template->ok(sprintf(__("Checked/Updated node for %s with id (%s) and linked to %s.", 'AdminTools'), $plugin_folder, $node_id, $node_link), 'return');
+                            $this->log[] = sprintf(__("Checked/Updated node for %s with id (%s) and linked to %s.",
+                                'PluginManager'), $plugin_folder, $node_id, $node_link);
                             continue;
                         }
                     }
@@ -191,11 +197,11 @@ class pluginFactory extends PHPDS_dependant
                     // Compile parent node id from user input.
                     if (!empty($node['parentlink'])) {
                         // Create parent node id.
-                        $parent_id = $this->nodeStructure->createNodeId($parent_plugin_folder, $node['parentlink']);
+                        $parent_id = $this->nodeHelper->createNodeId($parent_plugin_folder, $node['parentlink']);
                     } else if (!empty($node['parentlinkauto'])) {
                         if (empty($node['parentnodeid'])) {
                             // Try compiling node from auto parent link.
-                            $parent_id = $this->nodeStructure->createNodeId($parent_plugin_folder, $node['parentlinkauto']);
+                            $parent_id = $this->nodeHelper->createNodeId($parent_plugin_folder, $node['parentlinkauto']);
                         } else if (!empty($node['parentnodeid'])) {
                             $parent_id = $node['parentnodeid'];
                         } else {
@@ -207,15 +213,15 @@ class pluginFactory extends PHPDS_dependant
                     }
                     // Link to original plugin item or parent plugin item script.
                     if (!empty($node['symlink'])) {
-                        $extend_to = $this->nodeStructure->createNodeId($parent_plugin_folder, $node['symlink']);
+                        $extend_to = $this->nodeHelper->createNodeId($parent_plugin_folder, $node['symlink']);
                         if (empty($navigation->navigation["{$extend_to}"]))
-                            $extend_to = $this->nodeStructure->createNodeId($plugin_folder, $node['symlink']);
+                            $extend_to = $this->nodeHelper->createNodeId($plugin_folder, $node['symlink']);
                     } else {
                         $extend_to = '';
                     }
 
                     // Create custom node name.
-                    $node_name = trim($security->sqlWatchdog($node['name']));
+                    $node_name = trim(PU_CleanString($node['name']));
 
                     // Create node type.
                     if (!empty($node['type'])) {
@@ -226,11 +232,12 @@ class pluginFactory extends PHPDS_dependant
                     // Create sef alias.
                     if (!empty($node_type)) {
                         (!empty($node_name)) ? $node_name_ = $node_name : $node_name_ = $node_link;
-                        $alias = $core->safeName($navigation->determineNodeName($node['alias'], $core->replaceAccents($node_name_), $node_id));
+                        $alias = PU_safeName($navigation->determineNodeName($node['alias'],
+                            PU_replaceAccents($node_name_), $node_id));
                     } else {
                         $alias = false;
                     }
-                    // What type of node extention should be used.
+                    // What type of node extension should be used.
                     switch ($node['type']) {
                         case 2:
                             $extend = $extend_to;
@@ -276,26 +283,27 @@ class pluginFactory extends PHPDS_dependant
                     } else {
                         $hide = 0;
                     }
-                    // Create a template id or use default.
-                    if ($node['template'] == 'empty') {
-                        $node_template_insert = $templates_array['empty_template_id'];
-                    } else if (empty($node['template'])) {
-                        $node_template_insert = $templates_array['default_template_id'];
+                    // Create a theme id or use default.
+                    if ($node['theme'] == 'empty') {
+                        $node_theme_insert = $themes_array['empty_theme_id'];
+                    } else if (empty($node['theme'])) {
+                        $node_theme_insert = $themes_array['default_theme_id'];
                     } else {
                         // Get a unique id.
-                        $node_template_insert = $core->nameToId($node['template']);
+                        $node_theme_insert = PU_nameToId($node['theme']);
                         // Check if item needs to be created.
-                        if ($last_node_template_insert != $node_template_insert) {
+                        if ($last_node_theme_insert != $node_theme_insert) {
                             // Create a new node item...
-                            if ($db->invokeQuery('PHPDS_createTemplateQuery', $node_template_insert, $node['template'])) {
+                            if ($db->invokeQuery('PHPDS_createTemplateQuery', $node_theme_insert, $node['theme'])) {
                                 // Show execution.
-                                $template->ok(sprintf(__("Installed new template for %s.", 'AdminTools'), $node['template']));
+                                $this->log[] = sprintf(__("Installed new theme for %s.", 'PluginManager'),
+                                    $node['theme']);
                             }
                             // Assign so we dont create it twice.
-                            $last_node_template_insert = $node_template_insert;
+                            $last_node_theme_insert = $node_theme_insert;
                         }
                     }
-                    // Create template layout.
+                    // Create theme layout.
                     if (!empty($node['layout'])) {
                         $layout = (string)$node['layout'];
                     } else {
@@ -323,9 +331,24 @@ class pluginFactory extends PHPDS_dependant
                     // Save new item to database.
                     // Although it is not my style doing queries inside a loop,
                     // this situation is very unique and I think the only way getting the parent nodes id.
-                    if ($db->invokeQuery('PHPDS_writeNodePluginQuery', $node_id, $parent_id, $node_name, $node_link, $plugin_folder, $node_type, $extend, $new_window, $rank, $hide, $node_template_insert, $alias, $layout, $params)) {
+                    if ($db->invokeQuery('PHPDS_writeNodePluginQuery',
+                        $node_id,
+                        $parent_id,
+                        $node_name,
+                        $node_link,
+                        $plugin_folder,
+                        $node_type,
+                        $extend,
+                        $new_window,
+                        $rank,
+                        $hide,
+                        $node_theme_insert,
+                        $alias,
+                        $layout,
+                        $params)) {
                         // Show execution.
-                        $this->log .= $template->ok(sprintf(__("Installed node for %s with id (%s) and linked to %s.", 'AdminTools'), $plugin_folder, $node_id, $node_link), 'return');
+                        $this->log[] = sprintf(__("Installed node for %s with id (%s) and linked to %s.",
+                            'PluginManager'), $plugin_folder, $node_id, $node_link);
                     }
                 }
                 // For safety unset node properties.
@@ -354,7 +377,7 @@ class pluginFactory extends PHPDS_dependant
             $m['name']             = (string)$children['name'];
             $m['plugin']           = (string)$children['plugin'];
             $m['pluginauto']       = (string)$child['pluginauto'];
-            $m['template']         = (string)$children['template'];
+            $m['theme']            = (string)$children['theme'];
             $m['layout']           = (string)$children['layout'];
             $m['height']           = (string)$children['height'];
             $m['rank']             = (string)$children['rank'];
@@ -364,7 +387,26 @@ class pluginFactory extends PHPDS_dependant
             $m['hide']             = (int)$children['hide'];
             $m['noautopermission'] = (int)$children['noautopermission'];
             // Assign node values.
-            $this->node[] = array('nodeid' => $m['nodeid'], 'parentnodeid' => $m['parentnodeid'], 'parentlinkauto' => $m['parentlinkauto'], 'parentlink' => $m['parentlink'], 'alias' => $m['alias'], 'link' => $m['link'], 'symlink' => $m['symlink'], 'name' => $m['name'], 'pluginauto' => $m['pluginauto'], 'plugin' => $m['plugin'], 'template' => $m['template'], 'layout' => $m['layout'], 'height' => $m['height'], 'type' => $m['type'], 'newwindow' => $m['newwindow'], 'rank' => $m['rank'], 'hide' => $m['hide'], 'noautopermission' => $m['noautopermission'], 'params' => $m['params']);
+            $this->node[] = array(
+                'nodeid'           => $m['nodeid'],
+                'parentnodeid'     => $m['parentnodeid'],
+                'parentlinkauto'   => $m['parentlinkauto'],
+                'parentlink'       => $m['parentlink'],
+                'alias'            => $m['alias'],
+                'link'             => $m['link'],
+                'symlink'          => $m['symlink'],
+                'name'             => $m['name'],
+                'pluginauto'       => $m['pluginauto'],
+                'plugin'           => $m['plugin'],
+                'theme'            => $m['theme'],
+                'layout'           => $m['layout'],
+                'height'           => $m['height'],
+                'type'             => $m['type'],
+                'newwindow'        => $m['newwindow'],
+                'rank'             => $m['rank'],
+                'hide'             => $m['hide'],
+                'noautopermission' => $m['noautopermission'],
+                'params'           => $m['params']);
             // Recall for children node items.
             $this->installNodesDigger($children);
         }
@@ -377,8 +419,8 @@ class pluginFactory extends PHPDS_dependant
      */
     private function installSettings($plugin_folder)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $config = $this->config;
+        $notes  = array();
         // Assign settings q to install.
         $settings_array = $this->plugin->install->settings->setting;
         // Check if settings exists.
@@ -400,8 +442,8 @@ class pluginFactory extends PHPDS_dependant
             // Make sure setting is not empty.
             if (isset($param_write)) {
                 // Finally write setting.
-                if ($db->writeSettings($param_write, $plugin_folder, $notes)) // Show execution.
-                    $this->log .= $template->ok(sprintf(__("Installed settings for %s.", 'AdminTools'), $plugin_folder), 'return');
+                if ($config->writeSettings($param_write, $plugin_folder, $notes)) // Show execution.
+                    $this->log[] = sprintf(__("Installed settings for %s.", 'PluginManager'), $plugin_folder);
             }
         }
     }
@@ -413,26 +455,24 @@ class pluginFactory extends PHPDS_dependant
      */
     private function installClasses($plugin_folder)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $db = $this->db;
         // Assign settings q to install.
         $classes_array = $this->plugin->install->classes->class;
         if ($classes_array) {
             $db->invokeQuery('PHPDS_writeClassesQuery', $classes_array, $plugin_folder);
             // Show execution.
-            $this->log .= $template->ok(sprintf(__("Installed classes for %s.", 'AdminTools'), $plugin_folder), 'return');
+            $this->log[] = sprintf(__("Installed classes for %s.", 'PluginManager'), $plugin_folder);
         }
     }
 
     /**
      * Execute provided database query for plugin install.
      *
-     * @param string Folder and unique name where plugin is installed.
+     * @param string $plugin_folder Folder and unique name where plugin is installed.
      */
     private function installQueries($plugin_folder)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $db = $this->db;
         // Assign queries q.
         $queries_array = $this->plugin->install->queries->query;
         // Check if install query exists.
@@ -446,7 +486,8 @@ class pluginFactory extends PHPDS_dependant
                     // Execute query.
                     $db->invokeQuery('PHPDS_doQuery', $query_array);
                     // Show execution.
-                    $this->log .= $template->ok(sprintf(__("Executed query for %s : %s.", 'AdminTools'), $plugin_folder, $query_array), 'return');
+                    $this->log[] = sprintf(__("Executed query for %s : %s.", 'PluginManager'),
+                        $plugin_folder, $query_array);
                 }
             }
         }
@@ -455,54 +496,51 @@ class pluginFactory extends PHPDS_dependant
     /**
      * Install new plugin database version information.
      *
-     * @param string Folder and unique name where plugin was copied.
-     * @param string Last status required from plugin manager.
+     * @param string $plugin_folder Folder and unique name where plugin was copied.
+     * @param string $status        Last status required from plugin manager.
      */
     private function installVersion($plugin_folder, $status)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $db = $this->db;
         // Set version.
-        $version       = (int)$this->plugin->install['version'];
-        $version_human = (string)$this->plugin->version;
+        $version = (int)$this->plugin->install['version'];
+        // $version_human = (string)$this->plugin->version;
         // Do we have a version?
         if (!empty($version)) {
             // Replace in database.
             if ($db->invokeQuery('PHPDS_writePluginVersionQuery', $plugin_folder, $status, $version)) {
                 // Show execution.
-                $template->ok(sprintf(__("Installed plugin %s-V-%s.", 'AdminTools'), $plugin_folder, $version_human));
+                $this->log[] = sprintf(__("Installed plugin %s.", 'PluginManager'), $plugin_folder);
             }
         }
     }
 
     /**
-     * Runs all necesary queries to uninstall a plugins nodes from the database.
+     * Runs all necessary queries to uninstall a plugins nodes from the database.
      *
-     * @param string Folder and unique name where plugin was copied.
+     * @param string $plugin_folder Folder and unique name where plugin was copied.
+     * @param bool   $delete_critical_only
      */
     private function uninstallNodes($plugin_folder, $delete_critical_only = false)
     {
-        $db       = $this->db;
-        $template = $this->template;
         if (!empty($plugin_folder)) {
-            if ($this->nodeStructure->deleteNode(false, $plugin_folder, $delete_critical_only)) // Show execution.
-                $this->log .= $template->ok(sprintf(__("Uninstall nodes for %s.", 'AdminTools'), $plugin_folder), 'return');
+            if ($this->nodeHelper->deleteNode(false, $plugin_folder, $delete_critical_only)) // Show execution.
+                $this->log[] = sprintf(__("Uninstall nodes for %s.", 'PluginManager'), $plugin_folder);
         }
     }
 
     /**
      * Uninstall classes for a specific plugin from database.
      *
-     * @param string Folder and unique name where plugin was copied.
+     * @param string $plugin_folder Folder and unique name where plugin was copied.
      */
     public function uninstallClasses($plugin_folder)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $db = $this->db;
         // Delete all hooks for this plugin.
         if ($db->invokeQuery('PHPDS_deleteClassesQuery', $plugin_folder)) {
             // Show execution.
-            $this->log .= $template->ok(sprintf(__("Uninstalled classes for %s.", 'AdminTools'), $plugin_folder), 'return');
+            $this->log[] = sprintf(__("Uninstalled classes for %s.", 'PluginManager'), $plugin_folder);
         }
     }
 
@@ -513,22 +551,20 @@ class pluginFactory extends PHPDS_dependant
      */
     public function uninstallSettings($plugin_folder)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $config = $this->config;
         // Remove plugin settings if any.
-        if ($db->deleteSettings('*', $plugin_folder)) // Show execution.
-            $this->log .= $template->ok(sprintf(__("Uninstalled settings for %s.", 'AdminTools'), $plugin_folder), 'return');
+        if ($config->deleteSettings('*', $plugin_folder)) // Show execution.
+            $this->log[] = sprintf(__("Uninstalled settings for %s.", 'PluginManager'), $plugin_folder);
     }
 
     /**
      * Execute provided database query for plugin uninstall.
      *
-     * @param string Folder and unique name where plugin was copied.
+     * @param string $plugin_folder Folder and unique name where plugin was copied.
      */
-    private function uninstallQueries($plugin_folder = false)
+    private function uninstallQueries($plugin_folder = null)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $db = $this->db;
         // Check if Uninstall query exists.
         if (isset($this->plugin->uninstall->queries->query)) {
             // Assign queries to uninstall.
@@ -543,7 +579,9 @@ class pluginFactory extends PHPDS_dependant
                         // Execute query.
                         if ($db->newQuery($query_array)) {
                             // Show execution.
-                            if ($this->action != 'install') $this->log .= $template->ok(sprintf(__("Uninstalled query for %s : %s", 'AdminTools'), $plugin_folder, $query_array), 'return');
+                            if ($this->action != 'install') $this->log[] =
+                                sprintf(__("Uninstalled query for %s : %s", 'PluginManager'),
+                                    $plugin_folder, $query_array);
                         }
                     }
                 }
@@ -554,29 +592,28 @@ class pluginFactory extends PHPDS_dependant
     /**
      * Uninstall plugin database version.
      *
-     * @param string Folder and unique name where plugin was copied.
+     * @param string $plugin_folder Folder and unique name where plugin was copied.
      */
     private function uninstallVersion($plugin_folder)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $db = $this->db;
         // Delete database activation.
         if ($db->invokeQuery('PHPDS_deleteVersionQuery', $plugin_folder)) {
             // Show execution.
-            $template->ok(sprintf(__("Uninstalled plugin %s.", 'AdminTools'), $plugin_folder));
+            $this->log[] = sprintf(__("Uninstalled plugin %s.", 'PluginManager'), $plugin_folder);
         }
     }
 
     /**
      * Execute provided database query for plugin upgrade.
      *
-     * @param string Folder and unique name where plugin was copied.
-     * @param string Upgrade database against this version.
+     * @param string $plugin_folder     Folder and unique name where plugin was copied.
+     * @param int    $installed_version Upgrade database against this version.
      */
     private function upgradeQueries($plugin_folder, $installed_version)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $db     = $this->db;
+        $config = $this->config;
         // Assign queries q.
         $upgrade_array  = $this->plugin->upgrade;
         $latest_version = $this->plugin->install['version'];
@@ -596,7 +633,8 @@ class pluginFactory extends PHPDS_dependant
                         if (!empty($upgrade_query_)) {
                             // Execute upgrade query.
                             if ($db->invokeQuery('PHPDS_doQuery', $upgrade_query_)) // Show execution.
-                                $this->log .= $template->ok(sprintf(__("Query upgraded for %s : %s", 'AdminTools'), $plugin_folder, $upgrade_query_), 'return');
+                                $this->log[] = sprintf(__("Query upgraded for %s : %s", 'PluginManager'),
+                                        $plugin_folder, $upgrade_query_);
                         }
                     }
                 }
@@ -622,14 +660,16 @@ class pluginFactory extends PHPDS_dependant
                 // Check if we have settings to write in array.
                 if (isset($param_write)) {
                     // Write settings string.
-                    if ($db->writeSettings($param_write, $plugin_folder)) // Show execution.
-                        $this->log .= $template->ok(sprintf(__("Upgraded settings for %s.", 'AdminTools'), $plugin_folder), 'return');
+                    if ($config->writeSettings($param_write, $plugin_folder)) // Show execution.
+                        $this->log[] = sprintf(__("Upgraded settings for %s.", 'PluginManager'),
+                            $plugin_folder);
                 }
                 // Is there settings to delete in array?
                 if (isset($param_delete)) {
                     // Delete settings string.
-                    if ($db->deleteSettings($param_delete, $plugin_folder)) // Show execution.
-                        $this->log .= $template->ok(sprintf(__("Uninstalled some setting on upgrade for %s.", 'AdminTools'), $plugin_folder), 'return');
+                    if ($config->deleteSettings($param_delete, $plugin_folder)) // Show execution.
+                        $this->log[] = sprintf(__("Uninstalled some setting on upgrade for %s.", 'PluginManager'),
+                            $plugin_folder);
                 }
                 // Make sure node upgrades is not empty.
                 if (isset($upgrade->nodes->node)) {
@@ -638,14 +678,15 @@ class pluginFactory extends PHPDS_dependant
                         // Node link to delete.
                         $delete_node_link = (string)$node['delete'];
                         // Create node id for deletion.
-                        $node_id_to_delete[] = $this->nodeStructure->createNodeId($plugin_folder, $delete_node_link);
+                        $node_id_to_delete[] = $this->nodeHelper->createNodeId($plugin_folder, $delete_node_link);
                     }
                 }
                 // Check if we have items to delete.
                 if (!empty($node_id_to_delete)) {
                     // Delete node item.
-                    if ($this->nodeStructure->deleteNode($node_id_to_delete)) // Show execution.
-                        $this->log .= $template->ok(sprintf(__("Uninstalled some nodes on upgrade for %s.", 'AdminTools'), $plugin_folder), 'return');
+                    if ($this->nodeHelper->deleteNode($node_id_to_delete)) // Show execution.
+                        $this->log[] = sprintf(__("Uninstalled some nodes on upgrade for %s.", 'PluginManager'),
+                            $plugin_folder);
                 }
                 // Unset items for new loop.
                 unset($node_id_to_delete, $param_write, $param_delete);
@@ -658,19 +699,19 @@ class pluginFactory extends PHPDS_dependant
     /**
      * Upgrade existing plugin database.
      *
-     * @param string Folder and unique name where plugin was copied.
-     * @param string Last status required from plugin manager.
+     * @param string $plugin_folder Folder and unique name where plugin was copied.
+     * @param string $status        Last status required from plugin manager.
      */
     private function upgradeDatabase($plugin_folder, $status)
     {
-        $db       = $this->db;
-        $template = $this->template;
+        $db = $this->db;
         // Check if we have a database value.
         if (!empty($this->pluginUpgraded)) {
             // Update database.
             if ($db->invokeQuery('PHPDS_upgradeVersionQuery', $status, $this->pluginUpgraded, $plugin_folder)) {
                 // Show execution.
-                $template->ok(sprintf(__("Upgraded plugin %s database to version %s.", 'AdminTools'), $plugin_folder, $this->pluginUpgraded));
+                $this->log[] = sprintf(__("Upgraded plugin %s database to version %s.", 'PluginManager'),
+                    $plugin_folder, $this->pluginUpgraded);
             }
         }
     }

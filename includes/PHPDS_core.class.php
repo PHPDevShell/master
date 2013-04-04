@@ -123,12 +123,12 @@ class PHPDS_core extends PHPDS_dependant
     public function loadMods()
     {
         $configuration = $this->configuration;
-        $template_dir  = 'themes/' . $configuration['template_folder'] . '/';
+        $template_dir  = 'themes/' . $configuration['theme_folder'] . '/';
 
         if (file_exists($template_dir . 'mods.php')) {
             include_once $template_dir . 'mods.php';
-            if (class_exists($configuration['template_folder'])) {
-                $this->template->mod = $this->factory($configuration['template_folder']);
+            if (class_exists($configuration['theme_folder'])) {
+                $this->template->mod = $this->factory($configuration['theme_folder']);
             } else {
                 $this->template->mod = $this->factory('themeMods');
             }
@@ -145,11 +145,11 @@ class PHPDS_core extends PHPDS_dependant
     public function loadTheme()
     {
         $configuration = $this->configuration;
-        $template_dir  = 'themes/' . $configuration['template_folder'] . '/';
+        $template_dir  = 'themes/' . $configuration['theme_folder'] . '/';
 
         if (!empty($this->themeName)) {
-            $configuration['template_folder'] = $this->themeName;
-            $template_dir                     = 'themes/' . $configuration['template_folder'] . '/';
+            $configuration['theme_folder'] = $this->themeName;
+            $template_dir                     = 'themes/' . $configuration['theme_folder'] . '/';
         }
 
         try {
@@ -751,8 +751,8 @@ class PHPDS_core extends PHPDS_dependant
     {
         $settings   = $this->configuration;
         $navigation = $this->navigation;
-        if (!empty($navigation->navigation[$this->configuration['m']]['template_folder'])) {
-            return $navigation->navigation[$this->configuration['m']]['template_folder'];
+        if (!empty($navigation->navigation[$this->configuration['m']]['theme_folder'])) {
+            return $navigation->navigation[$this->configuration['m']]['theme_folder'];
         } else {
             return $settings['default_template'];
         }

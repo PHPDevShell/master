@@ -340,14 +340,14 @@ function root_role()
 {
     global $data;
     $db_prefix = $data['db_prefix'];
-    return @mysql_result(mysql_query("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_description='PHPDevShell_root_role'"), 0);
+    return @mysql_result(mysql_query("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_id='PHPDevShell_root_role'"), 0);
 }
 
 function guest_role()
 {
     global $data;
     $db_prefix = $data['db_prefix'];
-    return @mysql_result(mysql_query("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_description='PHPDevShell_guest_role'"), 0);
+    return @mysql_result(mysql_query("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_id='PHPDevShell_guest_role'"), 0);
 }
 
 function checkConfigFiles()

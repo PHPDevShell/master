@@ -318,7 +318,7 @@ class PHPDS_db extends PHPDS_dependant
     protected $connector;
 
     /**
-     * List of lternates connectors (i.e., not the default, primary connector)
+     * List of alternative connectors (i.e., not the default, primary connector)
      * @var array of iPHPDS_dbConnector
      */
     protected $connectors;

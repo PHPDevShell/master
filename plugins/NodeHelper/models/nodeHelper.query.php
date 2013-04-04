@@ -1,9 +1,5 @@
 <?php
 
-/**
- * Node Stucture - Read structure.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_readStructureQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -17,10 +13,6 @@ class PHPDS_readStructureQuery extends PHPDS_query
     ";
 }
 
-/**
- * Node Stucture - Delete structure.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteStructureQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -29,10 +21,6 @@ class PHPDS_deleteStructureQuery extends PHPDS_query
     ";
 }
 
-/**
- * Node Stucture - Reset structure pointer.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_resetStructureQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -42,10 +30,6 @@ class PHPDS_resetStructureQuery extends PHPDS_query
     ";
 }
 
-/**
- * Node Stucture - Write new structure.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_writeStructureQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -56,10 +40,6 @@ class PHPDS_writeStructureQuery extends PHPDS_query
     ";
 }
 
-/**
- * Node Stucture - Delete Nodes.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteNodesQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -71,10 +51,6 @@ class PHPDS_deleteNodesQuery extends PHPDS_query
     ";
 }
 
-/**
- * Node Stucture - Delete node structure.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteNodeStructureQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -86,10 +62,6 @@ class PHPDS_deleteNodeStructureQuery extends PHPDS_query
     ";
 }
 
-/**
- * Node Stucture - Delete role permissions.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteRolePermissionsQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -101,10 +73,6 @@ class PHPDS_deleteRolePermissionsQuery extends PHPDS_query
     ";
 }
 
-/**
- * Node Stucture - Delete filters.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteFiltersQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -116,25 +84,6 @@ class PHPDS_deleteFiltersQuery extends PHPDS_query
     ";
 }
 
-/**
- * Node Stucture - Delete crons.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
-class PHPDS_deleteCronsQuery extends PHPDS_query
-{
-	protected $sql = "
-		DELETE FROM
-			_db_core_cron
-		WHERE
-			node_id
-		%s
-    ";
-}
-
-/**
- * Node Stucture - Delete one or many nodes.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteNodeQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -146,11 +95,6 @@ class PHPDS_deleteNodeQuery extends PHPDS_query
 			plugin = '%s'
     ";
 
-	/**
-	 * Initiate invoke.
-	 *
-	 * @return boolean
-	 */
 	public function invoke($parameters = null)
 	{
 		$db = $this->db;
@@ -215,24 +159,16 @@ class PHPDS_deleteNodeQuery extends PHPDS_query
 	}
 }
 
-/**
- * Node Stucture - Write node item.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_writeNodeQuery extends PHPDS_query
 {
 	protected $sql = "
 		REPLACE INTO
-			_db_core_node_items (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window, rank, hide, template_id, alias, layout, params)
+			_db_core_node_items (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window, rank, hide, theme_id, alias, layout, params)
 		VALUES
 			('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     ";
 }
 
-/**
- * Node Stucture - Get plugin name from node id.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_readPluginFromNodeIdQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -247,10 +183,6 @@ class PHPDS_readPluginFromNodeIdQuery extends PHPDS_query
 	protected $singleValue = true;
 }
 
-/**
- * Node Stucture - Get plugin name from node id.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_readNodeIdFromNodeLinkQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -267,10 +199,6 @@ class PHPDS_readNodeIdFromNodeLinkQuery extends PHPDS_query
 	protected $singleValue = true;
 }
 
-/**
- * Node Stucture - Delete one or many nodes.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_doesNodeIdExistQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -285,17 +213,8 @@ class PHPDS_doesNodeIdExistQuery extends PHPDS_query
 	protected $singleValue = true;
 }
 
-/**
- * Node Stucture - Update a complete set of node ids all over with new node id.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateNodeIdQuery extends PHPDS_query
 {
-	/**
-	 * Initiate invoke.
-	 *
-	 * @return boolean
-	 */
 	public function invoke($parameters = null)
 	{
 		$db = $this->db;
@@ -305,11 +224,8 @@ class PHPDS_updateNodeIdQuery extends PHPDS_query
 		$db->invokeQuery('PHPDS_updateNodeItemsIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateParentNodeItemsIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateNodeItemsExtendQuery', $new_id, $old_id);
-		$db->invokeQuery('PHPDS_updateCoreCronNodeIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateCoreFilterNodeIdQuery', $new_id, $old_id);
-		$db->invokeQuery('PHPDS_updateCoreAccessLogsNodeIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateCoreNodeStructurNodeIdQuery', $new_id, $old_id);
-		$db->invokeQuery('PHPDS_updateCoreUploadLogsNodeIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateCoreUserRolePermissionsNodeIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateCoreSettingsNodeIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateCoreTagsNodeIdQuery', $new_id, $old_id);
@@ -318,10 +234,6 @@ class PHPDS_updateNodeIdQuery extends PHPDS_query
 	}
 }
 
-/**
- * Node Stucture - UPDATE `_db_core_node_items` (node_id)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateNodeItemsIdQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -329,10 +241,6 @@ class PHPDS_updateNodeItemsIdQuery extends PHPDS_query
 	";
 }
 
-/**
- * Node Stucture - UPDATE `_db_core_node_items` (parent_node_id)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateParentNodeItemsIdQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -340,10 +248,6 @@ class PHPDS_updateParentNodeItemsIdQuery extends PHPDS_query
 	";
 }
 
-/**
- * Node Stucture - UPDATE `_db_core_node_items` (extend)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateNodeItemsExtendQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -351,21 +255,6 @@ class PHPDS_updateNodeItemsExtendQuery extends PHPDS_query
 	";
 }
 
-/**
- * Node Stucture - UPDATE `_db_core_cron` (node_id)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
-class PHPDS_updateCoreCronNodeIdQuery extends PHPDS_query
-{
-	protected $sql = "
-		UPDATE `_db_core_cron` SET node_id='%s' WHERE node_id='%s';
-	";
-}
-
-/**
- * Node Stucture - UPDATE `_db_core_filter` (node_id)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateCoreFilterNodeIdQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -373,22 +262,6 @@ class PHPDS_updateCoreFilterNodeIdQuery extends PHPDS_query
 	";
 }
 
-/**
- * Node Stucture - UPDATE `_db_core_node_access_logs` (node_id)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
-class PHPDS_updateCoreAccessLogsNodeIdQuery extends PHPDS_query
-{
-	protected $sql = "
-		UPDATE `_db_core_node_access_logs` SET node_id='%s' WHERE node_id='%s';
-	";
-}
-
-
-/**
- * Node Stucture - UPDATE `_db_core_node_structure` (node_id)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateCoreNodeStructurNodeIdQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -396,22 +269,6 @@ class PHPDS_updateCoreNodeStructurNodeIdQuery extends PHPDS_query
 	";
 }
 
-/**
- * Node Stucture - UPDATE `_db_core_upload_logs` (node_id)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
-class PHPDS_updateCoreUploadLogsNodeIdQuery extends PHPDS_query
-{
-	protected $sql = "
-		UPDATE `_db_core_upload_logs` SET node_id='%s' WHERE node_id='%s';
-	";
-}
-
-
-/**
- * Node Stucture - UPDATE `_db_core_user_role_permissions` (node_id)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateCoreUserRolePermissionsNodeIdQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -419,10 +276,6 @@ class PHPDS_updateCoreUserRolePermissionsNodeIdQuery extends PHPDS_query
 	";
 }
 
-/**
- * Node Stucture - UPDATE `_db_core_settings` (setting_value)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateCoreSettingsNodeIdQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -430,14 +283,10 @@ class PHPDS_updateCoreSettingsNodeIdQuery extends PHPDS_query
 	";
 }
 
-/**
- * Node Stucture - UPDATE `_db_core_tags` (core_tags)
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_updateCoreTagsNodeIdQuery extends PHPDS_query
 {
 	protected $sql = "
-		UPDATE `_db_core_tags` SET tagTarget='%s' WHERE tagTarget='%s';
+		UPDATE `_db_core_tags` SET tag_target='%s' WHERE tag_target='%s';
 	";
 }
 

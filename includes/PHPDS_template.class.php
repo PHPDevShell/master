@@ -428,43 +428,6 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Acquire script identification image or logo.
-     *
-     * @param string $node_link
-     * @param string $active_plugin
-     * @param string $alias
-     * @param int    $is_parent
-     * @return string
-     */
-    public function scriptLogo($node_link, $active_plugin, $alias = null, $is_parent = 0)
-    {
-        // Find last occurance.
-        $filename_from = strrchr($node_link, '/');
-        if (empty($filename_from)) $filename_from = $node_link;
-        // Set image name.
-        $image_name = ltrim(PU_rightTrim($filename_from, '.php'), '/');
-        // Create image url.
-        $img_url_alias            = !empty($alias) ? "plugins/$active_plugin/images/$alias.png" : '';
-        $img_url                  = "plugins/$active_plugin/images/$image_name.png";
-        $image_url_plugin_default = "plugins/$active_plugin/images/default.png";
-        $image_url_root_default   = "plugins/$active_plugin/images/default-root.png";
-        // Lets check if image exists, if not, we need to set it to use default.
-        if ($img_url_alias && file_exists($img_url_alias)) {
-            return $this->CDN . '/' . $img_url_alias;
-        } elseif (file_exists($img_url)) {
-            return $this->CDN . '/' . $img_url;
-        } elseif (file_exists($image_url_plugin_default) && !$is_parent) {
-            return $this->CDN . '/' . $image_url_plugin_default;
-        } elseif (file_exists($image_url_root_default) && $is_parent) {
-            return $this->CDN . '/' . $image_url_root_default;
-        } elseif (!file_exists($image_url_root_default) && $is_parent) {
-            return $this->CDN . '/plugins/AdminTools/images/default-root.png';
-        } else {
-            return $this->CDN . '/plugins/AdminTools/images/default.png';
-        }
-    }
-
-    /**
      * Sets template time.
      */
     public function outputTime()
@@ -909,7 +872,7 @@ class PHPDS_template extends PHPDS_dependant
     {
         $navigation = $this->navigation->navigation;
         // Create icon dir.
-        $script_url = $this->CDN . '/themes/' . $navigation[$this->configuration['m']]['template_folder'] . '/images/icons-' . $size . '/' . $name . $type;
+        $script_url = $this->CDN . '/themes/' . $navigation[$this->configuration['m']]['theme_folder'] . '/images/icons-' . $size . '/' . $name . $type;
         if (empty ($title))
             $title = '';
         // Create HTML.
@@ -1323,8 +1286,8 @@ class PHPDS_template extends PHPDS_dependant
         $settings['default_template'] = '';
 
         // Check if the node has a defined template.
-        if (!empty($this->navigation->navigation[$this->configuration['m']]['template_folder'])) {
-            $settings['default_template'] = $this->navigation->navigation[$this->configuration['m']]['template_folder'];
+        if (!empty($this->navigation->navigation[$this->configuration['m']]['theme_folder'])) {
+            $settings['default_template'] = $this->navigation->navigation[$this->configuration['m']]['theme_folder'];
         } else {
             // If not check if the gui system settings was set with a default template.
             $settings['default_template'] = $this->configuration['default_template'];

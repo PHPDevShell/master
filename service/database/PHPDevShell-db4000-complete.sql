@@ -41,7 +41,7 @@ CREATE TABLE `_db_core_node_items` (
   `new_window`     INT(1) DEFAULT NULL,
   `rank`           INT(100) DEFAULT NULL,
   `hide`           INT(1) DEFAULT NULL,
-  `template_id`    VARCHAR(64) DEFAULT NULL,
+  `theme_id`       VARCHAR(64) DEFAULT NULL,
   `alias`          VARCHAR(255) DEFAULT NULL,
   `layout`         VARCHAR(255) DEFAULT NULL,
   `params`         VARCHAR(1024) DEFAULT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE `_db_core_plugin_activation` (
   `plugin_folder` VARCHAR(255) NOT NULL DEFAULT '0',
   `status`        VARCHAR(255) DEFAULT NULL,
   `version`       INT(16)      NOT NULL,
-  `use_logo`      INT(2) DEFAULT NULL,
+  `persistent`      INT(2) DEFAULT NULL,
   PRIMARY KEY (`plugin_folder`)
 )
   ENGINE = InnoDB
@@ -87,6 +87,7 @@ CREATE TABLE `_db_core_plugin_activation` (
 INSERT INTO `_db_core_plugin_activation` VALUES ('Mustache', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('LightModels', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('PluginManager', 'install', '1000', '0');
+INSERT INTO `_db_core_plugin_activation` VALUES ('NodeHelper', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('About', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('StandardLogin', 'install', '1000', '0');
 
@@ -107,7 +108,9 @@ CREATE TABLE `_db_core_plugin_classes` (
 -- Insert classes available from default plugins.;
 INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('views', 'PHPDS_views', 'Mustache', '1', '1');
 INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('models', 'LightModels_models', 'LightModels', '1', '1');
-INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('pluginManager', 'PHPDS_pluginmanager', 'PluginManager', '1', '1');
+INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('pluginFactory', 'PluginManager_pluginFactory', 'PluginManager', '1', '1');
+INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('pluginRepository', 'PluginManager_pluginRepository', 'PluginManager', '1', '1');
+INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('nodeHelper', 'NodeHelper_nodeHelper', 'NodeHelper', '1', '1');
 INSERT INTO `_db_core_plugin_classes` (class_name, alias, plugin_folder, enable, rank) VALUES ('StandardLogin', 'PHPDS_login', 'StandardLogin', '1', '1');
 
 -- Create session table.;
@@ -125,10 +128,10 @@ CREATE TABLE `_db_core_session` (
 
 -- Create settings table.;
 CREATE TABLE `_db_core_settings` (
-  `setting_description` VARCHAR(100) NOT NULL DEFAULT '',
+  `setting_id` VARCHAR(100) NOT NULL DEFAULT '',
   `setting_value`       TEXT,
   `note`                TEXT,
-  PRIMARY KEY (`setting_description`)
+  PRIMARY KEY (`setting_id`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
@@ -146,8 +149,8 @@ INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_short', 'Y-m-d',
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_show', 'September 17, 2010, 12:59 pm +0000', '');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_show_short', '2010-09-17', '');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_debug_language', '', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_template', 'default', 'Default theme for all nodes.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_template_id', 'default', 'Default template id.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_theme', 'default', 'Default theme for all nodes.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_theme_id', 'default', 'Default theme id.');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_upload_directory', 'write/upload/', 'Writable upload directory.');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_demo_mode', '0', 'Should system be set into demo mode, no transactions will occur.');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
@@ -162,8 +165,7 @@ INSERT INTO `_db_core_settings` VALUES ('AdminTools_loginandout', 'login', 'The 
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_login_message', '', 'a Default message to welcome users loging in.');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_meta_description', 'Administrative user interface based on AdminTools and other modern technologies.', '');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_meta_keywords', 'administrative, administrator, AdminTools, interface, ui, user', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_printable_template', 'default', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_queries_count', '1', 'Should queries be counted and info show.');
+INSERT INTO `_db_core_settings` VALUES ('AdminTools_queries_count', '0', 'Should queries be counted and info show.');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_redirect_login', 'readme', 'When a user logs in, where should he be redirected to?');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_region', 'US', 'Region settings.');
 INSERT INTO `_db_core_settings` VALUES ('AdminTools_regions_available', 'US', '');
@@ -197,16 +199,16 @@ CREATE TABLE `_db_core_tags` (
   DEFAULT CHARSET = utf8;
 
 -- Create themes table to store installed themes.;
-CREATE TABLE `_db_core_templates` (
-  `template_id`     VARCHAR(64) NOT NULL,
-  `template_folder` VARCHAR(255) DEFAULT NULL,
-  PRIMARY KEY (`template_id`)
+CREATE TABLE `_db_core_themes` (
+  `theme_id`     VARCHAR(64) NOT NULL,
+  `theme_folder` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`theme_id`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
 -- Insert default themes.;
-INSERT INTO `_db_core_templates` VALUES ('default', 'default');
+INSERT INTO `_db_core_themes` VALUES ('default', 'default');
 
 -- Create important user table to store all users.;
 CREATE TABLE `_db_core_users` (

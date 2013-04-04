@@ -34,9 +34,9 @@ class NAVIGATION_extractNodeQuery extends PHPDS_query
 {
     protected $sql = "
 		SELECT DISTINCT SQL_CACHE
-			t1.node_id, t1.parent_node_id, t1.node_name, t1.node_link, t1.plugin, t1.node_type, t1.extend, t1.new_window, t1.rank, t1.hide, t1.template_id, t1.alias, t1.layout, t1.params,
+			t1.node_id, t1.parent_node_id, t1.node_name, t1.node_link, t1.plugin, t1.node_type, t1.extend, t1.new_window, t1.rank, t1.hide, t1.theme_id, t1.alias, t1.layout, t1.params,
 			t3.is_parent, t3.type,
-			t6.template_folder
+			t6.theme_folder
 		FROM
 			_db_core_node_items AS t1
 		LEFT JOIN
@@ -48,9 +48,9 @@ class NAVIGATION_extractNodeQuery extends PHPDS_query
 		ON
 			t1.node_id = t3.node_id
 		LEFT JOIN
-			_db_core_templates AS t6
+			_db_core_themes AS t6
 		ON
-			t1.template_id = t6.template_id
+			t1.theme_id = t6.theme_id
 		WHERE
 			(t2.user_role_id IN (%s))
 		ORDER BY
@@ -77,7 +77,7 @@ class NAVIGATION_extractNodeQuery extends PHPDS_query
             // Create node items. //
             ////////////////////////
             $new_node = array();
-            $father->copyArray($mr, $new_node, array('node_id', 'parent_node_id', 'alias', 'node_link', 'rank', 'hide', 'new_window', 'is_parent', 'type', 'template_folder', 'layout', 'plugin', 'node_type', 'extend'));
+            $father->copyArray($mr, $new_node, array('node_id', 'parent_node_id', 'alias', 'node_link', 'rank', 'hide', 'new_window', 'is_parent', 'type', 'theme_folder', 'layout', 'plugin', 'node_type', 'extend'));
             $new_node['node_name'] = $navigation->determineNodeName($mr['node_name'], $mr['node_link'], $mr['node_id'], $mr['plugin']);
 
             $new_node['params']        = !empty($mr['params']) ? html_entity_decode($mr['params'], ENT_COMPAT, $charset) : '';
