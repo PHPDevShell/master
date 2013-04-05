@@ -1,9 +1,5 @@
 <?php
 
-/**
- * Plugin Manager - Get max rank for node items.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_readMaxNodesRankQuery extends PHPDS_query
 {
     protected $sql = "
@@ -16,10 +12,6 @@ class PHPDS_readMaxNodesRankQuery extends PHPDS_query
     protected $singleValue = true;
 }
 
-/**
- * Plugin Manager - Get min rank for node items.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_readMinNodesRankQuery extends PHPDS_query
 {
     protected $sql = "
@@ -32,10 +24,6 @@ class PHPDS_readMinNodesRankQuery extends PHPDS_query
     protected $singleValue = true;
 }
 
-/**
- * Plugin Manager - Create template.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_createThemeQuery extends PHPDS_query
 {
     protected $sql = "
@@ -46,10 +34,6 @@ class PHPDS_createThemeQuery extends PHPDS_query
     ";
 }
 
-/**
- * Plugin Manager - Delete role permissions.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteRolePermissionsPluginQuery extends PHPDS_query
 {
     protected $sql = "
@@ -62,10 +46,6 @@ class PHPDS_deleteRolePermissionsPluginQuery extends PHPDS_query
     ";
 }
 
-/**
- * Plugin Manager - Write role permissions.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_writeRolePermissionsPluginQuery extends PHPDS_query
 {
     protected $sql = "
@@ -76,25 +56,31 @@ class PHPDS_writeRolePermissionsPluginQuery extends PHPDS_query
     ";
 }
 
-/**
- * Plugin Manager - Write new node.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_writeNodePluginQuery extends PHPDS_query
 {
     protected $sql = "
 		REPLACE INTO
-			_db_core_node_items (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window, rank, hide, theme_id, alias, layout, params)
+			_db_core_node_items (
+                node_id,
+                parent_node_id,
+                node_name,
+                node_link,
+                plugin,
+                node_type,
+                extend,
+                new_window,
+                rank,
+                hide,
+                theme_id,
+                alias,
+                layout,
+                params
+			)
 		VALUES
 			('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     ";
 }
 
-
-/**
- * Plugin Manager - Select class rank.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_rankClassesQuery extends PHPDS_query
 {
     protected $sql = "
@@ -109,10 +95,6 @@ class PHPDS_rankClassesQuery extends PHPDS_query
     protected $singleValue = true;
 }
 
-/**
- * Plugin Manager - Write classes.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_writeClassesQuery extends PHPDS_query
 {
     protected $sql = "
@@ -164,19 +146,11 @@ class PHPDS_writeClassesQuery extends PHPDS_query
     }
 }
 
-/**
- * Plugin Manager - Do plugin query.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_doQuery extends PHPDS_query
 {
     protected $sql = "%s";
 }
 
-/**
- * Plugin Manager - Write plugin version.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_writePluginVersionQuery extends PHPDS_query
 {
     protected $sql = "
@@ -187,10 +161,6 @@ class PHPDS_writePluginVersionQuery extends PHPDS_query
 	";
 }
 
-/**
- * Plugin Manager - Delete classes from database.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteClassesQuery extends PHPDS_query
 {
     protected $sql = "
@@ -201,10 +171,6 @@ class PHPDS_deleteClassesQuery extends PHPDS_query
 	";
 }
 
-/**
- * Plugin Manager - Delete version from database.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_deleteVersionQuery extends PHPDS_query
 {
     protected $sql = "
@@ -215,10 +181,6 @@ class PHPDS_deleteVersionQuery extends PHPDS_query
 	";
 }
 
-/**
- * Plugin Manager - Upgrade version from database.
- * @author Jason Schoeman, Contact: titan [at] phpdevshell [dot] org.
- */
 class PHPDS_upgradeVersionQuery extends PHPDS_query
 {
     protected $sql = "
@@ -232,9 +194,6 @@ class PHPDS_upgradeVersionQuery extends PHPDS_query
 	";
 }
 
-/**
- * Plugin Manager - Does node actually exist.
- */
 class PHPDS_doesNodeExist extends PHPDS_query
 {
     protected $sql = "
@@ -249,9 +208,6 @@ class PHPDS_doesNodeExist extends PHPDS_query
     protected $singleValue = true;
 }
 
-/**
- * Plugin Manager - Update node link.
- */
 class PHPDS_updateNodeLink extends PHPDS_query
 {
     protected $sql = "

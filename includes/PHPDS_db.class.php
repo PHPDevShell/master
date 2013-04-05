@@ -550,7 +550,7 @@ class PHPDS_db extends PHPDS_dependant
     }
 
     /**
-     * Protect a array of strings from possible hacker (i.e. escape possible harmfull chars)
+     * Protect a array of strings from possible hacker (i.e. escape possible harmful chars)
      * (this has been moved from PHPDS_query)
 
      * @param $a array the strings to protect

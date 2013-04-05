@@ -61,7 +61,7 @@ class PHPDS_config extends PHPDS_dependant
      * Add a class to the registry.
      *
      * @param string $className    the name of the PHP class to register
-     * @param string $classAlias   an altername name for this class
+     * @param string $classAlias   an alternative name for this class
      * @param string $pluginFolder the name/folder of the plugin this class belongs to
      * @param string $fileName     (optional) a file where to load the class from, instead of the default name based on the class name
      */

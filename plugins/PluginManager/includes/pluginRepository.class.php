@@ -59,11 +59,19 @@ class pluginRepository extends PHPDS_dependant
 
         // Plugins available in repository.
         foreach ($repoarray['plugins'] as $name => $data) {
+            $installed = $this->isPluginInstalled($name);
+            if ($installed) {
+                $broken = ($this->pluginExistsLocally($name)) ? false : true;
+            } else {
+                $broken = false;
+            }
+
             $remote[$name] = array(
                 'name'      => $name,
                 'desc'      => $data['desc'],
                 'repo'      => $data['repo'],
-                'installed' => $this->isPluginInstalled($name)
+                'installed' => $installed,
+                'broken'    => $broken
             );
         }
 
@@ -251,7 +259,7 @@ class pluginRepository extends PHPDS_dependant
     {
         $xml = @simplexml_load_file($xmlcfgfile);
         if (!isset($xml) && !is_array($xml)) {
-            $this->template->warning(sprintf(__('No info available looked in %s'), $xmlcfgfile));
+            $this->template->warning(sprintf(__('No info available for: %s'), $xmlcfgfile));
             return false;
         }
         return $this->xmlPluginConfigToArray($xml);
@@ -366,10 +374,19 @@ class pluginRepository extends PHPDS_dependant
         return $depends_on;
     }
 
+    public function pluginDelete($plugin)
+    {
+
+    }
+
     public function pluginPrepare($plugin)
     {
         if ($this->pluginExistsLocally($plugin)) {
-            return $this->pluginPrepareReadyLocally();
+            if ($this->isPluginInstalled($plugin)) {
+                return $this->pluginReinstallReadyLocally();
+            } else {
+                return $this->pluginPrepareReadyLocally();
+            }
         } else {
             return $this->pluginPrepareNeedDownload();
         }
@@ -378,6 +395,11 @@ class pluginRepository extends PHPDS_dependant
     private function pluginPrepareReadyLocally()
     {
         return json_encode(array('status' => 'install', 'message' => __('Installing...')));
+    }
+
+    private function pluginReinstallReadyLocally()
+    {
+        return json_encode(array('status' => 'reinstall', 'message' => __('Re-installing...')));
     }
 
     private function pluginPrepareNeedDownload()

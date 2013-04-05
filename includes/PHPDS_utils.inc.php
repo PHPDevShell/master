@@ -733,9 +733,10 @@ function PU_GetDBSettings($configuration, $db = '')
  * Sets the header to correct status code.
  *
  * @param int $code
+ * @param string $message
  * @return int|null
  */
-function PU_silentHeaderStatus($code = NULL) {
+function PU_silentHeaderStatus($code = null, $message = null) {
     if ($code !== NULL) {
         switch ($code) {
             case 100: $text = 'Continue'; break;
@@ -781,7 +782,8 @@ function PU_silentHeaderStatus($code = NULL) {
                 break;
         }
         $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-        PU_silentHeader($protocol . ' ' . $code . ' ' . $text);
+        $message_ = (empty($message)) ? $text : $message;
+        PU_silentHeader($protocol . ' ' . $code . ' ' . $message_);
         PU_silentHeader("Status: " . $code);
         $GLOBALS['http_response_code'] = $code;
     } else {
