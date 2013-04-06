@@ -14,129 +14,136 @@ class pluginFactory extends PHPDS_dependant
     protected $nodeHelper;
     protected $node;
     protected $pluginUpgraded;
-    public $log;
+    public    $log;
 
     /**
-     * Runs all necessary queries to enter a plugin and its node items into the database.
+     * Assign properties to be used by plugin manager.
      *
      * @param string $plugin_folder Folder and unique name where plugin is copied.
-     * @param string $action        Action taken to manipulate plugin.
-     * @param int    $version       Version of the current installed plugin.
-     * @return bool
+     * @throws PHPDS_exception
      */
-    public function setPlugin($plugin_folder, $action, $version = null)
+    private function preConstruct($plugin_folder)
     {
         // Include global variables.
         $configuration = $this->configuration;
-        $cache         = $this->cache;
+        $config_path   = $configuration['absolute_path'] . "plugins/$plugin_folder/config/plugin.config.xml";
+
         // First include the configuration file for processing.
-        $xml = simplexml_load_file(
-            $configuration['absolute_path'] . "/plugins/$plugin_folder/config/plugin.config.xml"
-        );
+        $xml = @simplexml_load_file($config_path);
+
+        if (empty($xml) && empty($xml->name))
+            throw new PHPDS_exception(sprintf('Could not locate plugin config: %s', $config_path));
+
         // Set plugin array.
         $this->plugin = $xml;
-        $this->action = $action;
+
         // Extra class required.
         $this->nodeHelper = $this->factory('nodeHelper');
-
-        /////////////////////////////////////////////////////////
-        ///////////////////// INSTALL ///////////////////////////
-        /////////////////////////////////////////////////////////
-        // Create actions that needs to be taken.
-        // Complete Install
-        if ($action == 'install') {
-            // Install node items to database.
-            $this->installNodes($plugin_folder);
-            // Install settings.
-            $this->installSettings($plugin_folder);
-            // Install classes.
-            $this->installClasses($plugin_folder);
-            // For failed queries try to remove old database queries first.
-            $this->uninstallQueries($plugin_folder);
-            // Install custom database query.
-            $this->installQueries($plugin_folder);
-            // Write installed plugin.
-            $this->installVersion($plugin_folder, 'install');
-            // Write the node structure.
-            $this->nodeHelper->writeNodeStructure();
-            // Clear old cache.
-            $cache->cacheClear();
-
-            return 'installed';
-        }
-
-        /////////////////////////////////////////////////////////
-        ///////////////////// UNINSTALL /////////////////////////
-        /////////////////////////////////////////////////////////
-        // Complete Uninstall
-        if ($action == 'uninstall') {
-            // Remove node items from database.
-            $this->uninstallNodes($plugin_folder);
-            // Remove plugin settings if any.
-            $this->uninstallSettings($plugin_folder);
-            // Remove plugin classes if any.
-            $this->uninstallClasses($plugin_folder);
-            // Remove database.
-            $this->uninstallQueries($plugin_folder);
-            // Remove plugin from registry.
-            $this->uninstallVersion($plugin_folder);
-            // Write the node structure.
-            $this->nodeHelper->writeNodeStructure();
-            // Clear old cache.
-            $cache->cacheClear();
-        }
-
-        /////////////////////////////////////////////////////////
-        ///////////////////// REINSTALL /////////////////////////
-        /////////////////////////////////////////////////////////
-        // Complete Re-Install Node Items.
-        if ($action == 'reinstall') {
-            // Install node items to database.
-            $this->installNodes($plugin_folder, true);
-            // Before we install anything lets first clear old hooks to this plugin.
-            // Write the node structure.
-            $this->nodeHelper->writeNodeStructure();
-            // Clear old Cache.
-            $cache->cacheClear();
-        }
-
-        /////////////////////////////////////////////////////////
-        ///////////////////// AUTO UPGRADE //////////////////////
-        /////////////////////////////////////////////////////////
-        // Complete Upgrade.
-        if ($action == 'upgrade') {
-            // Upgrade custom database query.
-            $this->upgradeQueries($plugin_folder, $version);
-            // Install node items to database.
-            $this->installNodes($plugin_folder, true);
-            // Before we install anything lets first clear old classes to this plugin.
-            $this->uninstallClasses($plugin_folder);
-            // Install classes.
-            $this->installClasses($plugin_folder);
-            // Write database string.
-            $this->upgradeDatabase($plugin_folder, 'install');
-            // Write the node structure.
-            $this->nodeHelper->writeNodeStructure();
-            // Clear old Cache.
-            $cache->cacheClear();
-        }
-
-        /////////////////////////////////////////////////////////
-        ///////////////////// AUTO UPGRADE //////////////////////
-        /////////////////////////////////////////////////////////
-        if ($action == 'auto_upgrade') {
-            $this->pluginAutoUpgrade($plugin_folder);
-        }
     }
 
     /**
-     * Download and copy plugin to its correct location, then attempts to install.
-     * @param $plugin_folder
-     * @return void
+     * Installs a local plugin.
+     * @param string $plugin_folder
+     * @return bool
      */
-    private function pluginAutoUpgrade($plugin_folder)
+    public function install($plugin_folder)
     {
+        $this->preConstruct($plugin_folder);
 
+        // Install node items to database.
+        $this->installNodes($plugin_folder);
+        // Install settings.
+        $this->installSettings($plugin_folder);
+        // Install classes.
+        $this->installClasses($plugin_folder);
+        // For failed queries try to remove old database queries first.
+        $this->uninstallQueries($plugin_folder);
+        // Install custom database query.
+        $this->installQueries($plugin_folder);
+        // Write installed plugin.
+        $this->installVersion($plugin_folder, 'install');
+        // Write the node structure.
+        $this->nodeHelper->writeNodeStructure();
+        // Clear old cache.
+        $this->cache->cacheClear();
+
+        return true;
+    }
+
+    /**
+     * Re-installs the basics of a local plugin without overriding customizations.
+     * @param string $plugin_folder
+     * @return bool
+     */
+    public function reinstall($plugin_folder)
+    {
+        $this->preConstruct($plugin_folder);
+
+        // Install node items to database.
+        $this->installNodes($plugin_folder, true);
+        // Before we install anything lets first clear old hooks to this plugin.
+        // Write the node structure.
+        $this->nodeHelper->writeNodeStructure();
+        // Clear old Cache.
+        $this->cache->cacheClear();
+
+        return true;
+    }
+
+    /**
+     * Upgrades a plugin to its latest version includes;
+     * class, queries, settings
+     * @param string $plugin_folder
+     * @return bool
+     */
+    public function upgrade($plugin_folder)
+    {
+        $version = $this->plugin->install['version'];
+        $this->preConstruct($plugin_folder);
+
+        // Upgrade custom database query.
+        $this->upgradeQueries($plugin_folder, $version);
+        // Install node items to database.
+        $this->installNodes($plugin_folder, true);
+        // Before we install anything lets first clear old classes to this plugin.
+        $this->uninstallClasses($plugin_folder);
+        // Install classes.
+        $this->installClasses($plugin_folder);
+        // Write database string.
+        $this->upgradeDatabase($plugin_folder, 'install');
+        // Write the node structure.
+        $this->nodeHelper->writeNodeStructure();
+        // Clear old Cache.
+        $this->cache->cacheClear();
+
+        return true;
+    }
+
+    /**
+     * Removes a class completely from database but wont delete the files physically.
+     * @param string $plugin_folder
+     * @return bool
+     */
+    public function uninstall($plugin_folder)
+    {
+        $this->preConstruct($plugin_folder);
+
+        // Remove node items from database.
+        $this->uninstallNodes($plugin_folder);
+        // Remove plugin settings if any.
+        $this->uninstallSettings($plugin_folder);
+        // Remove plugin classes if any.
+        $this->uninstallClasses($plugin_folder);
+        // Remove database.
+        $this->uninstallQueries($plugin_folder);
+        // Remove plugin from registry.
+        $this->uninstallVersion($plugin_folder);
+        // Write the node structure.
+        $this->nodeHelper->writeNodeStructure();
+        // Clear old cache.
+        $this->cache->cacheClear();
+
+        return true;
     }
 
     /**
@@ -147,25 +154,31 @@ class pluginFactory extends PHPDS_dependant
      */
     private function installNodes($plugin_folder, $update = false)
     {
-        $core          = $this->core;
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
         $db            = $this->db;
         $config        = $this->config;
 
         // Get default and empty theme id's.
-        $themes_array = $config->getSettings(array('default_theme_id', 'empty_theme_id'), 'PluginManager');
+        $themes_array = $config->getSettings(array('default_theme_id'), 'PluginManager');
+
         // Assign nodes q to install.
         $nodes_array = $this->plugin->install->nodes;
+
         // Define.
         $last_node_theme_insert = false;
+
         // Execute installation of node items.
         if (!empty($nodes_array)) {
-            $this->installNodesDigger($nodes_array);
+
+            $this->nodesDigger($nodes_array);
             $nodes_array = $this->node;
-            if (count($nodes_array) > 0) {
+
+            if (!empty($nodes_array) && count($nodes_array) > 0) {
+
                 // Insert new node items into database.
                 foreach ($nodes_array as $ranking => $node) {
+
                     // Create node link.
                     $node_link = (string)$node['link'];
 
@@ -176,6 +189,7 @@ class pluginFactory extends PHPDS_dependant
                     } else {
                         $node_id = $node['nodeid'];
                     }
+
                     // Check if node is not just an update, we don't want to override custom settings.
                     if ($update == true) {
                         if ($db->invokeQuery('PHPDS_doesNodeExist', $node_id)) {
@@ -186,6 +200,7 @@ class pluginFactory extends PHPDS_dependant
                             continue;
                         }
                     }
+
                     // Check if node item should be installed to other node structure or if it is using different plugin.
                     if (!empty($node['plugin'])) {
                         $parent_plugin_folder = $node['plugin'];
@@ -194,6 +209,7 @@ class pluginFactory extends PHPDS_dependant
                     } else {
                         $parent_plugin_folder = $plugin_folder;
                     }
+
                     // Compile parent node id from user input.
                     if (!empty($node['parentlink'])) {
                         // Create parent node id.
@@ -211,6 +227,7 @@ class pluginFactory extends PHPDS_dependant
                         // This must be a root item then.
                         $parent_id = '0';
                     }
+
                     // Link to original plugin item or parent plugin item script.
                     if (!empty($node['symlink'])) {
                         $extend_to = $this->nodeHelper->createNodeId($parent_plugin_folder, $node['symlink']);
@@ -229,6 +246,7 @@ class pluginFactory extends PHPDS_dependant
                     } else {
                         $node_type = 1;
                     }
+
                     // Create sef alias.
                     if (!empty($node_type)) {
                         (!empty($node_name)) ? $node_name_ = $node_name : $node_name_ = $node_link;
@@ -237,6 +255,7 @@ class pluginFactory extends PHPDS_dependant
                     } else {
                         $alias = false;
                     }
+
                     // What type of node extension should be used.
                     switch ($node['type']) {
                         case 2:
@@ -249,18 +268,20 @@ class pluginFactory extends PHPDS_dependant
                             $extend = $extend_to;
                             break;
                         case 7:
-                            $extend = (string)$node['height'];
+                            $extend = (string) $node['height'];
                             break;
                         default:
                             $extend = false;
                             break;
                     }
+
                     // Should item be opened in new window.
                     if (!empty($node['newwindow'])) {
                         $new_window = (int)$node['newwindow'];
                     } else {
                         $new_window = 0;
                     }
+
                     // How should items be ranked.
                     if (!empty($node['rank'])) {
                         if ($node['rank'] == 'last') {
@@ -277,16 +298,16 @@ class pluginFactory extends PHPDS_dependant
                     } else {
                         $rank = $ranking;
                     }
+
                     // How should item be hide.
                     if (!empty($node['hide'])) {
                         $hide = (int)$node['hide'];
                     } else {
                         $hide = 0;
                     }
+
                     // Create a theme id or use default.
-                    if ($node['theme'] == 'empty') {
-                        $node_theme_insert = $themes_array['empty_theme_id'];
-                    } else if (empty($node['theme'])) {
+                    if (empty($node['theme'])) {
                         $node_theme_insert = $themes_array['default_theme_id'];
                     } else {
                         // Get a unique id.
@@ -294,7 +315,7 @@ class pluginFactory extends PHPDS_dependant
                         // Check if item needs to be created.
                         if ($last_node_theme_insert != $node_theme_insert) {
                             // Create a new node item...
-                            if ($db->invokeQuery('PHPDS_createTemplateQuery', $node_theme_insert, $node['theme'])) {
+                            if ($db->invokeQuery('PHPDS_createThemeQuery', $node_theme_insert, $node['theme'])) {
                                 // Show execution.
                                 $this->log[] = sprintf(__("Installed new theme for %s.", 'PluginManager'),
                                     $node['theme']);
@@ -303,6 +324,7 @@ class pluginFactory extends PHPDS_dependant
                             $last_node_theme_insert = $node_theme_insert;
                         }
                     }
+
                     // Create theme layout.
                     if (!empty($node['layout'])) {
                         $layout = (string)$node['layout'];
@@ -316,6 +338,7 @@ class pluginFactory extends PHPDS_dependant
                     } else {
                         $params = '';
                     }
+
                     ////////////////////////////////
                     // Role Permissions.
                     // Now we need to delete old values, if any, to prevent duplicates.
@@ -327,6 +350,7 @@ class pluginFactory extends PHPDS_dependant
                         // INSERT Node Permissions.
                         $db->invokeQuery('PHPDS_writeRolePermissionsPluginQuery', $configuration['user_role'], $node_id);
                     }
+
                     ////////////////////////////////
                     // Save new item to database.
                     // Although it is not my style doing queries inside a loop,
@@ -362,7 +386,7 @@ class pluginFactory extends PHPDS_dependant
      *
      * @param $child Object containing XML node tree.
      */
-    private function installNodesDigger($child)
+    private function nodesDigger($child)
     {
         // Looping through all XML node items while compiling values.
         foreach ($child->children() as $children) {
@@ -408,7 +432,7 @@ class pluginFactory extends PHPDS_dependant
                 'noautopermission' => $m['noautopermission'],
                 'params'           => $m['params']);
             // Recall for children node items.
-            $this->installNodesDigger($children);
+            $this->nodesDigger($children);
         }
     }
 

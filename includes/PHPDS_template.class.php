@@ -1004,6 +1004,7 @@ class PHPDS_template extends PHPDS_dependant
      * @param string $log
      * @param string $mail
      * @return string|void
+     * @throws PHPDS_exception
      */
     public function critical($critical, $return = 'print', $log = 'log', $mail = 'mailadmin')
     {
@@ -1043,6 +1044,8 @@ class PHPDS_template extends PHPDS_dependant
         // Return or print to browser.
         if ($return === 'print' || $return == false) {
             $this->notif->add(array('critical', $critical));
+            // Let the ajax controller know there was a critical error.
+            if (PU_isAJAX()) PU_silentHeaderStatus(500, $critical);
         } else if ($return === 'return' || $return == true) {
             return $this->mod->critical($critical);
         }

@@ -156,6 +156,7 @@ class PHPDS_deleteNodeQuery extends PHPDS_query
 			}
 			return true;
 		}
+        return false;
 	}
 }
 
@@ -163,7 +164,22 @@ class PHPDS_writeNodeQuery extends PHPDS_query
 {
 	protected $sql = "
 		REPLACE INTO
-			_db_core_node_items (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window, rank, hide, theme_id, alias, layout, params)
+			_db_core_node_items (
+                node_id,
+                parent_node_id,
+                node_name,
+                node_link,
+                plugin,
+                node_type,
+                extend,
+                new_window,
+                rank,
+                hide,
+                theme_id,
+                alias,
+                layout,
+                params
+			)
 		VALUES
 			('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
     ";

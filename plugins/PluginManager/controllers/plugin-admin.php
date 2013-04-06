@@ -73,16 +73,29 @@ class PluginActivation extends PHPDS_controller
                 case 'download':
                     return $this->repo->pluginPrepareDownload($this->G('plugin'));
                     break;
+                case 'delete':
+                    return $this->repo->pluginDelete($this->G('plugin'));
+                    break;
             }
         }
 
+        // Perform a plugin action related to database changes.
         if ($this->P('action')) {
             switch ($this->P('action')) {
                 case 'extract':
                     return $this->repo->pluginExtraction($this->P('plugin'), $this->P('zip'));
                     break;
                 case 'install':
-                    return $this->factory->setPlugin($this->P('plugin'), 'install');
+                    return $this->factory->install($this->P('plugin'));
+                    break;
+                case 'upgrade':
+                    return $this->factory->upgrade($this->P('plugin'));
+                    break;
+                case 'reinstall':
+                    return $this->factory->reinstall($this->P('plugin'));
+                    break;
+                case 'uninstall':
+                    return $this->factory->uninstall($this->P('plugin'));
                     break;
             }
         }
@@ -92,42 +105,7 @@ class PluginActivation extends PHPDS_controller
             //return $this->repo->checkOnlineUpdates();
         }
 
-        // Plugin activation starts.
-        /**
-        if ($this->P() && $this->user->isRoot()) {
-            $plugin = $this->security->post['plugin'];
-            /////////////////////////////////////////////////////////////////////
-            // When save is submitted... ////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////
-            // Install   = 1 ////////////////////////////////////////////////////
-            // Uninstall = 2 ////////////////////////////////////////////////////
-            // Reinstall = 3 ////////////////////////////////////////////////////
-            // Upgrade   = 4 ////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////
-            if (isset($this->security->post['install'])) {
-                // Execute plugin method.
-                $this->pm->setPlugin($plugin, 'install');
-            } else if (isset($this->security->post['uninstall'])) {
-                // Execute plugin method.
-                $this->pm->setPlugin($plugin, 'uninstall');
-            } else if (isset($this->security->post['reinstall'])) {
-                // Execute plugin method.
-                $this->pm->setPlugin($plugin, 'reinstall');
-            } else if (isset($this->security->post['upgrade'])) {
-                // Execute plugin method.
-                $this->pm->setPlugin($plugin, 'upgrade', $this->security->post['version']);
-            } else if (isset($this->security->post['auto_upgrade'])) {
-                // Execute plugin method.
-                $this->pm->setPlugin($plugin, 'auto_upgrade');
-            } else if (isset($this->security->post['set_logo'])) {
-                // Execute plugin method.
-                $this->pm->setPlugin($plugin, 'set_logo');
-            }
-            /////////////////////////////////////////////////////////////////////
-            // End save is submitted... /////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////
-        }
-       */
+        return false;
     }
 }
 

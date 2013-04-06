@@ -94,12 +94,12 @@
 
                 <div class="plugin-short-description muted">{{desc}}</div>
             </div>
-            <div class="column span3">
+            <div class="column span3 action-buttons">
                 <div class="hide">
                     {{#installed}}
                     <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
                     <button data-plugin="{{name}}" class="plugin-get-install btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
-                    <button class="btn btn"><i class="icon-off"></i></button>
+                    <button data-plugin="{{name}}" class="plugin-get-uninstall btn btn-warning"><i class="icon-remove icon-white"></i></button>
                     {{/installed}}
 
                     {{^installed}}
@@ -137,8 +137,8 @@
             </div>
             <div class="column span3">
                 <div class="hide">
-                    <button class="btn btn-info"><i class="icon-info-sign icon-white"></i></button>
-                    <button class="btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
+                    <button data-plugin="" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
+                    <button data-plugin="" class="plugin-get-install btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
                 </div>
             </div>
             <div class="column span3"></div>
@@ -148,6 +148,8 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
+        var $root = $("#repository");
+
         $("#plugin-search").searchFilter("div.plugin-repo div.row");
 
         $(this).on('pluginsUpdated', function (event) {
@@ -155,6 +157,7 @@
             $("#plugin-tools").removeClass("open");
         });
         bindNewPluginButtons(".old-bind");
+
         // Repository update.
         $("#repo-refresh").on("click", function() {
             if (ajaxRequestBusy) return false;
@@ -165,12 +168,12 @@
                     var results  = $.parseJSON(data);
                     var template = $("#new-plugin-template");
                     $.each(results, function(i, item) {
+                        $("button", template).attr("data-plugin", i);
                         $(".plugin-name", template).text(i);
                         $(".plugin-short-description", template).text(item.desc);
                         var newplugin = template.html();
                         $(".plugin-repo").prepend(newplugin);
                     });
-                    $(document).trigger('pluginsUpdated');
                 }
                 destroyPage();
             });
@@ -178,6 +181,7 @@
         });
         // Menu refresh after fresh plugin install.
         $("#menu-refresh").on("click", function () {
+            if (ajaxRequestBusy) return false;
             var url = $(this).attr("href");
             $.get(url, {"via-ajax": "light+mods"}, function (data, textStatus, request) {
                 var mainnav = $("#main-nav");
@@ -188,7 +192,7 @@
             return false;
         });
         // Plugin get info.
-        $(".plugin-get-info").on("click", function() {
+        $root.on("click", ".plugin-get-info", function() {
             if (ajaxRequestBusy) return false;
             requestPage();
             var plugin        = $(this).data("plugin");
@@ -200,8 +204,26 @@
             });
             return false;
         });
+        // Plugin uninstall.
+        $root.one("click", ".plugin-get-uninstall", function () {
+            $(this).removeClass("btn-warning").addClass("btn-danger confirm-uninstall-ready");
+            return false;
+        });
+        $root.on("click", ".confirm-uninstall-ready", function () {
+            if (ajaxRequestBusy) return false;
+            requestPage();
+            var plugin = $(this).data("plugin");
+            // Phase 0: Check dependencies, if any installed plugin depends on this plugin we cant uninstall.
+            // This can be a process and memory intensive process.
+            $.post(null, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
+                $(this).removeClass("confirm-uninstall-ready");
+                destroyPage();
+            });
+            return false;
+        });
+
         // Plugin download+install.
-        $(".plugin-get-install").on("click", function () {
+        $root.on("click", ".plugin-get-install", function () {
             if (ajaxRequestBusy) return false;
             requestPage();
             var plugin = $(this).data("plugin");
@@ -223,7 +245,7 @@
                                             // Phase 3 : Installing.
                                             var phase3 = $.parseJSON(data);
                                             $("#progress-bar").text(phase3.message);
-                                            if (phase3.status == 'install') {
+                                            if (phase3.status == 'install' || phase3.status == 'reinstall') {
                                                 $.post(null, {"action": phase3.status, "plugin": plugin}, function (data, textStatus, request) {
                                                     destroyPage();
                                                 });
@@ -238,7 +260,7 @@
                             }
                         });
                         // Phase 3 : Installing.
-                    } else if (phase1.status == 'install') {
+                    } else if (phase1.status == 'install' || phase1.status == 'reinstall') {
                         $.post(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
                             destroyPage();
                         });
