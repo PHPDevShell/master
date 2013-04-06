@@ -28,6 +28,7 @@ plugins/*
 !plugins/PluginManager
 !plugins/StandardLogin
 !plugins/index.php
+!plugins/repository.json
 
 write/*
 !write/index.php
