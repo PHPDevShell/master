@@ -31,6 +31,11 @@ class ReadMe extends PHPDS_controller
 
         $this->view->show();
     }
+
+    public function userServerTzDiff()
+    {
+
+    }
 }
 
 return 'ReadMe';

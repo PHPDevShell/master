@@ -15,6 +15,7 @@ class pluginFactory extends PHPDS_dependant
     protected $node;
     protected $pluginUpgraded;
     public    $log;
+    public    $console;
 
     /**
      * Assign properties to be used by plugin manager.
@@ -29,7 +30,7 @@ class pluginFactory extends PHPDS_dependant
         $config_path   = $configuration['absolute_path'] . "plugins/$plugin_folder/config/plugin.config.xml";
 
         // First include the configuration file for processing.
-        $xml = @simplexml_load_file($config_path);
+        $xml = simplexml_load_file($config_path);
 
         if (empty($xml) && empty($xml->name))
             throw new PHPDS_exception(sprintf('Could not locate plugin config: %s', $config_path));
@@ -173,7 +174,6 @@ class pluginFactory extends PHPDS_dependant
 
             $this->nodesDigger($nodes_array);
             $nodes_array = $this->node;
-
             if (!empty($nodes_array) && count($nodes_array) > 0) {
 
                 // Insert new node items into database.

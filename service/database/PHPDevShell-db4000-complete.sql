@@ -1,3 +1,19 @@
+CREATE TABLE `pds_core_cron` (
+  `node_id`   VARCHAR(64) NOT NULL,
+  `cron_desc` VARCHAR(255) DEFAULT NULL,
+  `cron_type` INT(1) DEFAULT NULL,
+  `log_cron`  INT(1) DEFAULT NULL,
+  `last_execution` INT(50) DEFAULT NULL,
+  `year`      INT(4) DEFAULT NULL,
+  `month`     INT(2) DEFAULT NULL,
+  `day`       INT(2) DEFAULT NULL,
+  `hour`      INT(2) DEFAULT NULL,
+  `minute`    INT(2) DEFAULT NULL,
+  PRIMARY KEY (`node_id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
 -- Create filters for search.;
 CREATE TABLE `_db_core_filter` (
   `search_id`     INT(255) UNSIGNED NOT NULL AUTO_INCREMENT,

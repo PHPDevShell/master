@@ -84,6 +84,17 @@ class PHPDS_deleteFiltersQuery extends PHPDS_query
     ";
 }
 
+class PHPDS_deleteCronsQuery extends PHPDS_query
+{
+    protected $sql = "
+		DELETE FROM
+			_db_core_cron
+		WHERE
+			node_id
+		%s
+    ";
+}
+
 class PHPDS_deleteNodeQuery extends PHPDS_query
 {
 	protected $sql = "
@@ -240,6 +251,7 @@ class PHPDS_updateNodeIdQuery extends PHPDS_query
 		$db->invokeQuery('PHPDS_updateNodeItemsIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateParentNodeItemsIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateNodeItemsExtendQuery', $new_id, $old_id);
+        $db->invokeQuery('PHPDS_updateCoreCronMenuIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateCoreFilterNodeIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateCoreNodeStructurNodeIdQuery', $new_id, $old_id);
 		$db->invokeQuery('PHPDS_updateCoreUserRolePermissionsNodeIdQuery', $new_id, $old_id);
@@ -268,6 +280,13 @@ class PHPDS_updateNodeItemsExtendQuery extends PHPDS_query
 {
 	protected $sql = "
 		UPDATE `_db_core_node_items` SET extend='%s' WHERE extend='%s';
+	";
+}
+
+class PHPDS_updateCoreCronMenuIdQuery extends PHPDS_query
+{
+    protected $sql = "
+		UPDATE `_db_core_cron` SET node_id='%s' WHERE node_id='%s';
 	";
 }
 
