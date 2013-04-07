@@ -1,13 +1,13 @@
 *
-!config/
-!includes/
-!language/
-!other/
-!plugins/
-!readme/
-!service/
-!themes/
-!write/
+!config/*
+!includes/*
+!language/*
+!other/*
+!plugins/*
+!readme/*
+!service/*
+!themes/*
+!write/*
 !.gitignore
 !index.php
 !README.md
@@ -29,10 +29,10 @@ plugins/*
 !plugins/index.php
 !plugins/repository.json
 
-write/cache/
-write/compile/
-write/private/
-write/session/
-write/tmp/
-write/logs/
+write/cache/*
+write/compile/*
+write/private/*
+write/session/*
+write/tmp/*
+write/logs/*
 
