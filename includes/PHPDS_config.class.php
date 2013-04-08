@@ -89,21 +89,12 @@ class PHPDS_config extends PHPDS_dependant
      */
     public function readClassRegistry()
     {
-        return $this->db->invokeQuery('CONFIG_readPluginClassRegistryQuery');
-    }
-
-    public function readClassRegistryNew()
-    {
-        return $this->connection->query("
-            SELECT SQL_CACHE
-                t1.class_id, t1.class_name, t1.alias, t1.plugin_folder, t1.enable, t1.rank
-            FROM
-                _db_core_plugin_classes AS t1
-            WHERE
-            (t1.enable = 1)
-            ORDER BY
-                t1.rank
-            ASC
+        return $this->connection->queryFetchAssocRows("
+          SELECT    SQL_CACHE t1.class_id, t1.class_name, t1.alias, t1.plugin_folder, t1.enable, t1.rank
+          FROM      _db_core_plugin_classes AS t1
+          WHERE     (t1.enable = 1)
+          ORDER BY  t1.rank
+          ASC
         ");
     }
 
@@ -170,7 +161,11 @@ class PHPDS_config extends PHPDS_dependant
     public function installedPlugins()
     {
         if ($this->cache->cacheEmpty('plugins_installed')) {
-            $installed_plugins_db = $this->db->invokeQuery('CONFIG_installedPluginsQuery');
+
+            $installed_plugins_db = $this->connection->queryFetchAssocRows("
+              SELECT  plugin_folder, status, version
+              FROM    _db_core_plugin_activation
+            ");
 
             foreach ($installed_plugins_db as $installed_plugins_array) {
                 $plugins_installed[$installed_plugins_array['plugin_folder']] = array(

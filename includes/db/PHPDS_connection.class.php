@@ -197,6 +197,18 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         return $result;
     }
 
+    public function queryFetchAssocRows($sql, $params = null)
+    {
+        $statement = $this->query($sql, $params);
+        if ($statement) {
+            while ($result = $this->fetchAssoc($statement))
+            {
+                $results[] = $result;
+            }
+        }
+        return $results;
+    }
+
     /**
      * Return the next row as an array or object, depending on the specified mode
      *

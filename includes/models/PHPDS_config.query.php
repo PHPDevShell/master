@@ -1,20 +1,4 @@
 <?php
-
-class CONFIG_readPluginClassRegistryQuery extends PHPDS_query
-{
-    protected $sql = "
-		SELECT SQL_CACHE
-			t1.class_id, t1.class_name, t1.alias, t1.plugin_folder, t1.enable, t1.rank
-		FROM
-			_db_core_plugin_classes AS t1
-		WHERE
-			(t1.enable = 1)
-		ORDER BY
-			t1.rank
-		ASC
-	";
-}
-
 class CONFIG_getSettingsQuery extends PHPDS_query
 {
     protected $sql = "
@@ -166,14 +150,4 @@ class CONFIG_deleteSettingsQuery extends PHPDS_query
             return false;
         }
     }
-}
-
-class CONFIG_installedPluginsQuery extends PHPDS_query
-{
-    protected $sql = "
-		SELECT
-			plugin_folder, status, version
-		FROM
-			_db_core_plugin_activation
-	";
 }
