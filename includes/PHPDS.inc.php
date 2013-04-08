@@ -27,6 +27,12 @@ class PHPDS
      */
     protected $db;
     /**
+     * Replacement core database object.
+     *
+     * @var object
+     */
+    protected $connection;
+    /**
      * Core config object.
      *
      * @var object
@@ -316,6 +322,19 @@ class PHPDS
     }
 
     /**
+     * Deal with database access configuration. Also makes the first master connection to the database.
+     *
+     * @return $this the current instance
+     */
+    protected function configConnection()
+    {
+        $conn = $this->PHPDS_connection();
+        $conn->connect();
+
+        return $this; // to allow fluent interface
+    }
+
+    /**
      * Copy settings from the database-loaded array. Converts and defaults to false if the value isn't set
      *
      * @param array $settings
@@ -424,6 +443,7 @@ class PHPDS
         $this->PHPDS_debug(); /////////////////////////////////////////////////
         // Various init subroutines. //////////////////////////////////////////
         $this->configSession()->configDb(); ///////////////////////////////////
+        $this->configConnection(); ////////////////////////////////////////////
 
         // Connects cache server. /////////////////////////////////////////////
         $this->PHPDS_cache()->connectCacheServer(); ///////////////////////////
@@ -628,6 +648,20 @@ class PHPDS
     }
 
     /**
+     * Allow access to the global database subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_pdo
+     */
+    public function PHPDS_connection()
+    {
+        if (empty($this->connection)) {
+            $this->connection = $this->_factory('PHPDS_connection');
+        }
+        return $this->connection;
+    }
+
+    /**
      * Allow access to the class factory
      * One is created if necessary.
      *
@@ -805,7 +839,7 @@ class PHPDS
         }
 
         // Engine classes default directories
-        $includes = array('includes/local', 'includes', 'includes/db-connectors');
+        $includes = array('includes/local', 'includes', 'includes/db-connectors', 'includes/db');
         foreach ($includes as $path) {
             $engine_include_path = $absolute_path . $path . '/' . $class_name . '.class.php';
             if ($this->sneakClass($class_name, $engine_include_path)) {
@@ -849,10 +883,6 @@ class PHPDS
 
         }
 
-        // Check PHPDS's own include folder
-        $phpdev_include_class = $absolute_path . 'plugins/AdminTools/includes/' . $class_name . '.class.php';
-        if ($this->sneakClass($class_name, $phpdev_include_class)) return true;
-
         // Oh this is becoming a problem, perhaps we can locate the file here.
         if (!empty($configuration['plugin_alt'])) {
             // Ok last chance, is it in here?
@@ -873,6 +903,7 @@ class PHPDS
  * @property PHPDS_cache      $cache
  * @property PHPDS_navigation $navigation
  * @property PHPDS_db         $db
+ * @property PHPDS_pdo        $conn
  * @property PHPDS_template   $template
  * @property PHPDS_tagger     $tagger
  * @property PHPDS_user       $user

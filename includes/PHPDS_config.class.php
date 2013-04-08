@@ -92,6 +92,21 @@ class PHPDS_config extends PHPDS_dependant
         return $this->db->invokeQuery('CONFIG_readPluginClassRegistryQuery');
     }
 
+    public function readClassRegistryNew()
+    {
+        return $this->connection->query("
+            SELECT SQL_CACHE
+                t1.class_id, t1.class_name, t1.alias, t1.plugin_folder, t1.enable, t1.rank
+            FROM
+                _db_core_plugin_classes AS t1
+            WHERE
+            (t1.enable = 1)
+            ORDER BY
+                t1.rank
+            ASC
+        ");
+    }
+
     /**
      * Used to get all essential system settings from the database, preventing multiple queries.
      *

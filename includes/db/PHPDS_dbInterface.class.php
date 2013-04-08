@@ -12,7 +12,7 @@
  */
 
 // Database abstraction for database layers
-interface DBi {
+interface PHPDS_dbInterface {
     /**
      * Returns the resulting resource as an associative array (same as MODE_ASSOC).
      * Defined because the layer can also return a special key based array,
