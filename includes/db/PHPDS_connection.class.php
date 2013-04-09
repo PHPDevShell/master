@@ -168,6 +168,14 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         return $result;
     }
 
+    public function queryReturnId($sql, $params = null)
+    {
+        $result    = false;
+        $statement = $this->query($sql, $params);
+        if ($statement) $result = $this->lastId($statement);
+        return $result;
+    }
+
     /**
      * Executes a query without preparing it first, then it fetches the row and returns it as an array or object,
      * depending on the specified mode.
@@ -234,6 +242,11 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
     public function queryFAR($sql, $params = null)
     {
         return $this->queryFetchAssocRows($sql, $params);
+    }
+
+    public function querySingle($sql, $params = null) {
+        $result = $this->queryFetchAssocRow($sql, $params);
+        return ($result) ? reset($result) : $result;
     }
 
     /**
@@ -346,6 +359,16 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
     public function startTransaction()
     {
         return $this->connection->beginTransaction();
+    }
+
+    /**
+     * Start SQL transaction.
+     *
+     * @return bool
+     */
+    public function endTransaction()
+    {
+        return $this->connection->commit();
     }
 
     /**

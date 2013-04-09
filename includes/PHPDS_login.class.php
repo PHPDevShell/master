@@ -84,6 +84,8 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
     {
         $id_crypt   = substr($cookie, 0, 6);
         $pass_crypt = substr($cookie, 6, 32);
+        $cookie_id  = null;
+        $user_id    = 0;
 
         $found = false;
 
@@ -101,23 +103,12 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
         if (!empty($found)) {
             $this->deleteCookie($cookie_id);
             $this->setUserCookie($user_id);
-            $user_array = $this->selectUserFromCookie($user_id);
+            $user_array = $this->user->getUser($user_id);
             $this->setLogin($user_array, "Persistent Login");
         } else {
             $this->setGuest();
             return false;
         }
-    }
-
-    /**
-     * Selects user details from provided cookie.
-     *
-     * @param string $cookie
-     * @return array
-     */
-    public function selectUserFromCookie($cookie)
-    {
-        return $this->db->invokeQuery('LOGIN_selectUserPersistentQuery', $cookie);
     }
 
     /**
@@ -128,7 +119,13 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      */
     public function selectCookie($id_crypt)
     {
-        return $this->db->invokeQuery('LOGIN_selectCookieQuery', $id_crypt);
+        $sql = "
+            SELECT  user_id, cookie_id, pass_crypt
+            FROM    _db_core_session
+            WHERE   id_crypt = :id_crypt
+        ";
+
+        return $this->connection->queryFetchAssocRow($sql, array('id_crypt' => $id_crypt));
     }
 
     /**
@@ -139,7 +136,21 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      */
     public function setUserCookie($user_id)
     {
-        return $this->db->invokeQuery('LOGIN_setPersistentCookieQuery', $user_id);
+        $sql = "
+          INSERT INTO _db_core_session (user_id, id_crypt, pass_crypt, timestamp)
+		  VALUES      (:user_id, :id_crypt, :pass_crypt, :timestamp)
+        ";
+        $pass_crypt = md5(uniqid(rand(), true));
+        $id_crypt   = substr(md5(uniqid(rand(), true)), 6, 6);
+        $timestamp  = time();
+
+        if ($this->connection->queryAffects($sql, array(
+            'user_id' => $user_id, 'id_crypt' => $id_crypt, 'pass_crypt' => $pass_crypt, 'timestamp' => $timestamp
+        ))) {
+            return setcookie('pdspc', $id_crypt . $pass_crypt, $timestamp + 63113852);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -149,7 +160,12 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      */
     public function deleteCookie($cookie_id)
     {
-        $this->db->invokeQuery('LOGIN_deleteCookieQuery', $cookie_id);
+        $sql = "
+            DELETE FROM _db_core_session
+            WHERE       cookie_id = :cookie_id
+        ";
+
+        return $this->connection->queryAffects($sql, array('cookie_id' => $cookie_id));
     }
 
     /**
@@ -160,7 +176,22 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      */
     public function clearUserCookie($user_id)
     {
-        return $this->db->invokeQuery('LOGIN_deletePersistentCookieQuery', $user_id);
+        $sql = "
+            DELETE FROM _db_core_session
+            WHERE       (id_crypt = :id_crypt AND user_id = :user_id)
+        ";
+
+        if (!empty($_COOKIE['pdspc'])) {
+            $id_crypt = substr($_COOKIE['pdspc'], 0, 6);
+
+            if ($this->connection->queryAffects($sql, array('id_crypt' => $id_crypt, 'user_id' => $user_id)))
+            {
+                return setcookie('pdspc', 'false', 0);
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
@@ -179,13 +210,15 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
      */
     public function controlLogin()
     {
-        if (!empty($this->configuration['allow_remember']) && empty($_SESSION['user_id']) && isset($_COOKIE['pdspc']) && empty($_REQUEST['logout']) && empty($_POST['login'])) {
+        if (!empty(
+            $this->configuration['allow_remember']) && empty($_SESSION['user_id']) &&
+            isset($_COOKIE['pdspc']) && empty($_REQUEST['logout']) && empty($_POST['login'])) {
             $this->lookupCookieLogin($_COOKIE['pdspc']);
-        } else
+        } else {
             if (!empty($_REQUEST['logout']) && $this->isLoggedIn()) {
                 $this->clearLogin(true);
                 $this->setGuest();
-            } else
+            } else {
                 if (!empty($_POST['login'])) {
                     $user_name     = empty($_POST['user_name']) ? '' : $_POST['user_name'];
                     $user_password = empty($_POST['user_password']) ? '' : $_POST['user_password'];
@@ -193,6 +226,8 @@ class PHPDS_login extends PHPDS_dependant implements iBaseLogin
                 } else {
                     $this->setGuest();
                 }
+            }
+        }
     }
 
     /**

@@ -5,7 +5,6 @@ class PHPDS_tagger extends PHPDS_dependant
     const tag_user  = 'user';
     const tag_node  = 'node';
     const tag_role  = 'role';
-    const tag_group = 'group';
 
     /**
      * Generic setter/getter for the tags.

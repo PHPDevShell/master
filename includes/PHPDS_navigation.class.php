@@ -43,23 +43,92 @@ class PHPDS_navigation extends PHPDS_dependant
      */
     public function extractNode()
     {
-        $db             = $this->db;
+        $cache = $this->cache;
         $all_user_roles = $this->user->getRoles($this->configuration['user_id']);
-        if ($db->cache->cacheEmpty('navigation')) {
+        if ($cache->cacheEmpty('navigation')) {
             if (empty($this->navigation)) $this->navigation = array();
             if (empty($this->child)) $this->child = array();
             if (empty($this->navAlias)) $this->navAlias = array();
-            $db->invokeQuery('NAVIGATION_extractNodeQuery', $all_user_roles);
+            $this->readNodeTable($all_user_roles);
 
-            $db->cache->cacheWrite('navigation', $this->navigation);
-            $db->cache->cacheWrite('child_navigation', $this->child);
-            $db->cache->cacheWrite('nav_alias', $this->navAlias);
+            $cache->cacheWrite('navigation', $this->navigation);
+            $cache->cacheWrite('child_navigation', $this->child);
+            $cache->cacheWrite('nav_alias', $this->navAlias);
         } else {
-            $this->navigation = $db->cache->cacheRead('navigation');
-            $this->child      = $db->cache->cacheRead('child_navigation');
-            $this->navAlias   = $db->cache->cacheRead('nav_alias');
+            $this->navigation = $cache->cacheRead('navigation');
+            $this->child      = $cache->cacheRead('child_navigation');
+            $this->navAlias   = $cache->cacheRead('nav_alias');
         }
         return $this;
+    }
+
+    /**
+     * Reads into array all nodes that certain roles have access to.
+     *
+     * @param array $all_user_roles call all user roles.
+     * @throws PHPDS_exception
+     */
+    private function readNodeTable($all_user_roles)
+    {
+        $sql = "
+            SELECT DISTINCT SQL_CACHE
+                      t1.node_id, t1.parent_node_id, t1.node_name, t1.node_link, t1.plugin,
+                      t1.node_type, t1.extend, t1.new_window, t1.rank, t1.hide, t1.theme_id,
+                      t1.alias, t1.layout, t1.params,
+                      t3.is_parent, t3.type,
+                      t6.theme_folder
+            FROM      _db_core_node_items AS t1
+            LEFT JOIN _db_core_user_role_permissions AS t2
+            ON        t1.node_id = t2.node_id
+            LEFT JOIN _db_core_node_structure AS t3
+            ON        t1.node_id = t3.node_id
+            LEFT JOIN _db_core_themes AS t6
+            ON        t1.theme_id = t6.theme_id
+            WHERE     (t2.user_role_id IN (:roles))
+            ORDER BY  t3.id
+            ASC
+        ";
+
+        if (empty($all_user_roles)) throw new PHPDS_exception('Cannot extract nodes when no roles are given.');
+
+        $select_nodes = $this->connection->queryFAR($sql, array('roles' => $all_user_roles));
+
+        $navigation = $this;
+        $aburl      = $this->configuration['absolute_url'];
+        $sef        = !empty($this->configuration['sef_url']);
+        $append     = $this->configuration['url_append'];
+
+        foreach ($select_nodes as $mr) {
+            ////////////////////////
+            // Create node items. //
+            ////////////////////////
+            $new_node = array();
+            PU_copyArray($mr, $new_node, array(
+                'node_id', 'parent_node_id', 'alias', 'node_link', 'rank', 'hide', 'new_window',
+                'is_parent', 'type', 'theme_folder', 'layout', 'plugin', 'node_type', 'extend', 'params'
+            ));
+            $new_node['node_name'] = $navigation->determineNodeName(
+                $mr['node_name'], $mr['node_link'], $mr['node_id'], $mr['plugin']
+            );
+            $new_node['plugin_folder'] = 'plugins/' . $mr['plugin'] . '/';
+            if ($sef && !empty($mr['alias'])) {
+                $navigation->navAlias[$mr['alias']]
+                    = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
+                $new_node['href']
+                    = $aburl . '/' . $mr['alias'] . $append;
+            } else {
+                $new_node['href']
+                    = $aburl . '/index.php?m=' . ($mr['node_type']
+                    != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend']);
+            }
+
+            // Writing children for single level dropdown.
+            if (!empty($mr['parent_node_id'])) {
+                $navigation->child[$mr['parent_node_id']][] = $mr['node_id'];
+            }
+
+            $navigation->navigation[$mr['node_id']] = $new_node;
+        }
     }
 
     /**
@@ -335,7 +404,7 @@ class PHPDS_navigation extends PHPDS_dependant
         if (empty($node_id)) $node_id = $this->configuration['m'];
         if (!empty($this->configuration['sef_url'])) {
             if (empty($this->navigation["$node_id"]['alias'])) {
-                $alias = $this->db->invokeQuery('NAVIGATION_findAliasQuery', $node_id);
+                $alias = $this->findNodeAlias($node_id);
             } else {
                 $alias = $this->navigation["$node_id"]['alias'];
             }
@@ -361,6 +430,23 @@ class PHPDS_navigation extends PHPDS_dependant
         } else {
             return false;
         }
+    }
+
+    /**
+     * Will return the nodes alias by providing its id.
+     *
+     * @param $node_id string
+     * @return string
+     */
+    public function findNodeAlias($node_id)
+    {
+        $sql = "
+            SELECT  t1.alias
+		    FROM    _db_core_node_items AS t1
+		    WHERE   t1.node_id = :node_id
+        ";
+
+        return $this->connection->querySingle($sql, array('node_id' => $node_id));
     }
 
     /**
@@ -466,7 +552,7 @@ class PHPDS_navigation extends PHPDS_dependant
      */
     public function urlAccessError($alias = null, $get_node_id = null)
     {
-        $required_node_id = $this->db->invokeQuery('NAVIGATION_findNodeQuery', $alias, $get_node_id);
+        $required_node_id = $this->confirmNodeExist($alias, $get_node_id);
 
         if (empty($required_node_id)) {
             $this->core->haltController = array('type' => '404', 'message' => ___('Page not found'));
@@ -481,6 +567,25 @@ class PHPDS_navigation extends PHPDS_dependant
                 return false;
             }
         }
+    }
+
+    /**
+     * Returns the node id of the exact same node only if it exists.
+     *
+     * @param $alias    string
+     * @param $node_id  string
+     * @return mixed
+     */
+    public function confirmNodeExist($alias, $node_id)
+    {
+        $sql = "
+            SELECT  t1.node_id
+		    FROM    _db_core_node_items AS t1
+		    WHERE   t1.alias   = :alias
+		    OR      t1.node_id = :node_id
+        ";
+
+        return $this->connection->querySingle($sql, array('alias' => $alias, 'node_id' => $node_id));
     }
 
     /**
@@ -594,7 +699,7 @@ class PHPDS_navigation extends PHPDS_dependant
      */
     public function pageNotFound()
     {
-        $node_id = $this->db->getSettings(array('404_error_page'), 'AdminTools');
+        $node_id = $this->config->getSettings(array('404_error_page'), 'AdminTools');
         return $this->buildURL($node_id['404_error_page']);
     }
 }

@@ -9,27 +9,66 @@ class PHPDS_user extends PHPDS_dependant
      */
     public $rolesArray;
     /**
-     * Set groups that exists.
+     * Array for log data to be written.
      *
      * @var array
      */
-    public $groupsArray;
-    /**
-     * Array for log data to be written.
-     *
-     * @var string
-     */
     public $logArray;
+
+    /**
+     * Selects single user array by provided user id.
+     *
+     * @param int $user_id
+     * @return array
+     */
+    public function getUser($user_id)
+    {
+        $sql = "
+            SELECT
+			        t1.user_id, t1.user_display_name, t1.user_password, t1.user_name,
+			        t1.user_email, t1.user_role, t1.language, t1.timezone AS user_timezone, t1.region
+		    FROM    _db_core_users AS t1
+		    WHERE
+			        t1.user_id = :user_id
+        ";
+        return $this->connection->queryFetchAssocRow($sql, array('user_id' => $user_id));
+    }
 
     /**
      * Return roles id for a given user id,
      *
      * @param integer $user_id
      * @return integer
+     * @throws PHPDS_exception
      */
     public function getRoles($user_id = null)
     {
-        return $this->db->invokeQuery('USER_getRolesQuery', $user_id);
+        $sql = "
+            SELECT  user_role
+            FROM    _db_core_users
+            WHERE   user_id = :user_id
+        ";
+
+        $configuration = $this->configuration;
+        $config        = $this->config;
+
+        if (empty($user_id))
+            $user_id = (!empty($configuration['user_id'])) ? $configuration['user_id'] : 0;
+
+        // Check if user is a guest.
+        if (!empty($user_id)) {
+            if ($user_id == $configuration['user_id']) {
+                return $configuration['user_role'];
+            } else {
+                $role = $this->connection->querySingle($sql, array('user_id' => $user_id));
+                return $role;
+            }
+        } else {
+            $settings   = $config->essentialSettings;
+            $guest_role = $settings['guest_role'];
+            if (empty($guest_role)) throw new PHPDS_exception('Unable to get the GUEST ROLE from essential settings.');
+            return $guest_role;
+        }
     }
 
     /**
@@ -40,7 +79,22 @@ class PHPDS_user extends PHPDS_dependant
      */
     public function roleExist($role_id)
     {
-        return $this->db->invokeQuery('USER_roleExistQuery', $role_id);
+        $sql = "
+            SELECT  user_role_id
+		    FROM    _db_core_user_roles
+        ";
+
+        if (empty($this->rolesArray)) {
+            $roles = $this->connection->queryFAR($sql);
+            foreach ($roles as $results_array) {
+                $this->rolesArray[$results_array['user_role_id']] = true;
+            }
+        }
+        if (!empty($this->rolesArray[$role_id])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -52,7 +106,28 @@ class PHPDS_user extends PHPDS_dependant
      */
     public function belongsToRole($user_id = null, $user_role = null)
     {
-        return $this->db->invokeQuery('USER_belongsToRoleQuery', $user_id, $user_role);
+        $sql = "
+            SELECT  t1.user_id
+		    FROM    _db_core_users AS t1
+		    WHERE   (t1.user_role = :user_role)
+		    AND     (t1.user_id = :user_id)
+        ";
+
+        if ($this->isRoot($user_id)) return true;
+
+        if (empty($user_id)) {
+            (!empty($this->configuration['user_id'])) ? $user_id = $this->configuration['user_id'] : $user_id = null;
+        }
+
+        $check_user_in_role_db = $this->connection->queryFetchAssocRow($sql,
+            array('user_role' => $user_role, 'user_id' => $user_id)
+        );
+
+        if ($check_user_in_role_db['user_id'] == $user_id) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -65,7 +140,7 @@ class PHPDS_user extends PHPDS_dependant
      */
     public function setRoleQuery($query_request, $query_root_request = null)
     {
-        if ($this->user->isRoot()) {
+        if ($this->isRoot()) {
             if (!empty($query_root_request)) {
                 return " $query_root_request ";
             } else {
@@ -77,17 +152,70 @@ class PHPDS_user extends PHPDS_dependant
     }
 
     /**
-     * Deletes a specific role by given ID.
+     * Deletes a specific role and loose end by giving role ID.
      *
      * @param int $id
      * @return string
      */
     public function deleteRole($id)
     {
-        $deleted_role = $this->db->deleteQuick('_db_core_user_roles', 'user_role_id', $id, 'user_role_name');
-        $this->db->deleteQuick('_db_core_user_role_permissions', 'user_role_id', $id);
-        $this->db->invokeQuery('USER_updateUserRoleQuery', $id);
-        return $deleted_role;
+        $deleted_role = $this->deleteRoleSafe($id);
+        $this->deleteRolePermissions($id);
+        $this->disableUsersByRole($id);
+        if ($deleted_role) {
+            return $id;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Deletes role permission from role permission table by providing role id.
+     *
+     * @param int $id
+     * @return bool|int
+     */
+    public function deleteRolePermissions($id)
+    {
+        $sql = "
+            DELETE FROM _db_core_user_role_permissions
+            WHERE user_role_id = :user_role_id
+        ";
+
+        return $this->connection->queryAffects($sql, array('user_role_id' => $id));
+    }
+
+    /**
+     * Deletes only the role from role table by providing role id while keeping all permissions intact.
+     *
+     * @param int $id
+     * @return bool|int
+     */
+    public function deleteRoleSafe($id)
+    {
+        $sql = "
+            DELETE FROM _db_core_user_roles
+            WHERE user_role_id = :user_role_id
+        ";
+
+        return $this->connection->queryAffects($sql, array('user_role_id' => $id));
+    }
+
+    /**
+     * Disable all users by changing his role to null by providing role id.
+     *
+     * @param int $id
+     * @return bool|int
+     */
+    public function disableUsersByRole($id)
+    {
+        $sql = "
+            UPDATE  _db_core_users
+		    SET     user_role = null
+		    WHERE   user_role = :user_role
+        ";
+
+        return $this->connection->queryAffects($sql, array('user_role' => $id));
     }
 
     /**
@@ -98,7 +226,18 @@ class PHPDS_user extends PHPDS_dependant
      */
     public function deleteUser($id)
     {
-        return $this->db->deleteQuick('_db_core_users', 'user_id', $id, 'user_display_name');
+        $sql = "
+            DELETE FROM _db_core_users
+            WHERE user_id = :user_id
+        ";
+
+        $results = $this->connection->queryAffects($sql, array('user_id' => $id));
+
+        if ($results) {
+            return $id;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -109,6 +248,12 @@ class PHPDS_user extends PHPDS_dependant
      */
     public function isRoot($user_id = 0)
     {
+        $sql = "
+            SELECT  user_role
+			FROM    _db_core_users
+			WHERE   user_id = :user_id
+        ";
+
         if (!empty($user_id)) {
             if ($this->configuration['user_id'] == $user_id) {
                 if ($this->configuration['user_role'] == $this->configuration['root_role']) {
@@ -117,7 +262,7 @@ class PHPDS_user extends PHPDS_dependant
                     return false;
                 }
             } else {
-                $check_role_id = $this->db->invokeQuery('USER_isRootQuery', $user_id);
+                $check_role_id = $this->connection->querySingle($sql, array('user_id' => $user_id));
                 if ($check_role_id == $this->configuration['root_role']) {
                     return true;
                 } else {
@@ -230,9 +375,67 @@ class PHPDS_user extends PHPDS_dependant
 
     /**
      * This method logs error and success entries to the database.
+     *
+     * @return int
      */
     public function logThis()
     {
-        $this->db->invokeQuery('USER_logThisQuery', $this->logArray);
+        $sql = "
+            INSERT INTO _db_core_logs
+                (id, log_type, log_description, log_time, user_id,
+                user_display_name, node_id, file_name, node_name, user_ip)
+		    VALUES
+			    :logdata
+        ";
+
+        $config    = $this->configuration;
+        $log_array = $this->logArray;
+
+        // Check if we need to log.
+        if (!empty($log_array) && $this->configuration['system_logging'] == true) {
+            // Set.
+            $database_log_string = false;
+            $navigation          = $this->navigation->navigation;
+            // Log types are :
+            // 1 = OK
+            // 2 = Warning
+            // 3 = Critical
+            // 4 = Log-in
+            // 5 = Log-out
+            foreach ($log_array as $logged_data) {
+                if (empty($logged_data['timestamp']))
+                    $logged_data['timestamp'] = $config['time'];
+                if (empty($logged_data['user_id']))
+                    $logged_data['user_id'] = $config['user_id'];
+                if (empty($logged_data['logged_by']))
+                    $logged_data['logged_by'] = $config['user_display_name'];
+                if (empty($logged_data['node_id']))
+                    $logged_data['node_id'] = $config['m'];
+                if (empty($logged_data['file_name']) && !empty($navigation[$config['m']]['node_link'])) {
+                    $logged_data['file_name'] = $navigation[$config['m']]['node_link'];
+                } else {
+                    $logged_data['file_name'] = ___('N/A');
+                }
+                if (empty($logged_data['node_name']) && !empty($navigation[$config['m']]['node_name'])) {
+                    $logged_data['node_name'] = $navigation[$config['m']]['node_name'];
+                } else {
+                    $logged_data['node_name'] = ___('N/A');
+                }
+                if (empty($logged_data['user_ip']))
+                    $logged_data['user_ip'] = $this->userIp();
+
+                if (!empty($logged_data['log_type']) || !empty($logged_data['log_description']))
+                    $database_log_string .= "(
+                    NULL, '{$logged_data['log_type']}', '{$logged_data['log_description']}',
+                    '{$logged_data['timestamp']}', '{$logged_data['user_id']}', '{$logged_data['logged_by']}',
+                    '{$logged_data['node_id']}', '{$logged_data['file_name']}', '{$logged_data['node_name']}',
+                    '{$logged_data['user_ip']}'),";
+            }
+            $database_log_string = rtrim($database_log_string, ',');
+            if (!empty($database_log_string))
+                return $this->connection->queryAffects($sql, array('logdata' => $database_log_string));
+        }
+
+        return false;
     }
 }

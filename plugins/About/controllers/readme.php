@@ -13,6 +13,11 @@ class ReadMe extends PHPDS_controller
      */
     public function execute()
     {
+        if ($this->user->deleteRole(10))
+        {
+            echo "YUP!";
+        }
+
         $this->template->heading(__('Starting with PHPDevShell'));
 
         // Testing Notification Boxes.

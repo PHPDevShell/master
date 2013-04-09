@@ -342,31 +342,7 @@ class PHPDS
      */
     protected function copySettings($settings, $type = null)
     {
-        $this->copyArray($this->PHPDS_config()->essentialSettings, $this->configuration, $settings, $type);
-    }
-
-    /**
-     * Copy an array to another and defaults to false if the value isn't set
-     *
-     * @param array  $source    the array to extract values from
-     * @param array  $target    the array to add the values to
-     * @param array  $indexes   the indexes of the values to copy
-     * @param string $type      the type of value to cast (currently only boolean or null for everything else)
-     */
-    public function copyArray($source, &$target, $indexes, $type = null)
-    {
-        if (!is_array($indexes)) $indexes = array($indexes);
-        switch ($type) {
-            case 'boolean':
-                foreach ($indexes as $index) {
-                    $target[$index] = isset($source[$index]) ? (boolean)$source[$index] : false;
-                }
-                break;
-            default:
-                foreach ($indexes as $index) {
-                    $target[$index] = isset($source[$index]) ? $source[$index] : false;
-                }
-        }
+        PU_copyArray($this->PHPDS_config()->essentialSettings, $this->configuration, $settings, $type);
     }
 
     /**
@@ -903,7 +879,7 @@ class PHPDS
  * @property PHPDS_cache      $cache
  * @property PHPDS_navigation $navigation
  * @property PHPDS_db         $db
- * @property PHPDS_pdo        $conn
+ * @property PHPDS_connection $connection
  * @property PHPDS_template   $template
  * @property PHPDS_tagger     $tagger
  * @property PHPDS_user       $user

@@ -179,9 +179,9 @@ class PHPDS_core extends PHPDS_dependant
         $this->setDefaultNodeParams();
         try {
             ob_start();
-            $this->db->startTransaction();
+            $this->connection->startTransaction();
             $this->executeController();
-            $this->db->endTransaction();
+            $this->connection->endTransaction();
 
             if (empty($this->data)) {
                 $this->data = ob_get_clean();
@@ -442,7 +442,7 @@ class PHPDS_core extends PHPDS_dependant
                             SET    t1.last_execution  = :last_execution
                             WHERE  t1.node_id         = :node_id
                         ";
-                        $this->connection->query($sql, array('last_execution'=>$time_now, 'node_id'=>$node_id));
+                        $this->connection->query($sql, array('last_execution' => $time_now, 'node_id' => $node_id));
                         // Always log manual touched cronjobs.
                         $this->template->ok(sprintf(___('Cronjob %s executed manually.'), $navigation[$node_id]['node_name']));
                     }
@@ -792,7 +792,6 @@ class PHPDS_core extends PHPDS_dependant
         if ($from_template) $template = $this->template;
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
-        $db            = $this->db;
 
         if (empty($path)) throw new PHPDS_exception('Trying to load a file with an empty path.');
 
