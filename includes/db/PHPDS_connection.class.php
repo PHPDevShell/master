@@ -176,6 +176,15 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         return $result;
     }
 
+    public function queryBuild($sql, $array, $params = null, $join = 'AND', $where='WHERE')
+    {
+        $array = array_filter($array, 'strlen');
+        $join  = join(" $join ", $array);
+        $sql  .= ($join) ? PHP_EOL . " $where " . PHP_EOL . $join : PHP_EOL;
+
+        return ($params) ? $this->query($sql, $params) : $sql;
+    }
+
     /**
      * Executes a query without preparing it first, then it fetches the row and returns it as an array or object,
      * depending on the specified mode.

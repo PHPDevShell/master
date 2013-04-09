@@ -418,7 +418,7 @@ class PHPDS
         // Init main debug instance. //////////////////////////////////////////
         $this->PHPDS_debug(); /////////////////////////////////////////////////
         // Various init subroutines. //////////////////////////////////////////
-        $this->configSession()->configDb(); ///////////////////////////////////
+        $this->configSession(); ///////////////////////////////////
         $this->configConnection(); ////////////////////////////////////////////
 
         // Connects cache server. /////////////////////////////////////////////
@@ -818,13 +818,7 @@ class PHPDS
         $includes = array('includes/local', 'includes', 'includes/db-connectors', 'includes/db');
         foreach ($includes as $path) {
             $engine_include_path = $absolute_path . $path . '/' . $class_name . '.class.php';
-            if ($this->sneakClass($class_name, $engine_include_path)) {
-                $query_include_path = $absolute_path . $path . '/models/' . $class_name . '.query.php';
-                $this->sneakClass($class_name, $query_include_path);
-                return true;
-            }
-            $engine_include_path = $absolute_path . $path . 'default.class.php';
-            if ($this->sneakClass($class_name, $engine_include_path)) return true;
+            $this->sneakClass($class_name, $engine_include_path);
         }
 
         // Try the plugin files - if a plugin is currently running

@@ -216,7 +216,7 @@ class PHPDS_config extends PHPDS_dependant
             if (!empty($db_replace))
                 $insert_settings = $this->connection->queryAffects($sql . PHP_EOL . $db_replace);
 
-            if (!empty($insert_settings)) {
+            if ($insert_settings) {
                 return true;
             } else {
                 return false;
@@ -262,7 +262,7 @@ class PHPDS_config extends PHPDS_dependant
             $delete_settings = $this->connection->queryAffects($sql . PHP_EOL . $db_delete_query);
         }
 
-        if (!empty($delete_settings)) {
+        if ($delete_settings) {
             return true;
         } else {
             return false;
