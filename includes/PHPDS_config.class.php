@@ -89,13 +89,14 @@ class PHPDS_config extends PHPDS_dependant
      */
     public function readClassRegistry()
     {
-        return $this->connection->queryFetchAssocRows("
-          SELECT    SQL_CACHE t1.class_id, t1.class_name, t1.alias, t1.plugin_folder, t1.enable, t1.rank
-          FROM      _db_core_plugin_classes AS t1
-          WHERE     (t1.enable = 1)
-          ORDER BY  t1.rank
-          ASC
-        ");
+        $sql = "
+            SELECT SQL_CACHE  t1.class_id, t1.class_name, t1.alias, t1.plugin_folder, t1.enable, t1.rank
+            FROM              _db_core_plugin_classes AS t1
+            WHERE             (t1.enable = 1)
+            ORDER BY          t1.rank
+            ASC
+        ";
+        return $this->connection->queryFAR($sql);
     }
 
     /**
@@ -125,7 +126,54 @@ class PHPDS_config extends PHPDS_dependant
      */
     public function getSettings($settings_required = false, $custom_prefix = null)
     {
-        return $this->db->invokeQuery('CONFIG_getSettingsQuery', $settings_required, $custom_prefix);
+        $sql = "
+                SELECT SQL_CACHE setting_id, setting_value
+                FROM             _db_core_settings
+                WHERE            setting_id
+         ";
+
+        $settings = array();
+
+        if ($custom_prefix == '*') {
+            $prefix = '%%';
+        } else {
+            $prefix = $this->config->settingsPrefix($custom_prefix);
+        }
+
+        if (is_array($settings_required)) {
+
+            $db_get_query = false;
+
+            foreach ($settings_required as $setting_from_db) {
+                if (!empty($setting_from_db)) {
+                    $db_get_query .= "'$prefix" . "$setting_from_db',";
+                    $settings[$setting_from_db] = null;
+                }
+            }
+            $db_get_query = rtrim($db_get_query, ",");
+
+            $db_get_query = " IN ($db_get_query) ";
+        } else {
+            $db_get_query = " LIKE '$prefix%%' ";
+        }
+
+        if (!empty($db_get_query)) {
+            $settings_db = $this->connection->queryFAR($sql . PHP_EOL . $db_get_query);
+        }
+
+        if (!empty($settings_db) && is_array($settings_db)) {
+            foreach ($settings_db as $fetch_setting_array) {
+                $description = $fetch_setting_array['setting_id'];
+                $value       = $fetch_setting_array['setting_value'];
+
+                $description = preg_replace("/$prefix/", '', $description);
+
+                $settings[$description] = $value;
+            }
+            return $settings;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -140,19 +188,85 @@ class PHPDS_config extends PHPDS_dependant
      */
     public function writeSettings($write_settings, $custom_prefix = '', $notes = array())
     {
-        return $this->db->invokeQuery('CONFIG_writeSettingsQuery', $write_settings, $custom_prefix, $notes);
+        $sql = "REPLACE INTO _db_core_settings (setting_id, setting_value, note) VALUES";
+
+        $config = $this->config;
+
+        if ($custom_prefix == '*') {
+            $prefix = '%';
+        } else {
+            $prefix = $config->settingsPrefix($custom_prefix);
+        }
+
+        $db_replace = false;
+        if (is_array($write_settings)) {
+
+            foreach ($write_settings as $settings_id => $settings_value) {
+
+                if (!empty($notes[$settings_id])) {
+                    $note = trim($notes[$settings_id]);
+                } else {
+                    $note = '';
+                }
+                $settings_id    = trim($prefix . $settings_id);
+                $settings_value = trim($settings_value);
+                $db_replace .= "('$settings_id', '$settings_value', '$note'),";
+            }
+            $db_replace = rtrim($db_replace, ",");
+            if (!empty($db_replace))
+                $insert_settings = $this->connection->queryAffects($sql . PHP_EOL . $db_replace);
+
+            if (!empty($insert_settings)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
      * Delete all settings stored by a given plugins name, is used when uninstalling a plugin.
      *
-     * @param mixed  $settings_to_delete Use '*' to delete all settings for certain plugin.
-     * @param string $custom_prefix
+     * @param array|string  $settings_to_delete Use '*' to delete all settings for certain plugin.
+     * @param string        $custom_prefix
      * @return boolean
      */
     public function deleteSettings($settings_to_delete = null, $custom_prefix = null)
     {
-        return $this->db->invokeQuery('CONFIG_deleteSettingsQuery', $settings_to_delete, $custom_prefix);
+        $sql = "
+            DELETE FROM _db_core_settings
+            WHERE       setting_id
+        ";
+
+        if ($custom_prefix == '*') {
+            $prefix = '%%';
+        } else {
+            $prefix = $this->config->settingsPrefix($custom_prefix);
+        }
+
+        $db_delete_query = false;
+
+        if (is_array($settings_to_delete)) {
+            foreach ($settings_to_delete as $setting_from_db) {
+                $db_delete_query .= "'$prefix" . "$setting_from_db',";
+            }
+            $db_delete_query = rtrim($db_delete_query, ",");
+
+            $db_delete_query = " IN ($db_delete_query) ";
+        } else if ($settings_to_delete == '*') {
+            $db_delete_query = " LIKE '$prefix%%' ";
+        }
+        if (!empty($db_delete_query)) {
+            $delete_settings = $this->connection->queryAffects($sql . PHP_EOL . $db_delete_query);
+        }
+
+        if (!empty($delete_settings)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -161,11 +275,11 @@ class PHPDS_config extends PHPDS_dependant
     public function installedPlugins()
     {
         if ($this->cache->cacheEmpty('plugins_installed')) {
-
-            $installed_plugins_db = $this->connection->queryFetchAssocRows("
+            $sql = "
               SELECT  plugin_folder, status, version
               FROM    _db_core_plugin_activation
-            ");
+            ";
+            $installed_plugins_db = $this->connection->queryFAR($sql);
 
             foreach ($installed_plugins_db as $installed_plugins_array) {
                 $plugins_installed[$installed_plugins_array['plugin_folder']] = array(

@@ -437,7 +437,12 @@ class PHPDS_core extends PHPDS_dependant
                     if (!$this->mvcNodeStructure($node_id)) {
                         $time_now = time();
                         // Update last execution.
-                        $this->db->invokeQuery('CORE_cronExecutionLogQuery', $time_now, $node_id);
+                        $sql = "
+                        	UPDATE _db_core_cron      AS t1
+                            SET    t1.last_execution  = :last_execution
+                            WHERE  t1.node_id         = :node_id
+                        ";
+                        $this->connection->query($sql, array('last_execution'=>$time_now, 'node_id'=>$node_id));
                         // Always log manual touched cronjobs.
                         $this->template->ok(sprintf(___('Cronjob %s executed manually.'), $navigation[$node_id]['node_name']));
                     }
@@ -463,7 +468,7 @@ class PHPDS_core extends PHPDS_dependant
 
         if (isset($this->haltController)) {
             // Roll back current transaction.
-            $this->db->invokeQuery('CORE_rollbackQuery');
+            $this->connection->rollBack();
             switch ($this->haltController['type']) {
                 case 'auth':
                     throw new PHPDS_securityException($this->haltController['message']);

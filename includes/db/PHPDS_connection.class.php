@@ -160,6 +160,14 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         }
     }
 
+    public function queryAffects($sql, $params = null)
+    {
+        $result    = false;
+        $statement = $this->query($sql, $params);
+        if ($statement) $result = $this->affectedRows($statement);
+        return $result;
+    }
+
     /**
      * Executes a query without preparing it first, then it fetches the row and returns it as an array or object,
      * depending on the specified mode.
@@ -181,6 +189,19 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         return $result;
     }
 
+    public function queryFetchRows($sql, $params = null, $mode = self::MODE_ASSOC_KEY, $classname = "stdClass", $statement = null)
+    {
+        $results   = false;
+        $statement = $this->query($sql, $params);
+        if ($statement) {
+            while ($result = $this->fetch($mode, $classname, $statement))
+            {
+                $results[] = $result;
+            }
+        }
+        return $results;
+    }
+
     /**
      * Executes a query without preparing it first, then it fetches the row as an associative array
      * and returns the result.
@@ -199,6 +220,7 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
 
     public function queryFetchAssocRows($sql, $params = null)
     {
+        $results   = array();
         $statement = $this->query($sql, $params);
         if ($statement) {
             while ($result = $this->fetchAssoc($statement))
@@ -207,6 +229,11 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
             }
         }
         return $results;
+    }
+
+    public function queryFAR($sql, $params = null)
+    {
+        return $this->queryFetchAssocRows($sql, $params);
     }
 
     /**
