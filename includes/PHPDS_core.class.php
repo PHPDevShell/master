@@ -443,8 +443,6 @@ class PHPDS_core extends PHPDS_dependant
                             WHERE  t1.node_id         = :node_id
                         ";
                         $this->db->query($sql, array('last_execution' => $time_now, 'node_id' => $node_id));
-                        // Always log manual touched cronjobs.
-                        $this->template->ok(sprintf(___('Cronjob %s executed manually.'), $navigation[$node_id]['node_name']));
                     }
                     break;
                 // HTML Ajax Widget.

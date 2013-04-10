@@ -244,7 +244,7 @@ class PHPDS_user extends PHPDS_dependant
      * Check if user is a root user.
      *
      * @param int $user_id If not logged in user, what user should be checked (primary role check only).
-     * @return boolean
+     * @return boolean|int
      */
     public function isRoot($user_id = 0)
     {
@@ -264,7 +264,7 @@ class PHPDS_user extends PHPDS_dependant
             } else {
                 $check_role_id = $this->db->querySingle($sql, array('user_id' => $user_id));
                 if ($check_role_id == $this->configuration['root_role']) {
-                    return true;
+                    return $check_role_id;
                 } else {
                     return false;
                 }

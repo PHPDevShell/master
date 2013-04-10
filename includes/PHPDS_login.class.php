@@ -316,12 +316,11 @@ class PHPDS_login extends PHPDS_dependant
     }
 
     /**
-     * Loads the username & password html template form.
+     * Loads the username & password html mod form.
      *
-     * @param boolean $return
      * @return string
      */
-    public function loginForm($return = false)
+    public function loginForm()
     {
         $settings      = $this->config->essentialSettings;
         $navigation    = $this->navigation;
@@ -389,7 +388,7 @@ class PHPDS_login extends PHPDS_dependant
     public function processLogin($username, $password)
     {
         if (empty($username) || empty($password)) {
-            $this->template->notice(___('You did not complete required username and password fields.'));
+            $this->template->notice(___('Provide username and password.'));
         } else {
             if ($this->lookupUsername($username)) {
                 // Simple method to lookup user by providing username and password.
@@ -409,9 +408,9 @@ class PHPDS_login extends PHPDS_dependant
                     );
                 }
             } else {
-                $this->core->haltController = array('type' => 'auth', 'message' => ___('Incorrect Login Data'));
+                $this->core->haltController = array('type' => 'auth', 'message' => ___('Incorrect login credentials'));
                 $this->template->notice(
-                    ___('Your <strong>username</strong> could not be found. Remember, it is Case Sensitive.')
+                    ___('Incorrect <strong>username</strong>.')
                 );
             }
         }

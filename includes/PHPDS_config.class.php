@@ -150,7 +150,7 @@ class PHPDS_config extends PHPDS_dependant
                     $settings[$setting_from_db] = null;
                 }
             }
-            $db_get_query = rtrim($db_get_query, ",");
+            $db_get_query = PU_rightTrim($db_get_query, ",");
 
             $db_get_query = " IN ($db_get_query) ";
         } else {
@@ -188,7 +188,12 @@ class PHPDS_config extends PHPDS_dependant
      */
     public function writeSettings($write_settings, $custom_prefix = '', $notes = array())
     {
-        $sql = "REPLACE INTO _db_core_settings (setting_id, setting_value, note) VALUES";
+        $sql = "
+                REPLACE INTO _db_core_settings (setting_id, setting_value, note)
+                VALUES  (:setting_id, :setting_value, :note)
+        ";
+
+        $this->db->prepare($sql);
 
         $config = $this->config;
 
@@ -198,7 +203,6 @@ class PHPDS_config extends PHPDS_dependant
             $prefix = $config->settingsPrefix($custom_prefix);
         }
 
-        $db_replace = false;
         if (is_array($write_settings)) {
 
             foreach ($write_settings as $settings_id => $settings_value) {
@@ -210,11 +214,11 @@ class PHPDS_config extends PHPDS_dependant
                 }
                 $settings_id    = trim($prefix . $settings_id);
                 $settings_value = trim($settings_value);
-                $db_replace .= "('$settings_id', '$settings_value', '$note'),";
+                $this->db->execute(array(
+                    'setting_id' => $settings_id, 'setting_value' => $settings_value, 'note' => $note
+                ));
             }
-            $db_replace = rtrim($db_replace, ",");
-            if (!empty($db_replace))
-                $insert_settings = $this->db->queryAffects($sql . PHP_EOL . $db_replace);
+            $insert_settings = $this->db->affectedRows();
 
             if ($insert_settings) {
                 return true;

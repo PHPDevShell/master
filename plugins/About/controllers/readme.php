@@ -13,6 +13,8 @@ class ReadMe extends PHPDS_controller
      */
     public function execute()
     {
+        0/0;
+
         $this->template->heading(__('Starting with PHPDevShell'));;
 
         // Testing Notification Boxes.

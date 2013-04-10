@@ -222,8 +222,11 @@ class PHPDS_tagger extends PHPDS_dependant
                     if (!empty($name)) {
                         $id    = (!empty($taggerids[$key])) ? $taggerids[$key] : '';
                         $value = (!empty($taggervalues[$key])) ? $taggervalues[$key] : '';
-                        $this->db->execute(array('tag_id' => $id, 'tag_object' => $object, 'tag_name' => $name,
-                            'tag_target' => $target, 'tag_value' => $value));
+                        $this->db->execute(
+                            array('tag_id' => $id, 'tag_object' => $object, 'tag_name' => $name,
+                                  'tag_target' => $target, 'tag_value' => $value
+                            )
+                        );
                     }
                 }
                 return $this->db->affectedRows();

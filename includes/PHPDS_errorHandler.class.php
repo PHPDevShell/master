@@ -8,36 +8,6 @@
 
 include_once dirname(__FILE__) . '/PHPDS_exception.class.php';
 
-interface iPHPDS_errorConduit
-{
-    /**
-     * Output a single message
-     *
-     * @see     class PHPDS_debug
-     * @version 1.0
-     * @author  greg <greg@phpdevshell.org>
-     *
-     * @param string  $domain domain to which the message is related
-     * @param string  $msg    a text message to handle
-     * @param integer $level  (optional) severity level (can be PHPDS_debug::DEBUG, PHPDS_debug::INFO, PHPDS_debug::WARN, PHPDS_debug::ERROR or PHPDS_debug::LOG)
-     * @param string  $label  (optional) a text label to given to the message
-     * @return null
-     */
-    public function message($domain, $msg, $level = 0, $label = '');
-
-    /**
-     * Outpust an exception
-     *
-     * @version 1.0
-     * @author  greg <greg@phpdevshell.org>
-     *
-     * @param string $domain domain to which the message is related
-     * @param Exception $ex     a complete exception object
-     * @return string
-     */
-    public function exception($domain, $ex);
-}
-
 
 /**
  * Error handler class
@@ -49,26 +19,26 @@ class PHPDS_errorHandler extends PHPDS_dependant
      * Error handler options
      */
 
-    protected $ignore_notices       = false; // - if set to true Error handler ignores notices
-    protected $ignore_warnings      = false; // - if set to true Error handler ignores warnings
-    protected $warningsAreFatal     = true; // if true warning are handled as Exceptions
-    protected $noticesAreFatal      = false; // if true, notices are handled as Exceptions
+    protected $ignore_notices = false; // - if set to true Error handler ignores notices
+    protected $ignore_warnings = false; // - if set to true Error handler ignores warnings
+    protected $warningsAreFatal = true; // if true warning are handled as Exceptions
+    protected $noticesAreFatal = false; // if true, notices are handled as Exceptions
 
-    protected $serverlog            = true; // log to syslog using error_log()
-    protected $file                 = ''; // - log file
-    protected $mail                 = ''; // - log mail
-    protected $display              = true; // - if set to true Error handler display error to output
-    protected $firebug              = false; // - if set to true Error handler send error to firebug
-    protected $firephp              = null; // - firephp object
+    protected $serverlog = true; // log to syslog using error_log()
+    protected $file = ''; // - log file
+    protected $mail = ''; // - log mail
+    protected $display = true; // - if set to true Error handler display error to output
+    protected $firebug = false; // - if set to true Error handler send error to firebug
+    protected $firephp = null; // - firephp object
 
-    protected $I_give_up            = false; // if this is true something serious is wrong.
-    protected $production           = false; // is this a system in production
+    protected $I_give_up = false; // if this is true something serious is wrong.
+    protected $production = false; // is this a system in production
 
-    public $error_backtrace         = false; // - Should a backtrace be created. (Causes problems some times)
+    public $error_backtrace = false; // - Should a backtrace be created. (Causes problems some times)
 
-    protected $conduits             = array(); // array of iPHPDS_errorConduit
+    protected $conduits = array(); // array of iPHPDS_errorConduit
 
-    protected $crumbs               = array(); // in case they are error AFTER the exception reported is triggered
+    protected $crumbs = array(); // in case they are error AFTER the exception reported is triggered
 
     /**
      * Constructor
@@ -202,6 +172,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
             }
 
             ///// DISPLAYING ON THE WEB PAGE
+
             try {
                 // in production we capture the whole output but display only a generic message
                 $output = $this->showException($ex, !$this->production);
@@ -209,10 +180,10 @@ class PHPDS_errorHandler extends PHPDS_dependant
                 error_log('An exception occured in the exception display.' . $e);
             }
 
-
             ///// WRITING TO A LOG FILE
             if ($this->file) {
-                $dir = realpath(BASEPATH . $this->file);
+                $dir = realpath(BASEPATH . '/' . $this->file) . '/';
+
                 if ($dir) {
                     $prefix   = 'error.' . date('Y-m-d');
                     $filepath = $dir . $prefix . '.log';
@@ -222,12 +193,10 @@ class PHPDS_errorHandler extends PHPDS_dependant
                     $detailedurlpath  = $this->configuration['absolute_url'] . '/' . $this->configuration['error']['file_log_dir'] . $unique_html_name;
 
                     $fp = fopen($filepath, "a+");
-
                     if (flock($fp, LOCK_EX)) {
                         fwrite($fp, "----\n$detailedfilepath | $detailedurlpath | " . $errMsg . "\n" . $trace . "\n");
                         flock($fp, LOCK_UN);
                     }
-
                     fclose($fp);
 
                     /// STORE EXTENDED REPORT
@@ -276,8 +245,6 @@ class PHPDS_errorHandler extends PHPDS_dependant
             }
         }
 
-        /*$errorTypes = array(E_ERROR => 'ERROR', E_WARNING => 'WARNING', E_PARSE => 'PARSING ERROR', E_NOTICE => 'NOTICE', E_CORE_ERROR => 'CORE ERROR', E_CORE_WARNING => 'CORE WARNING', E_COMPILE_ERROR => 'COMPILE ERROR', E_COMPILE_WARNING => 'COMPILE WARNING', E_USER_ERROR => 'USER ERROR', E_USER_WARNING => 'USER WARNING', E_USER_NOTICE => 'USER NOTICE', E_STRICT => 'STRICT NOTICE', E_RECOVERABLE_ERROR => 'RECOVERABLE ERROR');
-        $errMsg = empty($errorTypes[$errno]) ? 'Unknown error' : $errorTypes[$errno];*/
         $errMsg = $errstr . " ($errfile line $errline )";
 
         switch ($errno) {
@@ -452,16 +419,24 @@ class PHPDS_errorHandler extends PHPDS_dependant
             $trace  = (is_a($e, 'PHPDS_exception')) ? $e->getExtendedTrace() : $e->getTrace();
             $ignore = (is_a($e, 'PHPDS_exception')) ? $e->getIgnoreLines() : -1;
 
+            ///////////////////////////////////
+            // Used in error theme file.
             $filefragment = PHPDS_backtrace::fetchCodeFragment($filepath, $lineno);
             if (isset($trace[$ignore])) {
-                $frame         = $trace[$ignore];
+                $frame = $trace[$ignore];
+                ///////////////////////////////////
+                // Used in error theme file.
                 $framefragment = PHPDS_backtrace::fetchCodeFragment($frame['file'], $frame['line']);
             } else {
                 $ignore = -1;
             }
 
-            $message         = $e->getMessage();
-            $code            = $e->getCode();
+            $message = $e->getMessage();
+            ///////////////////////////////////
+            // Used in error theme file.
+            $code = $e->getCode();
+            ///////////////////////////////////
+            // Used in error theme file.
             $extendedMessage = (is_a($e, 'PHPDS_exception')) ? $e->getExtendedMessage() : '';
             $config          = $this->configuration;
             if (!empty($config)) {
@@ -480,6 +455,8 @@ class PHPDS_errorHandler extends PHPDS_dependant
         // now use the theme's error page to format the actual display
         $protocol = empty($_SERVER['HTTPS']) ? 'http://' : 'https://';
         // Need this for absolute URL configuration to be sef safe.
+        ///////////////////////////////////
+        // Used in error theme file.
         $aurl = $protocol . $_SERVER['SERVER_NAME'] . str_replace('/index.php', '', $_SERVER['PHP_SELF']);
 
         if (PU_isAJAX()) {
@@ -490,32 +467,15 @@ class PHPDS_errorHandler extends PHPDS_dependant
             print $message;
             return null;
         } else {
-            ob_start();
+            //ob_start();
             // Load error page: $e is the handled exception
-            require BASEPATH . 'themes/default/error.php';
-            $output = ob_get_clean();
+            include BASEPATH . 'themes/default/error.php';
+            //$output = ob_get_clean();
 
             if (!empty($this->crumbs)) {
                 $output = str_replace('<crumbs/>', implode("\n", $this->crumbs), $output);
             }
-
-            if (PU_isAJAX()) {
-                // If the error occurred during an AJAX request, we'll send back a lightweight ouput
-                $message = $this->display ? "$message - file $filepath line $lineno" : 'Error Concealed - Disabled in config';
-                PU_silentHeader('Status: 500 ' . $message);
-                PU_silentHeader('HTTP/1.1 500 ' . $message);
-                print $message;
-                return '';
-            } else {
-                // for a regular request, we present a nicely formatted html page; if provided, an extended description of the error is displayed
-                if ($detailed) {
-                    print $output;
-                } else {
-                    $message = '';
-                    require BASEPATH . 'themes/default/error.php'; // $message being empty, only a genetic message is output
-                }
-            }
-            return $output;
+            return 'test';
         }
     }
 }
@@ -639,7 +599,6 @@ class PHPDS_backtrace
         $trace = '';
         $i     = 0;
         foreach ($backtrace as $v) {
-            //if ($ignore-- > 0) continue;
             $i++;
             $class_collapsbody = "accordionbody" . $i;
             $ignore--;
@@ -667,9 +626,6 @@ class PHPDS_backtrace
                 }
                 $call .= ')';
                 $call = PHPDS_backtrace::highlightString(preg_replace("/,/", ", ", $call));
-                if (substr($v['class'], 0, 5) == 'PHPDS') {
-                    // $call = '<a href="http://doc.phpdevshell.org/PHPDevShell/'.$v['class'].'.html#'.$v['function'].'" target="_blank"><img src="' . $aurl . '/themes/default/images/icons-16/book-question.png" /></a>&nbsp;'.$call;
-                }
                 $trace .= $call;
             } elseif (isset($v['function'])) {
                 $fct      = $v['function'];
