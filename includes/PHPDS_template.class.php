@@ -237,6 +237,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             return $this->modifyHead;
         }
+        return null;
     }
 
     /**
@@ -254,6 +255,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             return $this->configuration['language'];
         }
+        return null;
     }
 
     /**
@@ -271,6 +273,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             return $this->mod->loader();
         }
+        return null;
     }
 
     /**
@@ -288,6 +291,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             return $this->configuration['charset'];
         }
+        return null;
     }
 
     /**
@@ -325,6 +329,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $html;
         }
+        return null;
     }
 
     /**
@@ -341,6 +346,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->CDN;
         }
+        return null;
     }
 
     /**
@@ -357,6 +363,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->configuration['absolute_url'];
         }
+        return null;
     }
 
     /**
@@ -376,6 +383,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $html;
         }
+        return null;
     }
 
     /**
@@ -395,36 +403,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $html;
         }
-    }
-
-    /**
-     * Gets the desired logo and displays it. This method will try its best to deliver a logo, whatever the case.
-     */
-    public function outputLogo()
-    {
-        $configuration = $this->configuration;
-
-        if ($this->modifyOutputLogo == false) {
-            if (!empty($configuration['custom_logo'])) {
-                // Give him his custom logo.
-                $logo = $this->mod->logo($this->CDN . '/', $this->CDN . '/' . $configuration['custom_logo'], $configuration['scripts_name_version'], $configuration['scripts_name_version']);
-            } else {
-                // Ok so we have no set logo, does the developer want a custom logo?
-                if (!empty($this->db->pluginLogo)) {
-                    // Ok lets get the logo that the user wishes to display.
-                    $logo = $this->mod->logo($this->CDN . '/', "{$this->CDN}/plugins/{$this->db->pluginLogo}/images/logo.png", $configuration['scripts_name_version'], $configuration['scripts_name_version']);
-                } else if (!empty($configuration['scripts_name_version'])) {
-                    $logo = $this->mod->logoText($configuration['scripts_name_version']);
-                } else {
-                    // Oops we have no logo, so lets just default to the orginal PHPDevShell logo.
-                    $logo = $this->mod->logo($this->CDN . '/', "{$this->CDN}/plugins/AdminTools/images/logo.png", $configuration['scripts_name_version'], $configuration['scripts_name_version']);
-                }
-            }
-            // Ok return the logo.
-            print $logo;
-        } else {
-            print $this->modifyOutputLogo;
-        }
+        return null;
     }
 
     /**
@@ -508,6 +487,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             return false;
         }
+        return null;
     }
 
     /**
@@ -884,6 +864,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return == true) {
             return $html;
         }
+        return null;
     }
 
     /**
@@ -901,6 +882,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->info($information);
         }
+        return null;
     }
 
     /**
@@ -931,6 +913,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->warning($warning);
         }
+        return null;
     }
 
     /**
@@ -963,6 +946,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->ok($ok);
         }
+        return null;
     }
 
     /**
@@ -994,6 +978,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->error($error);
         }
+        return null;
     }
 
     /**
@@ -1008,7 +993,6 @@ class PHPDS_template extends PHPDS_dependant
      */
     public function critical($critical, $return = 'print', $log = 'log', $mail = 'mailadmin')
     {
-        $navigation = $this->navigation->navigation;
         if ($log === true || $log == 'log') {
             // Log types are : ////////////////
             // 1 = OK /////////////////////////
@@ -1021,26 +1005,6 @@ class PHPDS_template extends PHPDS_dependant
             // Log the event //////////////////
             $this->user->logArray[] = array('log_type' => $log_type, 'log_description' => $critical);
         }
-        // Check if we need to email admin.
-        if ($this->configuration['email_critical']) {
-            // Subject.
-            $subject = sprintf(___("CRITICAL ERROR NOTIFICATION %s"), $this->configuration['scripts_name_version']);
-            // Message.
-            $broke_script = $navigation[$this->configuration['m']]['node_name'];
-            $broken_url   = $this->configuration['absolute_url'] . '/index.php?m=' . $this->configuration['m'];
-            $message      = sprintf(___("Admin,")) . "\r\n\r\n";
-            $message .= sprintf(___("THERE WAS A CRITICAL ERROR IN %s:"), $this->configuration['scripts_name_version']) . "\r\n\r\n" . $critical . "\r\n\r\n";
-            $message .= sprintf(___("Click on url to access broken script called %s:"), $broke_script) . "\r\n" . $broken_url . "\r\n";
-            $message .= sprintf(___("Script error occurred for user : %s"), $this->configuration['user_display_name']);
-
-            if ($mail === true || $mail == 'mailadmin') {
-                // Initiate email class.
-                // TODO: Add default mailer class.
-                //$email = $this->factory('mailer');
-                // Ok we can now send the critical email message.
-                //$email->sendmail("{$this->configuration['setting_admin_email']}", $subject, $message);
-            }
-        }
         // Return or print to browser.
         if ($return === 'print' || $return == false) {
             $this->notif->add(array('critical', $critical));
@@ -1049,6 +1013,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->critical($critical);
         }
+        return null;
     }
 
     /**
@@ -1066,6 +1031,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->notice($notice);
         }
+        return null;
     }
 
     /**
@@ -1083,6 +1049,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->busy($busy);
         }
+        return null;
     }
 
     /**
@@ -1100,6 +1067,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->message($message);
         }
+        return null;
     }
 
     /**
@@ -1117,6 +1085,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->note($note);
         }
+        return null;
     }
 
     /**
@@ -1135,6 +1104,7 @@ class PHPDS_template extends PHPDS_dependant
         } else if ($return === 'return' || $return == true) {
             return $this->mod->scriptHead($scripthead);
         }
+        return null;
     }
 
     /**
@@ -1155,43 +1125,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             print $info;
         }
-    }
-
-    /**
-     * Login heading messages.
-     *
-     * @param bool $return
-     * @return string|void
-     */
-    public function loginFormHeading($return = false)
-    {
-        $HTML    = '';
-        $message = '';
-
-        // Create headings for login.
-        if (!empty($this->core->haltController)) {
-            $HTML .= $this->heading(___('Authentication Required'), 'return');
-        } else {
-            // Get some default settings.
-            $settings = $this->db->getSettings(array('login_message'));
-
-            // Check if we have a login message to display.
-            if (!empty($settings['login_message'])) {
-                $login_message = $this->message(___($settings['login_message']), 'return');
-            } else {
-                $login_message = '';
-            }
-
-            $HTML .= $this->heading(___('Login'), 'return');
-            $HTML .= $login_message;
-            $HTML .= $message;
-        }
-
-        if ($return == false) {
-            print $HTML;
-        } else {
-            return $HTML;
-        }
+        return null;
     }
 
     /**
@@ -1202,13 +1136,14 @@ class PHPDS_template extends PHPDS_dependant
      */
     public function loginForm($return = false)
     {
-        $HTML = $this->factory('StandardLogin')->loginForm($return);
+        $HTML = $this->login->loginForm($return);
 
         if ($return == false) {
             print $HTML;
         } else {
             return $HTML;
         }
+        return null;
     }
 
     /**
@@ -1233,7 +1168,7 @@ class PHPDS_template extends PHPDS_dependant
                 $mod->role($configuration['user_role_name']),
                 $nav->navigation);
         } else {
-            $HTML = $this->factory('StandardLogin')->loginForm($return);
+            $HTML = $this->login->loginForm($return);
         }
 
         if ($return == false) {
@@ -1241,6 +1176,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             return $HTML;
         }
+        return null;
     }
 
     /**
@@ -1259,6 +1195,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             return $this->mod->altNav($nav);
         }
+        return null;
     }
 
     /**
@@ -1277,6 +1214,7 @@ class PHPDS_template extends PHPDS_dependant
         } else {
             return $this->mod->altHome($nav);
         }
+        return null;
     }
 
     /**
@@ -1298,35 +1236,6 @@ class PHPDS_template extends PHPDS_dependant
 
         // Return the complete template.
         return $settings['default_template'];
-    }
-
-    /**
-     * Returns some debug info to the frontend, at the bottom of the page
-     */
-    public function debugInfo()
-    {
-        if ($this->configuration['development']) {
-            if (!empty($this->db->countQueries)) {
-                $count_queries = $this->db->countQueries;
-            } else {
-                $count_queries = 0;
-            }
-            if ($this->configuration['queries_count']) {
-                if (!empty($this->core->themeFile)) {
-                    $memory_used = memory_get_peak_usage();
-                    $time_spent  = intval((microtime(true) - $GLOBALS['start_time']) * 1000);
-                    return $this->mod->debug($count_queries, number_format($memory_used / 1000000, 2, '.', ' '), $time_spent);
-                }
-            }
-        }
-    }
-
-    /**
-     * Prints some debug info to the frontend, at the bottom of the page
-     */
-    public function outputDebugInfo()
-    {
-        print $this->debugInfo();
     }
 
     /**

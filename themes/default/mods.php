@@ -14,17 +14,6 @@ class themeMods extends PHPDS_dependant
 HTML;
     }
 
-    public function logo($url, $src, $alt, $title)
-    {
-        return <<<HTML
-
-			<a href="{$url}" class="brand">
-				<img src="{$src}" class="logo" alt="{$alt}" title="{$title}" />
-			</a>
-
-HTML;
-    }
-
     public function logoText($title)
     {
         return <<<HTML
@@ -670,19 +659,6 @@ HTML;
         return <<<HTML
 
 			<META HTTP-EQUIV="refresh" CONTENT="{$time}; URL={$url}" >
-
-HTML;
-    }
-
-    public function debug($queries, $memory, $other = '')
-    {
-        return <<<HTML
-
-                <div id="debug">
-                    <div class="container">
-                        <p class="muted credit">(Queries Used : {$queries}) - (PHP Memory Used : {$memory} Mb) - (Page Load Time : {$other} ms)</p>
-                    </div>
-				</div>
 
 HTML;
     }

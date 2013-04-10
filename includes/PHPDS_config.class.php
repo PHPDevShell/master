@@ -96,7 +96,7 @@ class PHPDS_config extends PHPDS_dependant
             ORDER BY          t1.rank
             ASC
         ";
-        return $this->connection->queryFAR($sql);
+        return $this->db->queryFAR($sql);
     }
 
     /**
@@ -158,7 +158,7 @@ class PHPDS_config extends PHPDS_dependant
         }
 
         if (!empty($db_get_query)) {
-            $settings_db = $this->connection->queryFAR($sql . PHP_EOL . $db_get_query);
+            $settings_db = $this->db->queryFAR($sql . PHP_EOL . $db_get_query);
         }
 
         if (!empty($settings_db) && is_array($settings_db)) {
@@ -214,7 +214,7 @@ class PHPDS_config extends PHPDS_dependant
             }
             $db_replace = rtrim($db_replace, ",");
             if (!empty($db_replace))
-                $insert_settings = $this->connection->queryAffects($sql . PHP_EOL . $db_replace);
+                $insert_settings = $this->db->queryAffects($sql . PHP_EOL . $db_replace);
 
             if ($insert_settings) {
                 return true;
@@ -259,7 +259,7 @@ class PHPDS_config extends PHPDS_dependant
             $db_delete_query = " LIKE '$prefix%%' ";
         }
         if (!empty($db_delete_query)) {
-            $delete_settings = $this->connection->queryAffects($sql . PHP_EOL . $db_delete_query);
+            $delete_settings = $this->db->queryAffects($sql . PHP_EOL . $db_delete_query);
         }
 
         if ($delete_settings) {
@@ -279,7 +279,7 @@ class PHPDS_config extends PHPDS_dependant
               SELECT  plugin_folder, status, version
               FROM    _db_core_plugin_activation
             ";
-            $installed_plugins_db = $this->connection->queryFAR($sql);
+            $installed_plugins_db = $this->db->queryFAR($sql);
 
             foreach ($installed_plugins_db as $installed_plugins_array) {
                 $plugins_installed[$installed_plugins_array['plugin_folder']] = array(

@@ -10,7 +10,6 @@
 // Multi-database Configuration                                         ////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-
 $master_database = array(
     /**
      * Database DSN (Data Source Name) string. Used for PDO based connections.
@@ -112,7 +111,7 @@ $configuration['cache_type'] = 'PHPDS_sessionCache';
 $configuration['cache_refresh_intervals'] = 120;
 /**
  * Memcache/APC server details.
- * Only complete this when you are using the memcache extension, this is not needed for file based caching.
+ * Only complete this when you are using the memcached/apc extension, this is not needed for file based caching.
  * Copy and paste cache server block to create more then one server.
  * @global mixed
  */
@@ -194,7 +193,7 @@ $configuration['constant_conversion'] = false;
  */
 $configuration['function_files'] = array();
 /**
- * Default charset to use - note this is php htmlentities coding, not PDO's or mysql's
+ * Default charset to use - note this is php html entities coding, not PDO's or mysql's
  * @see  http://www.php.net/manual/en/function.htmlentities.php
  * @global string
  */
@@ -210,7 +209,7 @@ $configuration['dashboard'] = 'readme';
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * When your system goes to production, set this to TRUE to avoid informations leaks.
+ * When your system goes to production, set this to TRUE to avoid information leaks.
  * Will force compile on template engine.
  *
  * Overrides most 'debug' and 'error' settings

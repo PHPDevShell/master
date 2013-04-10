@@ -91,7 +91,7 @@ class PHPDS_navigation extends PHPDS_dependant
 
         if (empty($all_user_roles)) throw new PHPDS_exception('Cannot extract nodes when no roles are given.');
 
-        $select_nodes = $this->connection->queryFAR($sql, array('roles' => $all_user_roles));
+        $select_nodes = $this->db->queryFAR($sql, array('roles' => $all_user_roles));
 
         $navigation = $this;
         $aburl      = $this->configuration['absolute_url'];
@@ -184,9 +184,11 @@ class PHPDS_navigation extends PHPDS_dependant
 
         if (!empty($nav)) {
             // Start the main loop, the main loop handles the top level nodes.
-            // When child nodes are found the callFamily function is used to render those nodes. The callFamily function may or may not go recursive at that point.
+            // When child nodes are found the callFamily function is used to render those nodes.
+            // The callFamily function may or may not go recursive at that point.
             foreach ($nav as $m) {
-                if ($this->showNode($m['hide'], $m['node_id'], $configuration['m']) && ((string)$nav[$m['node_id']]['parent_node_id'] == '0')) {
+                if ($this->showNode($m['hide'], $m['node_id'], $configuration['m']) &&
+                    ((string)$nav[$m['node_id']]['parent_node_id'] == '0')) {
                     ($m['node_id'] == $configuration['m']) ? $url_active = 'active' : $url_active = 'inactive';
                     if ($m['is_parent'] == 1) {
                         $call_family = $this->callFamily($m['node_id']);
@@ -446,7 +448,7 @@ class PHPDS_navigation extends PHPDS_dependant
 		    WHERE   t1.node_id = :node_id
         ";
 
-        return $this->connection->querySingle($sql, array('node_id' => $node_id));
+        return $this->db->querySingle($sql, array('node_id' => $node_id));
     }
 
     /**
@@ -585,7 +587,7 @@ class PHPDS_navigation extends PHPDS_dependant
 		    OR      t1.node_id = :node_id
         ";
 
-        return $this->connection->querySingle($sql, array('alias' => $alias, 'node_id' => $node_id));
+        return $this->db->querySingle($sql, array('alias' => $alias, 'node_id' => $node_id));
     }
 
     /**

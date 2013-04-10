@@ -179,9 +179,9 @@ class PHPDS_core extends PHPDS_dependant
         $this->setDefaultNodeParams();
         try {
             ob_start();
-            $this->connection->startTransaction();
+            $this->db->startTransaction();
             $this->executeController();
-            $this->connection->endTransaction();
+            $this->db->endTransaction();
 
             if (empty($this->data)) {
                 $this->data = ob_get_clean();
@@ -442,7 +442,7 @@ class PHPDS_core extends PHPDS_dependant
                             SET    t1.last_execution  = :last_execution
                             WHERE  t1.node_id         = :node_id
                         ";
-                        $this->connection->query($sql, array('last_execution' => $time_now, 'node_id' => $node_id));
+                        $this->db->query($sql, array('last_execution' => $time_now, 'node_id' => $node_id));
                         // Always log manual touched cronjobs.
                         $this->template->ok(sprintf(___('Cronjob %s executed manually.'), $navigation[$node_id]['node_name']));
                     }
@@ -468,7 +468,7 @@ class PHPDS_core extends PHPDS_dependant
 
         if (isset($this->haltController)) {
             // Roll back current transaction.
-            $this->connection->rollBack();
+            $this->db->rollBack();
             switch ($this->haltController['type']) {
                 case 'auth':
                     throw new PHPDS_securityException($this->haltController['message']);

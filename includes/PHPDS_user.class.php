@@ -31,7 +31,7 @@ class PHPDS_user extends PHPDS_dependant
 		    WHERE
 			        t1.user_id = :user_id
         ";
-        return $this->connection->queryFetchAssocRow($sql, array('user_id' => $user_id));
+        return $this->db->queryFetchAssocRow($sql, array('user_id' => $user_id));
     }
 
     /**
@@ -60,7 +60,7 @@ class PHPDS_user extends PHPDS_dependant
             if ($user_id == $configuration['user_id']) {
                 return $configuration['user_role'];
             } else {
-                $role = $this->connection->querySingle($sql, array('user_id' => $user_id));
+                $role = $this->db->querySingle($sql, array('user_id' => $user_id));
                 return $role;
             }
         } else {
@@ -85,7 +85,7 @@ class PHPDS_user extends PHPDS_dependant
         ";
 
         if (empty($this->rolesArray)) {
-            $roles = $this->connection->queryFAR($sql);
+            $roles = $this->db->queryFAR($sql);
             foreach ($roles as $results_array) {
                 $this->rolesArray[$results_array['user_role_id']] = true;
             }
@@ -119,7 +119,7 @@ class PHPDS_user extends PHPDS_dependant
             (!empty($this->configuration['user_id'])) ? $user_id = $this->configuration['user_id'] : $user_id = null;
         }
 
-        $check_user_in_role_db = $this->connection->queryFetchAssocRow($sql,
+        $check_user_in_role_db = $this->db->queryFetchAssocRow($sql,
             array('user_role' => $user_role, 'user_id' => $user_id)
         );
 
@@ -182,7 +182,7 @@ class PHPDS_user extends PHPDS_dependant
             WHERE user_role_id = :user_role_id
         ";
 
-        return $this->connection->queryAffects($sql, array('user_role_id' => $id));
+        return $this->db->queryAffects($sql, array('user_role_id' => $id));
     }
 
     /**
@@ -198,7 +198,7 @@ class PHPDS_user extends PHPDS_dependant
             WHERE user_role_id = :user_role_id
         ";
 
-        return $this->connection->queryAffects($sql, array('user_role_id' => $id));
+        return $this->db->queryAffects($sql, array('user_role_id' => $id));
     }
 
     /**
@@ -215,7 +215,7 @@ class PHPDS_user extends PHPDS_dependant
 		    WHERE   user_role = :user_role
         ";
 
-        return $this->connection->queryAffects($sql, array('user_role' => $id));
+        return $this->db->queryAffects($sql, array('user_role' => $id));
     }
 
     /**
@@ -231,7 +231,7 @@ class PHPDS_user extends PHPDS_dependant
             WHERE user_id = :user_id
         ";
 
-        $results = $this->connection->queryAffects($sql, array('user_id' => $id));
+        $results = $this->db->queryAffects($sql, array('user_id' => $id));
 
         if ($results) {
             return $id;
@@ -262,7 +262,7 @@ class PHPDS_user extends PHPDS_dependant
                     return false;
                 }
             } else {
-                $check_role_id = $this->connection->querySingle($sql, array('user_id' => $user_id));
+                $check_role_id = $this->db->querySingle($sql, array('user_id' => $user_id));
                 if ($check_role_id == $this->configuration['root_role']) {
                     return true;
                 } else {
@@ -351,15 +351,24 @@ class PHPDS_user extends PHPDS_dependant
     {
         $conf = $this->configuration;
 
-        $conf['user_id']           = empty($_SESSION['user_id']) ? 0 : $_SESSION['user_id'];
-        $conf['user_name']         = empty($_SESSION['user_name']) ? '' : $_SESSION['user_name'];
-        $conf['user_display_name'] = empty($_SESSION['user_display_name']) ? '' : $_SESSION['user_display_name'];
-        $conf['user_role']         = empty($_SESSION['user_role']) ? 0 : $_SESSION['user_role'];
-        $conf['user_email']        = empty($_SESSION['user_email']) ? '' : $_SESSION['user_email'];
-        $conf['user_language']     = empty($_SESSION['user_language']) ? '' : $_SESSION['user_language'];
-        $conf['user_region']       = empty($_SESSION['user_region']) ? '' : $_SESSION['user_region'];
-        $conf['user_timezone']     = empty($_SESSION['user_timezone']) ? '' : $_SESSION['user_timezone'];
-        $conf['user_locale']       = empty($_SESSION['user_locale']) ? $this->core->formatLocale() : $_SESSION['user_locale'];
+        $conf['user_id']           = empty($_SESSION['user_id'])                ? 0
+            : $_SESSION['user_id'];
+        $conf['user_name']         = empty($_SESSION['user_name'])              ? ''
+            : $_SESSION['user_name'];
+        $conf['user_display_name'] = empty($_SESSION['user_display_name'])      ? ''
+            : $_SESSION['user_display_name'];
+        $conf['user_role']         = empty($_SESSION['user_role'])              ? 0
+            : $_SESSION['user_role'];
+        $conf['user_email']        = empty($_SESSION['user_email'])             ? ''
+            : $_SESSION['user_email'];
+        $conf['user_language']     = empty($_SESSION['user_language'])          ? ''
+            : $_SESSION['user_language'];
+        $conf['user_region']       = empty($_SESSION['user_region'])            ? ''
+            : $_SESSION['user_region'];
+        $conf['user_timezone']     = empty($_SESSION['user_timezone'])          ? ''
+            : $_SESSION['user_timezone'];
+        $conf['user_locale']       = empty($_SESSION['user_locale'])            ? $this->core->formatLocale()
+            : $_SESSION['user_locale'];
     }
 
     /**
@@ -368,7 +377,7 @@ class PHPDS_user extends PHPDS_dependant
     public function controlLogin()
     {
         if (!isset($_SESSION['user_id']) || !empty($_POST['login']) || !empty($_REQUEST['logout'])) {
-            $this->factory('StandardLogin')->controlLogin();
+            $this->login->controlLogin();
         }
         $this->userConfig();
     }
@@ -385,8 +394,10 @@ class PHPDS_user extends PHPDS_dependant
                 (id, log_type, log_description, log_time, user_id,
                 user_display_name, node_id, file_name, node_name, user_ip)
 		    VALUES
-			    :logdata
+			    (NULL, :log_type, :log_description, :log_time, :user_id,
+                :user_display_name, :node_id, :file_name, :node_name, :user_ip)
         ";
+        $this->db->prepare($sql);
 
         $config    = $this->configuration;
         $log_array = $this->logArray;
@@ -394,7 +405,6 @@ class PHPDS_user extends PHPDS_dependant
         // Check if we need to log.
         if (!empty($log_array) && $this->configuration['system_logging'] == true) {
             // Set.
-            $database_log_string = false;
             $navigation          = $this->navigation->navigation;
             // Log types are :
             // 1 = OK
@@ -424,18 +434,22 @@ class PHPDS_user extends PHPDS_dependant
                 if (empty($logged_data['user_ip']))
                     $logged_data['user_ip'] = $this->userIp();
 
-                if (!empty($logged_data['log_type']) || !empty($logged_data['log_description']))
-                    $database_log_string .= "(
-                    NULL, '{$logged_data['log_type']}', '{$logged_data['log_description']}',
-                    '{$logged_data['timestamp']}', '{$logged_data['user_id']}', '{$logged_data['logged_by']}',
-                    '{$logged_data['node_id']}', '{$logged_data['file_name']}', '{$logged_data['node_name']}',
-                    '{$logged_data['user_ip']}'),";
+                if (!empty($logged_data['log_type']) || !empty($logged_data['log_description'])) {
+                    $this->db->execute(array(
+                        'log_type'          => $logged_data['log_type'],
+                        'log_description'   => $logged_data['log_description'],
+                        'log_time'          => $logged_data['timestamp'],
+                        'user_id'           => $logged_data['user_id'],
+                        'user_display_name' => $logged_data['logged_by'],
+                        'node_id'           => $logged_data['node_id'],
+                        'file_name'         => $logged_data['file_name'],
+                        'node_name'         => $logged_data['node_name'],
+                        'user_ip'           => $logged_data['user_ip']
+                    ));
+                }
             }
-            $database_log_string = rtrim($database_log_string, ',');
-            if (!empty($database_log_string))
-                return $this->connection->queryAffects($sql, array('logdata' => $database_log_string));
+            return $this->db->affectedRows();
         }
-
         return false;
     }
 }

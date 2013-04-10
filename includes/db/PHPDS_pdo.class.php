@@ -1,7 +1,9 @@
 <?php
 
-// A lightweight DB (PDO) Wrapper
-class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
+/**
+ * Lightweight PGO wrapper.
+ */
+class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
 {
     /**
      * @var string $dbDSN   A string containing the DSN (Data Source Name)
@@ -67,7 +69,6 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
 
     /**
      * Connect to the database server.
-     *
      */
     public function connect()
     {
@@ -160,6 +161,13 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         }
     }
 
+    /**
+     * Executes a query and returns the affected rows count.
+     *
+     * @param string $sql    The SQL statement to be executed
+     * @param array  $params The parameters
+     * @return bool|int
+     */
     public function queryAffects($sql, $params = null)
     {
         $result    = false;
@@ -168,6 +176,13 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         return $result;
     }
 
+    /**
+     * Executes a query and returns the last created id.
+     *
+     * @param string $sql    The SQL statement to be executed
+     * @param array  $params The parameters
+     * @return bool|int|string
+     */
     public function queryReturnId($sql, $params = null)
     {
         $result    = false;
@@ -176,6 +191,17 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         return $result;
     }
 
+    /**
+     * Can both build and execute a query or just build. The build is adding the AND/OR condition in between conditions.
+     * After building it, it will pass it to be queried as a full sql string.
+     *
+     * @param string $sql    The SQL statement to be executed
+     * @param array  $array  The array containing the different conditions to be joined with AND/Or.
+     * @param array  $params (Optional parameters)
+     * @param string $join   The string that will be used to join the array example = :example AND foo = :foo AND bar...
+     * @param string $where  Adds a string WHERE on how the sql should be joined with rest of query.
+     * @return resource|string Can return the statement resource or complete SQL string.
+     */
     public function queryBuild($sql, $array, $params = null, $join = 'AND', $where='WHERE')
     {
         $array = array_filter($array, 'strlen');
@@ -201,15 +227,28 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
     public function queryFetchRow($sql, $params = null, $mode = self::MODE_ASSOC_KEY, $classname = "stdClass", $statement = null)
     {
         $result    = false;
-        $statement = $this->query($sql, $params);
+        if (!isset($statement)) $statement = $this->query($sql, $params);
         if ($statement) $result = $this->fetch($mode, $classname, $statement);
         return $result;
     }
 
+    /**
+     * Executes a query without preparing it first, then it fetches all rows and returns it as an array or object,
+     * depending on the specified mode.
+     *
+     * @param string   $sql          The SQL statement to be executed
+     * @param array    $params       The parameters
+     * @param int      $mode         , the return mode
+     * @param string   $classname    The name of the class to instantiate, set the properties of and return.
+     *                               If not specified, a stdClass object is returned. (MODE_OBJECT)
+     * @param resource $statement    , the previously returned statement
+     * @return mixed The resulting row (or false is nothing is found)
+     * @see DBi::MODE_ASSOC_KEY, DBi::MODE_ASSOC, DBi::MODE_NUM, DBi::MODE_BOTH, DBi::MODE_OBJECT
+     */
     public function queryFetchRows($sql, $params = null, $mode = self::MODE_ASSOC_KEY, $classname = "stdClass", $statement = null)
     {
         $results   = false;
-        $statement = $this->query($sql, $params);
+        if (!isset($statement)) $statement = $this->query($sql, $params);
         if ($statement) {
             while ($result = $this->fetch($mode, $classname, $statement))
             {
@@ -235,6 +274,14 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         return $result;
     }
 
+    /**
+     * Executes a query without preparing it first, then it fetches all rows as an associative array
+     * and returns a complete result set.
+     *
+     * @param string $sql     The SQL statement to be executed
+     * @param array  $params  The parameters
+     * @return mixed Associative array of result or False if failed.
+     */
     public function queryFetchAssocRows($sql, $params = null)
     {
         $results   = array();
@@ -248,14 +295,27 @@ class PHPDS_connection extends PHPDS_dependant implements PHPDS_dbInterface
         return $results;
     }
 
+    /**
+     * Alias for queryFetchAssocRows
+     *
+     * @see PHPDS_dbInterface::queryFetchAssocRows
+     */
     public function queryFAR($sql, $params = null)
     {
         return $this->queryFetchAssocRows($sql, $params);
     }
 
-    public function querySingle($sql, $params = null) {
+    /**
+     * Returns a single string result of a for from a single column.
+     *
+     * @param string $sql    The SQL statement to be executed
+     * @param array  $params The parameters
+     * @return string
+     */
+    public function querySingle($sql, $params = null)
+    {
         $result = $this->queryFetchAssocRow($sql, $params);
-        return ($result) ? reset($result) : $result;
+        return ($result) ? reset($result) : null;
     }
 
     /**

@@ -35,7 +35,7 @@ class PHPDS_tagger extends PHPDS_dependant
 		    SET tag_object = :tag_object, tag_name = :tag_name, tag_target = :tag_target, tag_value = :tag_value
         ";
 
-        return $this->connection->queryAffects($sql,
+        return $this->db->queryAffects($sql,
             array('tag_object' => $object, 'tag_name' => $name, 'tag_target' => $target, 'tag_value' => $value)
         );
     }
@@ -60,8 +60,8 @@ class PHPDS_tagger extends PHPDS_dependant
         $build[] = ($name   != null) ? 'tag_name   = :tag_name'   : null;
         $build[] = ($target != null) ? 'tag_target = :tag_target' : null;
 
-        $sql = $this->connection->queryBuild($sql, $build);
-        return $this->connection->querySingle($sql,
+        $sql = $this->db->queryBuild($sql, $build);
+        return $this->db->querySingle($sql,
             array('tag_object' => $object, 'tag_name' => $name, 'tag_target' => $target)
         );
     }
@@ -85,8 +85,8 @@ class PHPDS_tagger extends PHPDS_dependant
         $build[] = ($name != null)   ? 'tag_name   = :tag_name'   : null;
         $build[] = ($target != null) ? 'tag_target = :tag_target' : null;
 
-        $sql = $this->connection->queryBuild($sql, $build);
-        return $this->connection->queryFAR($sql,
+        $sql = $this->db->queryBuild($sql, $build);
+        return $this->db->queryFAR($sql,
             array('tag_object' => $object, 'tag_name' => $name, 'tag_target' => $target)
         );
     }
@@ -196,7 +196,7 @@ class PHPDS_tagger extends PHPDS_dependant
             AND     tag_object = :tag_object
         ";
 
-        return $this->connection->queryFAR($sql, array('tag_target' => $target, 'tag_object' => $object));
+        return $this->db->queryFAR($sql, array('tag_target' => $target, 'tag_object' => $object));
     }
 
     /**
@@ -215,24 +215,23 @@ class PHPDS_tagger extends PHPDS_dependant
             REPLACE INTO _db_core_tags ( tag_id,  tag_object,  tag_name,  tag_target,  tag_value)
 		    VALUES                     (:tag_id, :tag_object, :tag_name, :tag_target, :tag_value)
         ";
-        $this->connection->prepare($sql);
+        $this->db->prepare($sql);
         if (!empty($taggernames) && is_array($taggernames)) {
             if (!empty($target) && !empty($object)) {
                 foreach ($taggernames as $key => $name) {
                     if (!empty($name)) {
                         $id    = (!empty($taggerids[$key])) ? $taggerids[$key] : '';
                         $value = (!empty($taggervalues[$key])) ? $taggervalues[$key] : '';
-                        $this->connection->execute(
-                            array('tag_id' => $id, 'tag_object' => $object, 'tag_name' => $name,
-                                  'tag_target' => $target, 'tag_value' => $value)
-                        );
+                        $this->db->execute(array('tag_id' => $id, 'tag_object' => $object, 'tag_name' => $name,
+                            'tag_target' => $target, 'tag_value' => $value));
                     }
                 }
-                return $this->connection->affectedRows();
+                return $this->db->affectedRows();
             }
         } else {
             return false;
         }
+        return false;
     }
 
     /**
@@ -248,6 +247,6 @@ class PHPDS_tagger extends PHPDS_dependant
 		  WHERE       tag_id = :tag_id
         ";
 
-        return $this->connection->queryAffects($sql, array('tag_id' => $tag_id));
+        return $this->db->queryAffects($sql, array('tag_id' => $tag_id));
     }
 }

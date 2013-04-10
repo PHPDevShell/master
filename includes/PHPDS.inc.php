@@ -27,12 +27,6 @@ class PHPDS
      */
     protected $db;
     /**
-     * Replacement core database object.
-     *
-     * @var object
-     */
-    protected $connection;
-    /**
      * Core config object.
      *
      * @var object
@@ -44,6 +38,12 @@ class PHPDS
      * @var object
      */
     protected $core;
+    /**
+     * Core object.
+     *
+     * @var object
+     */
+    protected $login;
     /**
      * Core cache object.
      *
@@ -322,19 +322,6 @@ class PHPDS
     }
 
     /**
-     * Deal with database access configuration. Also makes the first master connection to the database.
-     *
-     * @return $this the current instance
-     */
-    protected function configConnection()
-    {
-        $conn = $this->PHPDS_connection();
-        $conn->connect();
-
-        return $this; // to allow fluent interface
-    }
-
-    /**
      * Copy settings from the database-loaded array. Converts and defaults to false if the value isn't set
      *
      * @param array $settings
@@ -418,8 +405,9 @@ class PHPDS
         // Init main debug instance. //////////////////////////////////////////
         $this->PHPDS_debug(); /////////////////////////////////////////////////
         // Various init subroutines. //////////////////////////////////////////
-        $this->configSession(); ///////////////////////////////////
-        $this->configConnection(); ////////////////////////////////////////////
+        $this->configSession(); ///////////////////////////////////////////////
+        // Start database connection. /////////////////////////////////////////
+        $this->configDb(); ////////////////////////////////////////////////////
 
         // Connects cache server. /////////////////////////////////////////////
         $this->PHPDS_cache()->connectCacheServer(); ///////////////////////////
@@ -477,7 +465,7 @@ class PHPDS
     }
 
     /**
-     * shortcut to PHPDS_classFactory::factorClass()
+     * @alias PHPDS_classFactory::factorClass
      */
     public function _factory($classname, $params = null, $dependancy = null)
     {
@@ -486,11 +474,6 @@ class PHPDS
         }
         return $this->classes->factorClass($classname, $params, $dependancy);
     }
-
-    /*
-     * Most fields contains objects which are "lazy initiated" (that is created
-     * the first time they are asked for).
-     */
 
     /**
      * Allow access to configuration, either read (no param) or write
@@ -550,6 +533,20 @@ class PHPDS
             $this->config = $this->_factory('PHPDS_config');
         }
         return $this->config;
+    }
+
+    /**
+     * Allow access to the global config subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_login
+     */
+    public function PHPDS_login()
+    {
+        if (empty($this->login)) {
+            $this->login = $this->_factory('PHPDS_login');
+        }
+        return $this->login;
     }
 
     /**
@@ -618,23 +615,9 @@ class PHPDS
     public function PHPDS_db()
     {
         if (empty($this->db)) {
-            $this->db = $this->_factory('PHPDS_db');
+            $this->db = $this->_factory('PHPDS_pdo');
         }
         return $this->db;
-    }
-
-    /**
-     * Allow access to the global database subsystem
-     * One is created if necessary.
-     *
-     * @return PHPDS_pdo
-     */
-    public function PHPDS_connection()
-    {
-        if (empty($this->connection)) {
-            $this->connection = $this->_factory('PHPDS_connection');
-        }
-        return $this->connection;
     }
 
     /**
@@ -663,7 +646,6 @@ class PHPDS
     {
         if (empty($this->template) && $lazy) {
             $this->template = $this->_factory('PHPDS_template');
-            //if ($this->compatMode < 2) $GLOBALS['template'] = & $this->template;
         }
         return $this->template;
     }
@@ -850,7 +832,6 @@ class PHPDS
                     }
                 }
             }
-
         }
 
         // Oh this is becoming a problem, perhaps we can locate the file here.
@@ -868,16 +849,16 @@ class PHPDS
  * This is a base class for PHPDS subsystems
  * It allows dependency injection and dependency fetching; also mimics multiple inheritance;
  *
- * @property PHPDS_core       $core
- * @property PHPDS_config     $config
- * @property PHPDS_cache      $cache
- * @property PHPDS_navigation $navigation
- * @property PHPDS_db         $db
- * @property PHPDS_connection $connection
- * @property PHPDS_template   $template
- * @property PHPDS_tagger     $tagger
- * @property PHPDS_user       $user
- * @property PHPDS_notif      $notif
+ * @property PHPDS_core        $core
+ * @property PHPDS_config      $config
+ * @property PHPDS_cache       $cache
+ * @property PHPDS_navigation  $navigation
+ * @property PHPDS_dbInterface $db
+ * @property PHPDS_template    $template
+ * @property PHPDS_tagger      $tagger
+ * @property PHPDS_user        $user
+ * @property PHPDS_notif       $notif
+ * @property PHPDS_login       $login
  *
  */
 class PHPDS_dependant

@@ -1,64 +1,4 @@
 <?php
-
-/**
- * Build array from get url.
- *
- * TODO: it's probably faster to use PHP build-in function (array_merge...)
- *
- * @param array $myGET
- * @param array $includeInGet
- * @param array $excludeFromGet
- * @return array
- */
-function PU_BuildGETArray(array $myGET, $includeInGet = null, $excludeFromGet = null)
-{
-    if (!is_null($includeInGet)) {
-        if (!is_array($includeInGet))
-            $includeInGet = array($includeInGet);
-        foreach ($includeInGet as $index => $value)
-            $myGET[$index] = $value;
-    }
-    if (!is_null($excludeFromGet)) {
-        if (!is_array($excludeFromGet))
-            $excludeFromGet = array($excludeFromGet);
-        foreach ($excludeFromGet as $param)
-            unset($myGET[$param]);
-    }
-    return $myGET;
-}
-
-/**
- * Creates a (string) url to be used with GET, including encoding
- *
- * @param array  $myGET
- * @param string $glue
- * @return string
- */
-function PU_BuildGETString(array $myGET, $glue = '&amp;')
-{
-    $url = '';
-    if (count($myGET)) {
-        $params = array();
-        foreach ($myGET as $index => $value)
-            $params[] .= rawurlencode($index) . '=' . rawurlencode($value);
-        $url = '?' . implode($glue, $params);
-    }
-    return $url;
-}
-
-/**
- * Build GET part of a url
- *
- * @param string $includeInGet   (optional) array of pairs: parameters to add as GET in the url
- * @param string $excludeFromGet (optional) array of strings: parameters to remove from GET in the url
- * @param string $glue           The character connector in between.
- * @return string the whole parameter part of the url (including '?') ; maybe empty if there are no parameters
- */
-function PU_BuildGET($includeInGet = null, $excludeFromGet = null, $glue = '&amp;')
-{
-    return PU_BuildGETString(PU_BuildGETArray($_GET, $includeInGet, $excludeFromGet), $glue);
-}
-
 /**
  * Simply checks if string is a constant or not.
  *
@@ -84,134 +24,6 @@ function PU_isConstant($is_constant)
 function PU_nameToId($convert_to_id)
 {
     return sprintf('%u', crc32($convert_to_id));
-}
-
-/**
- * Build a xml-style attributes string based on an array
- *
- * @param $attributes array, the attribute array to compile
- * @param $glue       string, a piece of string to insert between the values
- * @return string
- */
-function PU_BuildAttrString(array $attributes = null, $glue = '')
-{
-    $result = '';
-    if (is_array($attributes))
-        foreach ($attributes as $key => $value) {
-            if ($result && $glue)
-                $result .= $glue;
-            $result .= " $key=\"$value\"";
-        }
-    return $result;
-}
-
-/**
- * Builds a parsed url.
- *
- * @param array $p
- * @return string
- */
-function PU_buildParsedURL($p)
-{
-    if (!is_array($p))
-        return $p;
-
-    if (empty($p['scheme']))
-        $p['scheme'] = 'http';
-    if (empty($p['host']))
-        $p['host'] = $_SERVER["HTTP_HOST"];
-    if (empty($p['port']))
-        $p['port'] = '';
-    else
-        $p['port'] = ':' . $p['port'];
-    if (empty($p['user']))
-        $p['user'] = '';
-    if (empty($p['pass']))
-        $p['pass'] = '';
-    if (empty($p['path']))
-        $p['path'] = $_SERVER["PHP_SELF"];
-    if (empty($p['query']))
-        $p['query'] = '';
-    if (empty($p['fragment']))
-        $p['fragment'] = '';
-    else
-        $p['fragment'] = '#' . $p['fragment'];
-
-    $auth = ($p['user'] || $p['pass']) ? $p['user'] . ':' . $p['pass'] . '@' : '';
-
-    if ($p['query'] && ('?' != substr($p['query'], 0, 1)))
-        $p['query'] = '?' . $p['query'];
-
-    if ('/' == substr($p['path'], 0, 1))
-        $url = $p['scheme'] . '://' . $auth . $p['host'] . $p['port'] . $p['path'] . $p['query'] . $p['fragment'];
-    else
-        $url = $p['path'] . $p['query'] . $p['fragment'];
-
-    return $url;
-}
-
-/**
- * Build a url with GET parameters
- *
- * @param string|array $target          (optional) string: the target script url (current script if missing)
- * @param array        $includeInGet    (optional) array of pairs: parameters to add as GET in the url
- * @param array        $excludeFromGet  (optional) array of strings: parameters to remove from GET in the url
- * @param string       $glue            Connector between strings of url.
- * @return string the built url
- *
- */
-function PU_BuildURL($target = null, $includeInGet = null, $excludeFromGet = null, $glue = '&amp;')
-{
-    if (is_null($target))
-        $target = $_SERVER["REQUEST_URI"];
-    if (!is_array($target))
-        $target = parse_url($target);
-
-    if (empty($target['query']))
-        $tarGET = $_GET;
-    else {
-        parse_str($target['query'], $tarGET);
-        $tarGET = array_merge($_GET, $tarGET);
-    }
-    $myGET           = PU_BuildGETArray($tarGET, $includeInGet, $excludeFromGet);
-    $target['query'] = PU_BuildGETString($myGET, $glue);
-    $target          = PU_buildParsedURL($target);
-    return $target;
-}
-
-/**
- * Clean a string from possibly harmful chars
- * These are removed: single and double quotes, backslashes, optionnaly html tags (everything between < and >)
- * A cleaned string should be safe to include in an html output
- *
- * @param string $string     the string to clean
- * @param bool   $clean_htlm if true, HTML tags are deleted too
- * @return string
- */
-function PU_CleanString($string, $clean_htlm = false)
-{
-    $string = preg_replace('/["\'\\\\]/', '', $string);
-    if ($clean_htlm)
-        $string = preg_replace('/<.+>/', '', $string);
-    return $string;
-}
-
-/**
- * Convert a string to UTF8 (default) or to HTML
- *
- * @param string $string  the string to convert
- * @param bool   $htmlize if true the string is converted to HTML, if nul to UTF8; otherwise specified encoding
- * @return string
- */
-function PU_MakeString($string, $htmlize = false)
-{
-    if (!empty($string)) {
-        $from = mb_detect_encoding($string, 'HTML-ENTITIES, UTF-8, ISO-8859-1, ISO-8859-15', true);
-        $to   = is_null($htmlize) ? 'UTF-8' : (($htmlize === true) ? 'HTML-ENTITIES' : $htmlize);
-        //$to = ($htmlize ? 'HTML-ENTITIES' : 'UTF-8');
-        $string = mb_convert_encoding($string, $to, $from);
-    }
-    return $string;
 }
 
 /**
@@ -245,7 +57,7 @@ function PU_copyArray($source, &$target, $indexes, $type = null)
  * @param array $haystack
  * @return mixed
  */
-function PU_ArraySearch($needle, $haystack)
+function PU_arraySearch($needle, $haystack)
 {
     if (empty($needle) || empty($haystack)) {
         return false;
@@ -337,59 +149,6 @@ if (function_exists('gettext')) {
         return '';
     }
 
-}
-
-/**
- * Outputs an array in html
- * A slightly better version of print_r()
- * Note: this output is html
- *
- * @param array   $a
- * @param string  $title
- * @param boolean $htmlize (default to false) if true html is escaped to be displayed as source
- *
- * @return string
- */
-function PU_dumpArray($a, $title = '', $htmlize = false)
-{
-    $s = $title ? "<p>$title</p>" : '';
-
-    if (!(is_array($a) || is_object($a))) {
-        $a = array($a);
-    }
-
-    if (count($a) == 0) {
-        $s .= '(empty array)';
-    } else {
-        $s .= '<ul class="array_dump">';
-        foreach ($a as $k => $e) {
-            $t = gettype($e);
-            switch ($t) {
-                case 'array':
-                    $t .= ', ' . count($e) . ' elements';
-                    break;
-                case 'string':
-                    $t .= ', ' . strlen($e) . ' chars, ' . mb_detect_encoding($e);
-
-                    break;
-                case 'object':
-                    $t .= ' of class "' . get_class($e) . '"';
-                    break;
-            }
-            $s .= '<li>'
-                . '<span class="array_key"><span class="array_grey">[&nbsp;</span>' . $k . '<span class="array_grey">&nbsp;]&nbsp;=&gt;</span></span>'
-                . '&nbsp;<span class="array_type">(' . $t . ')</span>&nbsp;';
-            if (is_array($e) || is_object($e)) {
-                $e = PU_dumpArray($e, null, $htmlize);
-            } else if ($htmlize) {
-                $e = htmlentities($e);
-            }
-            $s .= '<span class="array_value">' . (string)$e . '</li>';
-        }
-        $s .= '</ul>';
-    }
-
-    return $s;
 }
 
 /**
@@ -528,6 +287,59 @@ function PU_addIncludePath($path)
         return set_include_path(get_include_path() . PATH_SEPARATOR . $path);
     }
     return false;
+}
+
+/**
+ * Outputs an array in html
+ * A slightly better version of print_r()
+ * Note: this output is html
+ *
+ * @param array   $a
+ * @param string  $title
+ * @param boolean $htmlize (default to false) if true html is escaped to be displayed as source
+ *
+ * @return string
+ */
+function PU_dumpArray($a, $title = '', $htmlize = false)
+{
+    $s = $title ? "<p>$title</p>" : '';
+
+    if (!(is_array($a) || is_object($a))) {
+        $a = array($a);
+    }
+
+    if (count($a) == 0) {
+        $s .= '(empty array)';
+    } else {
+        $s .= '<ul class="array_dump">';
+        foreach ($a as $k => $e) {
+            $t = gettype($e);
+            switch ($t) {
+                case 'array':
+                    $t .= ', ' . count($e) . ' elements';
+                    break;
+                case 'string':
+                    $t .= ', ' . strlen($e) . ' chars, ' . mb_detect_encoding($e);
+
+                    break;
+                case 'object':
+                    $t .= ' of class "' . get_class($e) . '"';
+                    break;
+            }
+            $s .= '<li>'
+                . '<span class="array_key"><span class="array_grey">[&nbsp;</span>' . $k . '<span class="array_grey">&nbsp;]&nbsp;=&gt;</span></span>'
+                . '&nbsp;<span class="array_type">(' . $t . ')</span>&nbsp;';
+            if (is_array($e) || is_object($e)) {
+                $e = PU_dumpArray($e, null, $htmlize);
+            } else if ($htmlize) {
+                $e = htmlentities($e);
+            }
+            $s .= '<span class="array_value">' . (string)$e . '</li>';
+        }
+        $s .= '</ul>';
+    }
+
+    return $s;
 }
 
 /**
@@ -717,43 +529,6 @@ function PU_SearchAndReplaceBetween($string, $start, $end, $replace = '', $repla
 }
 
 /**
- * Returns an array containing the current database settings as per the system configuration. This function
- * handles both old legacy settings and the new multi-db setup configuration.
- *
- * TODO: rethink all this (this function is mostly broken, also should this not be in "db")
- *
- * @param array  $configuration The configuration array. This is required since we don't necessarily have access to it otherwise.
- * @param string $db            Specifies the database configuration to use, leave blank if not sure.
- * @return array The database settings
- * @throws PHPDS_databaseException
- */
-function PU_GetDBSettings($configuration, $db = '')
-{
-    if (!empty($configuration['database_name'])) {
-        // Return with legacy database settings
-        return array(
-            'dsn'        => '',
-            'database'   => $configuration['database_name'],
-            'host'       => (!empty($configuration['server_address']) ? $configuration['server_address'] : 'localhost'),
-            'username'   => (!empty($configuration['database_user_name']) ? $configuration['database_user_name'] : 'root'),
-            'password'   => (!empty($configuration['database_password']) ? $configuration['database_password'] : 'root'),
-            'prefix'     => (!empty($configuration['database_prefix']) ? $configuration['database_prefix'] : 'pds_'),
-            'persistent' => (isset($configuration['persistent_db_connection']) ? $configuration['persistent_db_connection'] : false),
-            'charset'    => (!empty($configuration['database_charset']) ? $configuration['database_charset'] : 'utf8'));
-    } else {
-        // Return with new style database settings
-        if (empty($db)) {
-            $db = $configuration['master_database'];
-        }
-
-        if (isset($configuration['databases'][$db])) {
-            return $configuration['databases'][$db];
-        }
-    }
-    throw new PHPDS_databaseException('Unable to provide the required database settings');
-}
-
-/**
  * Sets the header to correct status code.
  *
  * @param int $code
@@ -822,7 +597,7 @@ function PU_silentHeaderStatus($code = null, $message = null) {
  *
  * @return string
  */
-function PU_PackEnv()
+function PU_packEnv()
 {
     $env = array(
         'POST'    => $_POST,
@@ -843,7 +618,7 @@ function PU_PackEnv()
  * @param string $text     The text you wish to log.
  * @param string $filename The filename to which to log the string to. "debug.log" is used if not specified.
  */
-function PU_DebugLog($text, $filename = '')
+function PU_debugLog($text, $filename = '')
 {
     if (empty($filename)) $filename = 'write/logs/debug.log';
     error_log(date('Y-m-d H:i:s') . ' - ' . $text . "\n", 3, $filename);
@@ -857,7 +632,7 @@ function PU_DebugLog($text, $filename = '')
  * @param string $root
  * @return string|bool the actual path or false
  */
-function PU_SafeSubpath($path, $root)
+function PU_safeSubpath($path, $root)
 {
     if (substr($path, 0, 1) != '/') {
         $path = $root . '/' . $path;
