@@ -10,24 +10,18 @@
 // Multi-database Configuration                                         ////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-$configuration['database'] = array(
+/**
+ * Main database connection parameters for default connector.
+ * If you install a different database connector you might want to.
+ *
+ * @global array
+ */
+$configuration['database']['main'] = array(
     /**
      * Database DSN (Data Source Name) string. Used for PDO based connections.
      * @global string
      */
     'dsn'        => 'mysql:host=localhost;dbname=phpdev',
-
-    /**
-     * Database Server Hostname. Not required if using PDO.
-     * @global string
-     */
-    'host'       => 'localhost',
-
-    /**
-     * Database Name. Not required if using PDO.
-     * @global string
-     */
-    'database'   => 'phpdev',
 
     /**
      * Database Server Username.
@@ -48,16 +42,10 @@ $configuration['database'] = array(
     'prefix'     => '_db_',
 
     /**
-     * Whether the database connection should be persistent or not.
+     * Alternative driver options.
      * @global string
      */
-    'persistent' => false,
-
-    /**
-     * Database connection character set
-     * @global string
-     */
-    'charset'    => 'utf8'
+    'options'     => array(PDO::ATTR_PERSISTENT => true)
 );
 
 ////////////////////////////////////////////////////////////////////////////////////////////
