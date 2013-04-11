@@ -128,7 +128,7 @@ class PHPDS_databaseException extends PHPDS_exception
         if ($code == 1045) {
             $this->ignoreLines = 5;
         }
-        $msg = 'The MySQL database engine returned with an error' . ': "' . $message . '"';
+        $msg = 'Database related error : (' . $message . ')';
         parent::construct($msg, $code, $previous);
     }
 

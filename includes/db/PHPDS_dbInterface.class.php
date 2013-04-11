@@ -1,20 +1,10 @@
 <?php
-/**
- * Delphex Web Framework Core
- *
- * @link http://www.delphexonline.com
- * @copyright Copyright (C) 2012 Delphex Technologies CC, All rights reserved.
- * @author Don Schoeman
- *
- * Copyright notice: See readme/notice
- * By using DWF you agree to notice and license, if you dont agree to this notice/license you are not allowed to use DWF.
- *
- */
 
 /**
  * Class PHPDS_dbInterface
  */
-interface PHPDS_dbInterface {
+interface PHPDS_dbInterface
+{
     /**
      * Returns the resulting resource as an associative array (same as MODE_ASSOC).
      * Defined because the layer can also return a special key based array,

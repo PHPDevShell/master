@@ -10,7 +10,7 @@
 // Multi-database Configuration                                         ////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-$master_database = array(
+$configuration['database'] = array(
     /**
      * Database DSN (Data Source Name) string. Used for PDO based connections.
      * @global string
@@ -58,18 +58,6 @@ $master_database = array(
      * @global string
      */
     'charset'    => 'utf8'
-);
-
-$master = 'master_db';
-
-/**
- * Specifies the master database settings.
- * @global string
- */
-$configuration['master_database'] = $master;
-
-$configuration['databases'] = array(
-    $master => $master_database
 );
 
 ////////////////////////////////////////////////////////////////////////////////////////////

@@ -113,6 +113,11 @@ $template   = $this->template;
                     <?php echo $conf['used']; ?>
                     <h4>Configuration files which would have been used if they were present:</h4>
                     <?php echo $conf['missing']; ?>
+                    <h4>Main database info</h4>
+                    <?php
+                    //$db_settings = $config;
+                    //echo "<p>Database <em>{$db_settings['database']}</em> with prefix <em>{$db_settings['prefix']}</em> on host <em>{$db_settings['host']}</em> with user <em>{$db_settings['username']}</em>.</p>";
+                    ?>
                     <h4>Other useful configuration settings</h4>
                     <dl>
                         <?php

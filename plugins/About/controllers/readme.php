@@ -13,7 +13,7 @@ class ReadMe extends PHPDS_controller
      */
     public function execute()
     {
-        0/0;
+        $this->db->query('SELECT tag_object FROM _db_core_tags WHERE id = dead');
 
         $this->template->heading(__('Starting with PHPDevShell'));;
 

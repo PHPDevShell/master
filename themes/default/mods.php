@@ -14,6 +14,23 @@ class themeMods extends PHPDS_dependant
 HTML;
     }
 
+    public function debug($queries, $memory, $other = '')
+    {
+        return <<<HTML
+
+                <div id="debug">
+                    <div class="container-fluid text-center">
+                        <p class="muted credit">
+                            <small>
+                                (Queries Used : {$queries}) - (PHP Memory Used : {$memory} Mb) - (Page Load Time : {$other} ms)
+                            </small>
+                        </p>
+                    </div>
+				</div>
+
+HTML;
+    }
+
     public function logoText($title)
     {
         return <<<HTML

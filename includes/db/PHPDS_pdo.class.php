@@ -79,16 +79,21 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
         $this->dbUsername = $cfg['username'];
         $this->dbPassword = $cfg['password'];
 
-        if (empty($this->connection)) {
-            // Set the PDO driver options
-            $driver_options = null;
-            if ($this->dbPersistent) $driver_options = array(PDO::ATTR_PERSISTENT => true);
+        try {
+            if (empty($this->connection)) {
+                // Set the PDO driver options
+                $driver_options = null;
+                if ($this->dbPersistent) $driver_options = array(PDO::ATTR_PERSISTENT => true);
 
-            // Connect to the server and database
-            $this->connection = new PDO($this->dbDSN, $this->dbUsername, $this->dbPassword, $driver_options);
+                // Connect to the server and database
+                $this->connection = new PDO($this->dbDSN, $this->dbUsername, $this->dbPassword, $driver_options);
 
-            // Set the error reporting attribute so that SQL errors also generates exceptions
-            $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                // Set the error reporting attribute so that SQL errors also generates exceptions
+                $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            }
+        } catch (PDOException $e) {
+            $msg = 'Cannot connect to database';
+            throw new PHPDS_databaseException($msg, 0, $e);
         }
     }
 
@@ -132,32 +137,37 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      * @param $sql    string The SQL statement to be executed
      * @param $params array The parameters
      * @return resource The resulting resource (or false if no statement was supplied)
+     * @throws PHPDS_queryException
      */
     public function query($sql, $params = null)
     {
-        if (!empty($sql)) {
-            // Replace the DB prefix.
-            $sql = str_replace('/_db_/', $this->dbPrefix, $sql);
+        try {
+            if (!empty($sql)) {
+                // Replace the DB prefix.
+                $sql = str_replace('/_db_/', $this->dbPrefix, $sql);
 
-            $this->queryCount += 1;
+                $this->queryCount += 1;
 
-            if (!is_null($params)) {
-                // Replace the parameters with values
-                foreach ($params as $key => $value) {
-                    if (gettype($value) == 'string') {
-                        $sql = str_replace(":" . $key, "'" . $this->escape($value) . "'", $sql);
-                    } else {
-                        $sql = str_replace(":" . $key, $this->escape($value), $sql);
+                if (!is_null($params)) {
+                    // Replace the parameters with values
+                    foreach ($params as $key => $value) {
+                        if (gettype($value) == 'string') {
+                            $sql = str_replace(":" . $key, "'" . $this->escape($value) . "'", $sql);
+                        } else {
+                            $sql = str_replace(":" . $key, $this->escape($value), $sql);
+                        }
                     }
                 }
-            }
 
-            $this->lastQuery = $sql;
-            $this->result    = $this->connection->query($sql);
-            return $this->result;
-        } else {
-            $this->result = false;
-            return false;
+                $this->lastQuery = $sql;
+                $this->result    = $this->connection->query($sql);
+                return $this->result;
+            } else {
+                $this->result = false;
+                return false;
+            }
+        } catch (PDOException $e) {
+            throw new PHPDS_queryException($sql, 0, $e);
         }
     }
 

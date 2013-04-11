@@ -3,6 +3,8 @@ define('phpdevshell_version', 'PHPDevShell V-4.0.0-Beta-1-DB-4000');
 define('phpdevshell_db_version', '4000');
 
 require_once 'PHPDS_utils.inc.php';
+require_once 'db/PHPDS_dbInterface.class.php';
+
 /**
  * Root class of PHPDevShell, binds all methods/plugins together.
  */
@@ -185,23 +187,6 @@ class PHPDS
     }
 
     /**
-     * Load plugin-specific host-style config
-     *
-     * This allows plugins to provide a configuration, for example when 1 plugin <=> 1 site
-     * @param array $configuration
-     */
-    protected function loadPluginsConfig(&$configuration)
-    {
-        $files = glob($this->basepath('plugins') . '/*/config/host.config.php');
-        if (!empty($files)) {
-            foreach ($files as $filename) {
-                $this->log("Looking for plugin config file \"$filename\"");
-                $this->includeConfigFile($filename, $configuration);
-            }
-        }
-    }
-
-    /**
      * Create a config array from the config files, and store it in the instance field
      *
      * The actual configuration is loaded from two files (one is generic, the other is custom)
@@ -231,8 +216,6 @@ class PHPDS
         $this->loadConfigFile('PHPDS-defaults', $configuration);
         $this->loadConfigFile('multi-host', $configuration);
         $this->loadConfigFile('single-site', $configuration);
-
-        $this->loadPluginsConfig($configuration);
 
         if (!empty($_SERVER['SERVER_NAME'])) {
             if (!empty($configuration['host'][$_SERVER['SERVER_NAME']])) {
@@ -758,6 +741,7 @@ class PHPDS
      */
     public function sneakClass($classname, $filename)
     {
+        if (class_exists($classname, false)) return true;
         if (is_file($filename)) {
             include_once ($filename);
             if (class_exists($classname, false)) {
@@ -789,18 +773,14 @@ class PHPDS
             $classFolder = $classParams['plugin_folder'];
 
             $engine_include_path = $absolute_path . 'plugins/' . $classFolder . '/includes/' . $filename . '.class.php';
-            $query_include_path  = $absolute_path . 'plugins/' . $classFolder . '/models/' . $filename . '.query.php';
-            if ($this->sneakClass($class_name, $engine_include_path)) {
-                $this->sneakClass($class_name, $query_include_path);
-                return true;
-            }
+            if ($this->sneakClass($class_name, $engine_include_path)) return true;
         }
 
         // Engine classes default directories
-        $includes = array('includes/local', 'includes', 'includes/db-connectors', 'includes/db');
+        $includes = array('includes/local', 'includes', 'includes/db');
         foreach ($includes as $path) {
             $engine_include_path = $absolute_path . $path . '/' . $class_name . '.class.php';
-            $this->sneakClass($class_name, $engine_include_path);
+            if ($this->sneakClass($class_name, $engine_include_path)) return true;
         }
 
         // Try the plugin files - if a plugin is currently running
@@ -809,38 +789,14 @@ class PHPDS
             if (!empty($navigation->navigation[$configuration['m']]['plugin'])) {
 
                 // Check if file exists in active plugins folder.
-                $plugin_include_class = $absolute_path . 'plugins/' . $navigation->navigation[$configuration['m']]['plugin'] . '/includes/' . $class_name . '.class.php';
-                if ($this->sneakClass($class_name, $plugin_include_class)) {
-                    $plugin_include_query = $absolute_path . 'plugins/' . $navigation->navigation[$configuration['m']]['plugin'] . '/models/' . $class_name . '.query.php';
-                    $this->sneakClass($class_name, $plugin_include_query);
-                    return true;
-                }
+                $plugin_include_class = $absolute_path . 'plugins/' .
+                    $navigation->navigation[$configuration['m']]['plugin'] . '/includes/' . $class_name . '.class.php';
+                if ($this->sneakClass($class_name, $plugin_include_class)) return true;
 
                 $plugin_include_class = $absolute_path . 'plugins/' . $navigation->navigation[$configuration['m']]['plugin'] . '/includes/default.class.php';
                 if ($this->sneakClass($class_name, $plugin_include_class)) return true;
             }
-
-            // We should have found it by now, lets seek the plugin folders include directories, not optimal, but better then an error I guess.
-            $files = glob($this->basepath('plugins') . '/*/includes/' . $class_name . '.class.php');
-            if (!empty($files)) {
-                foreach ($files as $filename) {
-                    if ($this->sneakClass($class_name, $filename)) {
-                        // Oh awesome, it worked, now the query file.
-                        $filenamequery = preg_replace("/.class.php/", '.query.php', $filename);
-                        $this->sneakClass($class_name, $filenamequery);
-                        return true;
-                    }
-                }
-            }
         }
-
-        // Oh this is becoming a problem, perhaps we can locate the file here.
-        if (!empty($configuration['plugin_alt'])) {
-            // Ok last chance, is it in here?
-            $plugin_include_class = $absolute_path . $configuration['plugin_alt'] . 'includes/' . $class_name . '.class.php';
-            if ($this->sneakClass($class_name, $plugin_include_class)) return true;
-        }
-
         return false;
     }
 }
@@ -946,7 +902,6 @@ class PHPDS_dependant
     public function __get($name)
     {
         $result = '';
-
         try {
             // for a local field, try to find an accessor
             if (method_exists($this, $name)) {
@@ -995,15 +950,14 @@ class PHPDS_dependant
                     return true;
                 }
             }
-
             // if the parent doesn't provide the field, then it's ours
             $this->{$name} = $value;
-
             # Below breaks code.
             #throw new PHPDS_exception('Trying to set non-existent (or maybe masked) field "'.$name.'"');
         } catch (Exception $e) {
             throw new PHPDS_exception("Can't set any '$name' (maybe dependancy is wrong)", 0, $e);
         }
+        return false;
     }
 
     /**
@@ -1052,28 +1006,6 @@ class PHPDS_dependant
     {
         if (is_a($this, 'debug')) $this->debug($data);
         else $this->debugInstance()->debug($data);
-    }
-
-    /**
-     * DEPRECATED: alias for log()
-     *
-     * @deprecated
-     * @param $data
-     */
-    public function _log($data)
-    {
-        $this->log($data);
-    }
-
-    /**
-     * DEPRECATED: alias for _log()
-     *
-     * @deprecated
-     * @param $data
-     */
-    public function info($data)
-    {
-        $this->log($data);
     }
 
     /**
@@ -1151,7 +1083,6 @@ class PHPDS_dependant
  */
 class PHPDS_array extends ArrayObject
 {
-
     /**
      * Magic set array.
      *

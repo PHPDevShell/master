@@ -1239,6 +1239,32 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
+     * Returns some debug info to the frontend, at the bottom of the page
+     */
+    public function debugInfo()
+    {
+        if ($this->configuration['development']) {
+            if ($this->configuration['queries_count']) {
+                if (!empty($this->core->themeFile)) {
+                    $memory_used = memory_get_usage();
+                    $time_spent  = intval((microtime(true) - $GLOBALS['start_time']) * 1000);
+                    return $this->mod->debug($this->db->queryCount,
+                        number_format($memory_used / 1000000, 2, '.', ' '), $time_spent);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Prints some debug info to the frontend, at the bottom of the page
+     */
+    public function outputDebugInfo()
+    {
+        print $this->debugInfo();
+    }
+
+    /**
      * Convert all HTML entities to their applicable characters.
      *
      * @param string $string_to_decode

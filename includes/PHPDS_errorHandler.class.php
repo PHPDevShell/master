@@ -222,7 +222,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
             }
 
         } catch (Exception $e) {
-            // something bad happend in the exception handler, we build a new exception to describe that in the error page
+            // something bad happened in the exception handler, we build a new exception to describe that in the error page
             $this->I_give_up = true;
             $msg             = _('An exception occured in the exception handler. URL was: "' . $_SERVER['REQUEST_URI'] . '"');
             new PHPDS_exception($msg, 0, $e);
@@ -501,8 +501,6 @@ class PHPDS_errorHandler extends PHPDS_dependant
 /**
  * Generate a pretty (formatted to be read) backtrace, skipping the first lines if asked
  *
- * @param $ignore                integer, number of frames to skip (optional, defaults to 0)
- * @param $backtrace             the backtrace (optional)
  * @return string
  */
 class PHPDS_backtrace
