@@ -2,9 +2,9 @@
 /**
  * This page will be displayed whenever an unhandled error or exception occurs in PHPDevShell
  */
-$skin = empty($this->configuration['skin']) ? '' : $this->configuration['skin'];
+$skin       = empty($this->configuration['skin']) ? '' : $this->configuration['skin'];
 $navigation = $this->navigation;
-$template = $this->template;
+$template   = $this->template;
 ?>
 <!DOCTYPE HTML>
 <html lang="en">
@@ -14,23 +14,23 @@ $template = $this->template;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="keywords" content="critical, error">
     <meta name="description" content="We encountered an error">
-    <link rel="stylesheet" href="<?php echo $aurl ?>/themes/default/bootstrap/css/bootstrap.css?v=4.0.0"
+    <link rel="stylesheet" href="<?php echo $theme['aurl'] ?>/themes/default/bootstrap/css/bootstrap.css?v=4.0.0"
           type="text/css">
-    <link rel="stylesheet" href="<?php echo $aurl ?>/themes/default/bootstrap/css/bootstrap-responsive.css?v=4.0.0"
+    <link rel="stylesheet" href="<?php echo $theme['aurl'] ?>/themes/default/bootstrap/css/bootstrap-responsive.css?v=4.0.0"
           type="text/css">
-    <link rel="stylesheet" href="<?php echo $aurl ?>/themes/default/prettify/prettify.css?v=100" type="text/css">
-    <link rel="stylesheet" href="<?php echo $aurl ?>/themes/default/css/default.css?v=400" type="text/css">
-    <script type="text/javascript" src="<?php echo $aurl ?>/themes/default/jquery/js/jquery-min.js?v=1.9.1"></script>
-    <script type="text/javascript" src="<?php echo $aurl ?>/themes/default/js/default.js?v=4.0.0"></script>
-    <script type="text/javascript" src="<?php echo $aurl ?>/themes/default/bootstrap/js/bootstrap.js?v=2.2.2"></script>
-    <script type="text/javascript" src="<?php echo $aurl ?>/themes/default/prettify/prettify.js?v=100"></script>
+    <link rel="stylesheet" href="<?php echo $theme['aurl'] ?>/themes/default/prettify/prettify.css?v=100" type="text/css">
+    <link rel="stylesheet" href="<?php echo $theme['aurl'] ?>/themes/default/css/default.css?v=400" type="text/css">
+    <script type="text/javascript" src="<?php echo $theme['aurl'] ?>/themes/default/jquery/js/jquery-min.js?v=1.9.1"></script>
+    <script type="text/javascript" src="<?php echo $theme['aurl'] ?>/themes/default/js/default.js?v=4.0.0"></script>
+    <script type="text/javascript" src="<?php echo $theme['aurl'] ?>/themes/default/bootstrap/js/bootstrap.js?v=2.2.2"></script>
+    <script type="text/javascript" src="<?php echo $theme['aurl'] ?>/themes/default/prettify/prettify.js?v=100"></script>
 </head>
 <!-- PHPDevShell Main Body -->
 <body id="container" onload="prettyPrint()">
 <div id="wrap">
     <div id="bg" class="container-fluid">
         <h1>Internal System Error</h1>
-        <?php if (!empty($message)) {
+        <?php if (!empty($theme['message'])) {
             if (is_a($e, 'PHPDS_exception')) {
                 if ($e->hasCauses()) {
                     @list($msg, $causes, $extra_html) = new PHPDS_array($e->getCauses());
@@ -56,28 +56,28 @@ $template = $this->template;
                 <div class="pull-right"><strong><?php echo date('d M Y') ?> <?php echo date('H:i a') ?></strong></div>
                 <?php
                 if (!empty($config['m'])) {
-                    echo "Executing <strong>{$config['m']}</strong>" . " invoked class <em>" . get_class($e) . "</em> with code $code";
+                    echo "Executing <strong>{$config['m']}</strong>" . " invoked class <em>" . get_class($e) . "</em> with code {$theme['code']}";
                 } else {
                     echo '<strong>Internal Error</strong>';
                 }
                 ?>
 
                 <div class="error-split-line"></div>
-                <?php echo $message; ?>
+                <?php echo $theme['message']; ?>
 
                 <?php
-                if (!empty($extendedMessage)) {
-                    echo "$extendedMessage";
+                if (!empty($theme['extendedMessage'])) {
+                    echo $theme['extendedMessage'];
                 }
                 ?>
             </div>
-            <?php if (!empty($filefragment)) { ?>
+            <?php if (!empty($theme['filefragment'])) { ?>
                 <p class="text-warning">
                     The error <em><strong>actually</strong></em> occurred in
                     <strong><em><?php echo $filepath?></em></strong> at line <strong><?php echo $lineno?></strong> (see
                     the <a href="#backtrace">backtrace</a>)
                 </p>
-                <pre><?php echo $filefragment ?></pre>
+                <pre><?php echo $theme['filefragment'] ?></pre>
             <?php } ?>
 
             <?php if ($ignore >= 0) { ?>
@@ -103,7 +103,7 @@ $template = $this->template;
                 </tr>
                 </thead>
                 <tbody>
-                <?php echo $bt; ?>
+                <?php echo $theme['bt']; ?>
                 </tbody>
             </table>
             <?php if (!empty($conf)) { ?>
@@ -126,7 +126,7 @@ $template = $this->template;
                         echo "<dd><code>" . (empty($config['guest_role']) ? 'not set' : $config['guest_role']) . "</code></dd>";
                         echo "<dt>Guest group</dt>";
                         echo "<dd><code>" . (empty($config['guest_group']) ? 'not set' : $config['guest_group']) . "</code></dd>";
-                        list($plugin, $menu_link) = $navigation->menuPath();
+                        list($plugin, $menu_link) = $navigation->nodePath();
                         echo "<dt>Active plugin</dt>";
                         $menu_link_ = (empty($menu_link)) ? '' : ' (path is ' . $menu_link . ')';
                         echo "<dd><code>" . (empty($plugin) ? 'not set' : $plugin . $menu_link_) . "</code></dd>";
@@ -139,7 +139,7 @@ $template = $this->template;
                 </div>
                 <div>
                     <h3>Variable Registry</h3>
-                    <pre><?php echo PU_dumpArray($this->classFactory->PluginClasses); ?></pre>
+                    <pre><?php echo PU_dumpArray($this->classFactory->pluginClasses); ?></pre>
                 </div>
                 <?php
                 echo PHPDS_backtrace::phpInfo();
@@ -152,12 +152,12 @@ $template = $this->template;
         <?php } else { ?>
         <p class="lead">
             An error has occurred while trying to provide you with the requested resource. The site administrator has
-            been informed and will take the appropriate action.</p>
+            been informed and will take the appropriate action.
+        </p>
 
-        <p><a href="<?php echo $aurl ?>" class="btn btn-inverse"><i class="icon-home icon-white"></i> Home</a></p>
+        <p><a href="<?php echo $theme['aurl'] ?>" class="btn btn-inverse"><i class="icon-home icon-white"></i> Home</a></p>
     </div>
     <?php } ?>
-</div>
 </div>
 </body>
 </html>

@@ -38,5 +38,4 @@ try {
         $config = $PHPDS->PHPDS_configuration();
         if (!empty($config['error']['display'])) print "<pre>$e</pre>";
     }
-    print '<p>You might want to run the <a href="other/service.php">installation script.</a></p>';
 }

@@ -111,7 +111,7 @@ class PHPDS_debug extends PHPDS_dependant
         if (!$this->enabled) return;
 
         if ($this->firephp) $this->firephp->dump($label, $data);
-        $this->error_log('DUMP', $data);
+        $this->error('DUMP', $data);
     }
 
     /**
@@ -173,7 +173,7 @@ class PHPDS_debug extends PHPDS_dependant
      */
     public function warning($data)
     {
-        return $this->warn($data);
+        $this->warn($data);
     }
 
     /**

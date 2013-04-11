@@ -58,14 +58,17 @@ class PHPDS_errorHandler extends PHPDS_dependant
 
             if ($configuration['mask']) $flags = intval($configuration['mask']);
 
-            if (isset($configuration['ignore_notices'])) $this->ignore_notices = !empty($configuration['ignore_notices']);
-            if (isset($configuration['ignore_warnings'])) $this->ignore_warnings = !empty($configuration['ignore_warnings']);
-            if (isset($configuration['warningsAreFatal'])) $this->warningsAreFatal = !empty($configuration['warningsAreFatal']);
-            if (isset($configuration['noticesAreFatal'])) $this->noticesAreFatal = !empty($configuration['noticesAreFatal']);
+            if (isset($configuration['ignore_notices'])) $this->ignore_notices =
+                !empty($configuration['ignore_notices']);
+            if (isset($configuration['ignore_warnings'])) $this->ignore_warnings =
+                !empty($configuration['ignore_warnings']);
+            if (isset($configuration['warningsAreFatal'])) $this->warningsAreFatal =
+                !empty($configuration['warningsAreFatal']);
+            if (isset($configuration['noticesAreFatal'])) $this->noticesAreFatal =
+                !empty($configuration['noticesAreFatal']);
 
-            // Backends
             if (!empty($configuration['serverlog'])) $this->serverlog = !empty($configuration['serverlog']);
-            if (!empty($configuration['file_log_dir'])) $this->file = $configuration['file_log_dir']; // TODO: check file is writable
+            if (!empty($configuration['file_log_dir'])) $this->file = $configuration['file_log_dir'];
             if (!empty($configuration['email_critical'])) $this->mail = $configuration['email_critical'];
             if (isset($configuration['display'])) $this->display = !empty($configuration['display']);
             if (isset($configuration['firePHP'])) $this->firebug = !empty($configuration['firePHP']);
@@ -118,7 +121,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
      */
     public function doHandleShutdown()
     {
-        if ($this->I_give_up) return; // avoid re-entrancy
+        if ($this->I_give_up) return; // avoid re-entrance
 
         $error   = error_get_last();
         $errmask = error_reporting();
@@ -148,13 +151,16 @@ class PHPDS_errorHandler extends PHPDS_dependant
             if (!$ex instanceof errorHandler) {
                 $errMsg_subject = get_class($ex) . ': ' . $errMsg;
                 $errMsg         = $errMsg_subject . " file : {$ex->getFile()} (line {$ex->getLine()})";
-                array_unshift($backtrace, array('file' => $ex->getFile(), 'line' => $ex->getLine(), 'function' => 'throw ' . get_class($ex), 'args' => array($errMsg, $ex->getCode())));
+                array_unshift($backtrace,
+                    array('file' => $ex->getFile(), 'line' => $ex->getLine(),
+                          'function' => 'throw ' . get_class($ex), 'args' => array($errMsg, $ex->getCode())));
             }
             $errMsg .= ' | ' . date("Y-m-d H:i:s");
             if (empty($_SERVER['HTTP_HOST'])) {
                 $errMsg .= ' | ' . implode(' ', $_SERVER['argv']);
             } else {
-                $errMsg .= ' | ' . $_SERVER['HTTP_HOST'] . " (" . $_SERVER['SERVER_ADDR'] . ":" . $_SERVER['SERVER_PORT'] . ")" . "\n";
+                $errMsg .= ' | ' . $_SERVER['HTTP_HOST'] .
+                    " (" . $_SERVER['SERVER_ADDR'] . ":" . $_SERVER['SERVER_PORT'] . ")" . "\n";
             }
             if ($this->error_backtrace == true) {
                 $trace = PHPDS_backtrace::asText(2, $backtrace);
@@ -172,19 +178,19 @@ class PHPDS_errorHandler extends PHPDS_dependant
             }
 
             ///// DISPLAYING ON THE WEB PAGE
-
             try {
                 // in production we capture the whole output but display only a generic message
                 $output = $this->showException($ex, !$this->production);
             } catch (Exception $e) {
+                $output = 'An exception occured in the exception display.' . $e;
                 error_log('An exception occured in the exception display.' . $e);
             }
 
             ///// WRITING TO A LOG FILE
             if ($this->file) {
-                $dir = realpath(BASEPATH . '/' . $this->file) . '/';
+                $dir = BASEPATH . $this->file;
 
-                if ($dir) {
+                if (is_writable($dir)) {
                     $prefix   = 'error.' . date('Y-m-d');
                     $filepath = $dir . $prefix . '.log';
 
@@ -210,11 +216,10 @@ class PHPDS_errorHandler extends PHPDS_dependant
             }
 
             // SENDING AN EMAIL
-            if ($this->mail) {
+            if ($this->mail && !empty($errMsg_subject) && !empty($detailedfilepath) && !empty($detailedurlpath)) {
                 $headers = 'MIME-Version: 1.0' . "\n" . 'Content-type: text/plain; charset=UTF-8' . "\n" . 'From: Error Handler <' . $this->mail . ">\n";
-                @mail("$this->mail", "$errMsg_subject", "$errMsg\r\n$trace\r\n\r\n$detailedfilepath\r\n$detailedurlpath", $headers);
+                @mail("$this->mail", "$errMsg_subject", "$errMsg\r\n$trace\r\n----\r\n$detailedfilepath\r\n----\r\n$detailedurlpath", $headers);
             }
-
 
         } catch (Exception $e) {
             // something bad happend in the exception handler, we build a new exception to describe that in the error page
@@ -232,7 +237,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
     {
         $errmask = error_reporting();
         if (!($errmask & $errno)) { // if error has been masked with error_reporting() or suppressed with an @
-            return;
+            return false;
         }
 
         if (!$this->I_give_up) {
@@ -411,7 +416,8 @@ class PHPDS_errorHandler extends PHPDS_dependant
         if ($this->PHPDS_dependance()->isEmbedded()) return;
 
         PU_cleanBuffers();
-
+        $lineno   = 0;
+        $filepath = 'unknown';
         if (is_a($e, 'Exception')) {
             $lineno   = $e->getLine();
             $filepath = $e->getFile();
@@ -421,12 +427,12 @@ class PHPDS_errorHandler extends PHPDS_dependant
 
             ///////////////////////////////////
             // Used in error theme file.
-            $filefragment = PHPDS_backtrace::fetchCodeFragment($filepath, $lineno);
+            $theme['filefragment'] = PHPDS_backtrace::fetchCodeFragment($filepath, $lineno);
             if (isset($trace[$ignore])) {
                 $frame = $trace[$ignore];
                 ///////////////////////////////////
                 // Used in error theme file.
-                $framefragment = PHPDS_backtrace::fetchCodeFragment($frame['file'], $frame['line']);
+                $theme['filefragment'] = PHPDS_backtrace::fetchCodeFragment($frame['file'], $frame['line']);
             } else {
                 $ignore = -1;
             }
@@ -434,10 +440,10 @@ class PHPDS_errorHandler extends PHPDS_dependant
             $message = $e->getMessage();
             ///////////////////////////////////
             // Used in error theme file.
-            $code = $e->getCode();
+            $theme['code'] = $e->getCode();
             ///////////////////////////////////
             // Used in error theme file.
-            $extendedMessage = (is_a($e, 'PHPDS_exception')) ? $e->getExtendedMessage() : '';
+            $theme['extendedMessage'] = (is_a($e, 'PHPDS_exception')) ? $e->getExtendedMessage() : '';
             $config          = $this->configuration;
             if (!empty($config)) {
                 if (isset($config['config_files_used']))
@@ -446,7 +452,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
                 if (isset($config['config_files_missing']))
                     $conf['missing'] = PU_dumpArray($config['config_files_missing']);
             }
-            $bt = PHPDS_backtrace::asHTML($ignore, $trace);
+            $theme['bt'] = PHPDS_backtrace::asHTML($ignore, $trace);
         } else {
             $message = "Unknown exception...";
             $code    = null;
@@ -457,7 +463,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
         // Need this for absolute URL configuration to be sef safe.
         ///////////////////////////////////
         // Used in error theme file.
-        $aurl = $protocol . $_SERVER['SERVER_NAME'] . str_replace('/index.php', '', $_SERVER['PHP_SELF']);
+        $theme['aurl'] = $protocol . $_SERVER['SERVER_NAME'] . str_replace('/index.php', '', $_SERVER['PHP_SELF']);
 
         if (PU_isAJAX()) {
             // If the error occurred during an AJAX request, we'll send back a lightweight ouput
@@ -467,15 +473,27 @@ class PHPDS_errorHandler extends PHPDS_dependant
             print $message;
             return null;
         } else {
-            //ob_start();
+            $theme['message'] = $message;
+            ob_start();
             // Load error page: $e is the handled exception
             include BASEPATH . 'themes/default/error.php';
-            //$output = ob_get_clean();
+            $output = ob_get_clean();
 
             if (!empty($this->crumbs)) {
                 $output = str_replace('<crumbs/>', implode("\n", $this->crumbs), $output);
             }
-            return 'test';
+
+            // for a regular request, we present a nicely formatted html page; if provided,
+            // an extended description of the error is displayed
+            if ($detailed) {
+                echo $output;
+            } else {
+                ///////////////////////////////////
+                // Used in error theme file.
+                $theme['message'] = '';
+                require BASEPATH.'themes/cloud/error.php'; // $message being empty, only a genetic message is output
+            }
+            return $output;
         }
     }
 }
@@ -489,7 +507,6 @@ class PHPDS_errorHandler extends PHPDS_dependant
  */
 class PHPDS_backtrace
 {
-
     /**
      * Returns a formatted string with the last line of the backtrace
      *
