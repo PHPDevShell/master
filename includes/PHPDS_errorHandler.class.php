@@ -139,6 +139,9 @@ class PHPDS_errorHandler extends PHPDS_dependant
      */
     public function doHandleException(Exception $ex)
     {
+        // Do an immediate database rollback.
+        if (!empty($this->db->autoTransact)) $this->db->rollBack();
+
         if ($this->I_give_up) return;
 
         if (is_a($ex, 'PHPDS_exception')) {

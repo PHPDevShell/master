@@ -439,9 +439,10 @@ class PHPDS
         $this->stage = 2;
         try {
             // Run template as required.
-            $this->PHPDS_core()->startController();
+            $this->core->startController();
             // Write collected logs to database.
-            $this->PHPDS_user()->logThis();
+            $this->user->logThis();
+            $this->db->endTransaction();
         } catch (Exception $e) {
             $this->PHPDS_errorHandler()->doHandleException($e);
         }
@@ -598,7 +599,7 @@ class PHPDS
     public function PHPDS_db()
     {
         if (empty($this->db)) {
-            $this->db = $this->_factory('PHPDS_pdo');
+            $this->db = $this->_factory($this->configuration['db_connector']);
         }
         return $this->db;
     }
@@ -659,20 +660,6 @@ class PHPDS
             $this->notif = $this->_factory(('PHPDS_notif'));
         }
         return $this->notif;
-    }
-
-    /**
-     * Allow access to the global templating subsystem
-     * One is created if necessary.
-     *
-     * @return self
-     */
-    public function PHPDS_lang()
-    {
-        if (empty($this->lang)) {
-            $this->lang = new PHPDS_array();
-        }
-        return $this->lang;
     }
 
     /**

@@ -20,7 +20,7 @@ class EFCNotStartedException extends Exception {
 };
 
 // Implements a simple File based cache
-class FileCache {
+class PHPDS_fileCache {
     public $config;
     public $enabled = False;
     public $lifetime = 1440;

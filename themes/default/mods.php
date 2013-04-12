@@ -237,16 +237,6 @@ HTML;
         return $HTML;
     }
 
-    public function scriptIcon($src, $title)
-    {
-        $HTML = <<<HTML
-
-			<img class="img" src="{$src}" title="{$title}" alt="{$title}" />
-
-HTML;
-        return $HTML;
-    }
-
     public function scriptHead($text)
     {
         $HTML = "<h2>{$text}</h2>";

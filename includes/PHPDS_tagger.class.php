@@ -159,24 +159,21 @@ class PHPDS_tagger extends PHPDS_dependant
     }
 
     /**
-     * This function creates tag view list with form input fields. Can also store it if available
+     * This function creates tag view list for templates form input fields. Will also store it if available.
      *
      * @param string $object
      * @param string $target
      * @param array  $taggernames   Array of names posted by the tagger form.
      * @param array  $taggervalues  Array of values posted by the tagger form.
      * @param array  $taggerids     Array of updated ids posted by the tagger form.
-     * @return string
+     * @return array
      */
     public function tagArea($object, $target, $taggernames, $taggervalues, $taggerids)
     {
-        $mod = $this->template->mod;
-
         $this->tagMultiple($object, $target, $taggernames, $taggervalues, $taggerids);
         $taglist = $this->getMultiple($object, $target);
-        $tagarea = $mod->taggerArea($taglist, ___('Tag Name'), ___('Tag Value'));
 
-        return $tagarea;
+        return $taglist;
     }
 
     /**
@@ -207,7 +204,7 @@ class PHPDS_tagger extends PHPDS_dependant
      * @param array  $taggernames   Array of names posted by the tagger form.
      * @param array  $taggervalues  Array of values posted by the tagger form.
      * @param array  $taggerids     Array of updated ids posted by the tagger form.
-     * @return int|false
+     * @return int|bool
      */
     public function tagMultiple($object, $target, $taggernames, $taggervalues, $taggerids)
     {

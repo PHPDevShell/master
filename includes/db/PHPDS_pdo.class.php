@@ -2,99 +2,94 @@
 
 /**
  * Lightweight PGO wrapper.
+ * @property PDO $connection[]
  */
 class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
 {
     /**
-     * @var string $dbDSN   A string containing the DSN (Data Source Name)
+     * Property of default or active server to do queries from.
+     * @var string $server
      */
-    public $dbDSN = "";
-
+    public $server = 'master';
     /**
-     * @var string $dbHost   A string containing the hostname
+     * Object of multiple database instances.
+     * @var object $connection
      */
-    public $dbHost = "";
-
+    public $connection;
     /**
-     * @var string $dbName A string containing the database name
+     * Property of default or active server to do queries from.
+     * @var string $instance
      */
-    public $dbName = "";
-
+    public $prefix;
     /**
-     * @var string $dbUsername  A string containing the database username
-     */
-    public $dbUsername = "";
-
-    /**
-     * @var string $dbPassword  A string containing the database password
-     */
-    public $dbPassword = "";
-
-    /**
-     * @var string $dbPrefix A string containing the database prefix
-     */
-    public $dbPrefix = "";
-
-    /**
-     * @var string $dbPersistent A string containing the database persistence setting
-     */
-    public $dbPersistent = false;
-
-    /**
-     * @var string $dbCharset   A string containing the database connection character set.
-     *                          Ignored by pdoConnector since the character set must be
-     *                          specified in the DSN.
-     */
-    public $dbCharset = "";
-
-    /**
-     * @var resource $connection type,  the connection for the mysql connection (as returned by new PDO())
-     */
-    public $connection = null;
-
-    /**
-     * @var resource $result type,  the result resource of a query (as returned by a PDO query)
+     * Result resource of a query (as returned by a PDO query)
+     * @var resource $result
      */
     public $result;
-
     /**
-     * @var int $queryCount The number of queries executed over the lifetime of this instance
+     * The number of queries executed over the lifetime of this instance
+     * @var int $queryCount
      */
     public $queryCount = 0;
-
     /**
-     * @var string $lastQuery The last query that was executed
+     * The last query that was executed
+     * @var string $lastQuery
      */
     public $lastQuery = '';
+    /**
+     * This handy switch allows you to turn off automatic transactions, this is useful for instance
+     * where you want your slave db to only read where not transactions is required.
+     * Transactions will start at the beginning, commit at the end, or rollback on any exception or critical error.
+     * @var array
+     */
+    public $autoTransact = array();
 
     /**
      * Connect to the database server.
      */
     public function connect()
     {
-        // This is just temporary config bind until we have a talk about this.
-        // Remember master/slave read and write. Also talk about multi-db support.
-        $cfg = $this->configuration['databases'][$this->configuration['master_database']];
-        $this->dbDSN = $cfg['dsn'];
-        $this->dbUsername = $cfg['username'];
-        $this->dbPassword = $cfg['password'];
-
         try {
-            if (empty($this->connection)) {
-                // Set the PDO driver options
-                $driver_options = null;
-                if ($this->dbPersistent) $driver_options = array(PDO::ATTR_PERSISTENT => true);
+            if (empty($this->connection[$this->server])) {
+                if (empty($this->configuration['database'][$this->server]))
+                    throw new PHPDS_exception('No database configuration found for server : ' . $this->server);
+
+                $cfg = (object) $this->configuration['database'][$this->server];
+                $this->prefix = $cfg->prefix;
 
                 // Connect to the server and database
-                $this->connection = new PDO($this->dbDSN, $this->dbUsername, $this->dbPassword, $driver_options);
+                $this->connection[$this->server] = new PDO($cfg->dsn, $cfg->username, $cfg->password, $cfg->options);
 
                 // Set the error reporting attribute so that SQL errors also generates exceptions
-                $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $this->connection[$this->server]->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+                if (! empty($cfg->autotransact)) {
+                    $this->autoTransact[$this->server] = true;
+                } else {
+                    $this->autoTransact[$this->server] = false;
+                }
+
+                // Start transaction if required by settings.
+                $this->startTransaction();
             }
         } catch (PDOException $e) {
             $msg = 'Cannot connect to database';
             throw new PHPDS_databaseException($msg, 0, $e);
         }
+    }
+
+    /**
+     * Gives the ability to create an instance of another server configuration, as many can be created as needed.
+     * Config must exist for a particular name or an exception will be throw.
+     *
+     * @param string $server The name of the database configuration a connection or instance should be created.
+     * @return $this
+     */
+    public function in($server)
+    {
+        $this->server = $server;
+        $this->connect();
+        return $this;
     }
 
     /**
@@ -106,9 +101,9 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      */
     public function prepare($sql, $driver_options = array())
     {
-        $sql             = str_replace('/_db_/', $this->dbPrefix, $sql);
+        if ($this->prefix !== '_db_') $sql = str_replace('/_db_/', $this->prefix, $sql);
         $this->lastQuery = $sql;
-        $this->result    = (!empty($sql)) ? $this->connection->prepare($sql, $driver_options) : false;
+        $this->result    = (!empty($sql)) ? $this->connection[$this->server]->prepare($sql, $driver_options) : false;
         return $this->result;
     }
 
@@ -144,7 +139,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
         try {
             if (!empty($sql)) {
                 // Replace the DB prefix.
-                $sql = str_replace('/_db_/', $this->dbPrefix, $sql);
+                if ($this->prefix !== '_db_') $sql = str_replace('/_db_/', $this->prefix, $sql);
 
                 $this->queryCount += 1;
 
@@ -153,6 +148,8 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
                     foreach ($params as $key => $value) {
                         if (gettype($value) == 'string') {
                             $sql = str_replace(":" . $key, "'" . $this->escape($value) . "'", $sql);
+                        } else if (gettype($value) == 'NULL') {
+                            $sql = str_replace(":" . $key, '\'\'', $sql);
                         } else {
                             $sql = str_replace(":" . $key, $this->escape($value), $sql);
                         }
@@ -160,7 +157,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
                 }
 
                 $this->lastQuery = $sql;
-                $this->result    = $this->connection->query($sql);
+                $this->result    = $this->connection[$this->server]->query($sql);
                 return $this->result;
             } else {
                 $this->result = false;
@@ -427,7 +424,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      */
     public function lastId()
     {
-        return $this->connection->lastInsertId();
+        return $this->connection[$this->server]->lastInsertId();
     }
 
     /**
@@ -437,7 +434,11 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      */
     public function startTransaction()
     {
-        return $this->connection->beginTransaction();
+        if ($this->autoTransact[$this->server] && !$this->connection[$this->server]->inTransaction()) {
+            return $this->connection[$this->server]->beginTransaction();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -447,7 +448,16 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      */
     public function endTransaction()
     {
-        return $this->connection->commit();
+        if (!empty($this->autoTransact)) {
+            foreach($this->autoTransact as $server => $autotransact) {
+                if ($autotransact && $this->connection[$server]->inTransaction()) {
+                    $this->connection[$server]->commit();
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -457,7 +467,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      */
     public function commit()
     {
-        return $this->connection->commit();
+        $this->endTransaction();
     }
 
     /**
@@ -467,7 +477,16 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      */
     public function rollBack()
     {
-        return $this->connection->rollBack();
+        if (!empty($this->autoTransact)) {
+            foreach($this->autoTransact as $server => $autotransact) {
+                if ($autotransact && $this->connection[$server]->inTransaction()) {
+                    $this->connection[$server]->rollBack();
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

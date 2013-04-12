@@ -13,9 +13,13 @@ class ReadMe extends PHPDS_controller
      */
     public function execute()
     {
-        $this->db->query('SELECT tag_object FROM _db_core_tags WHERE id = dead');
+        $this->db->query('SELECT tag_object FROM _db_core_tags WHERE tag_object = null');
+        $this->db->in('slave');
+        $this->db->query('SELECT tag_object FROM _db_core_tags WHERE tag_object = null');
+        $this->db->in('master')->query('SELECT tag_object FROM _db_core_tags WHERE tag_object = null');
+        $this->db->in('slave')->query('SELECT tag_object FROM _db_core_tags WHERE tag_object = "wjjt"');
 
-        $this->template->heading(__('Starting with PHPDevShell'));;
+        $this->template->heading(__('Starting with PHPDevShell'));
 
         // Testing Notification Boxes.
         $warning = $this->template->warning('This is a sample warning message, this can be written in log.', 'return', 'nolog');

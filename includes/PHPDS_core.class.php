@@ -179,9 +179,7 @@ class PHPDS_core extends PHPDS_dependant
         $this->setDefaultNodeParams();
         try {
             ob_start();
-            $this->db->startTransaction();
             $this->executeController();
-            $this->db->endTransaction();
 
             if (empty($this->data)) {
                 $this->data = ob_get_clean();
@@ -465,8 +463,6 @@ class PHPDS_core extends PHPDS_dependant
         }
 
         if (isset($this->haltController)) {
-            // Roll back current transaction.
-            $this->db->rollBack();
             switch ($this->haltController['type']) {
                 case 'auth':
                     throw new PHPDS_securityException($this->haltController['message']);

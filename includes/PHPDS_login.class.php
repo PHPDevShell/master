@@ -316,15 +316,14 @@ class PHPDS_login extends PHPDS_dependant
     }
 
     /**
-     * Loads the username & password html mod form.
+     * Build login form information for typical use in a login form.
      *
-     * @return string
+     * @return array
      */
-    public function loginForm()
+    public function loginBuilder()
     {
         $settings      = $this->config->essentialSettings;
         $navigation    = $this->navigation;
-        $template      = $this->template;
         $configuration = $this->configuration;
         $redirect_page = '';
 
@@ -352,30 +351,15 @@ class PHPDS_login extends PHPDS_dependant
             } else {
                 $registration = false;
             }
-
-            // Create the "remember me" checkbox, if needed
-            if (!empty($settings['allow_remember'])) {
-                $remember = ___('Remember Me?');
-            } else {
-                $remember = false;
-            }
-            // Create HTML login field.
-            return $template->mod->loginForm(
-                $post_login_url,
-                ___('Username or Email'),
-                ___('Password'),
-                $redirect_page,
-                $navigation->buildURL($this->lostPasswordPageId),
-                ___('Lost Password?'),
-                $registration,
-                ___('Not registered yet?'),
-                $remember,
-                $template->postValidation(),
-                ___('Account Detail'),
-                $user_name,
-                __('Submit'));
+            // Create HTML login fields.
+            return array(
+                'post_login_url'        => $post_login_url,
+                'redirect_page'         => $redirect_page,
+                'lost_password_page_id' => $navigation->buildURL($this->lostPasswordPageId),
+                'registration'          => $registration,
+                'user_name'             => $user_name);
         }
-        return null;
+        return array();
     }
 
     /**

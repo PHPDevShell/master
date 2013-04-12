@@ -35,6 +35,14 @@ interface PHPDS_dbInterface
 
     public function connect();
     /**
+     * Gives the ability to create an instance of another server configuration, as many can be created as needed.
+     * Config must exist for a particular name or an exception will be throw.
+     *
+     * @param string $server The name of the database configuration a connection or instance should be created.
+     * @return $this
+     */
+    public function in($server);
+    /**
      * Prepares a statement for execution and returns a statement object.
      *
      * @param string $sql            The SQL statement to prepare

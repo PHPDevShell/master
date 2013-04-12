@@ -21,7 +21,7 @@ class EFSNotStartedException extends Exception {
 };
 
 // Implements a standard PHP file based session layer
-class FileSession implements SessionIntf {
+class PHPDS_fileSession implements SessionIntf {
     public $config;
     public $session_id = 0;
     public $old_session_id = 0;

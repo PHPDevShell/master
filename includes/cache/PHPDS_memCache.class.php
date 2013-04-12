@@ -11,19 +11,20 @@
  *
  */
 
-class EAPCNotAvailableException extends Exception {}
-class EAPCNotStartedException extends Exception {
+class EMCNotAvailableException extends Exception {}
+class EMCNotStartedException extends Exception {
     public function __construct($message = "", $code = 0 , $previous = null) {
         parent::__construct($message, $code, $previous);
-        $message = __s("Cache system not started properly. APCCache::start() not called or failed to start cache properly.");
+        $message = __s("Cache system not started properly. MCCache::start() not called or failed to start cache properly.");
     }
 };
 
-// Implements an APC Cache wrapper
-class APCCache {
+// Implements a memcached wrapper
+class PHPDS_memCached {
     public $config;
     public $enabled = False;
     public $lifetime = 1440;
+    public $memcached = null;
     public $test_mode = false;
     public $started = false;
 
@@ -31,14 +32,16 @@ class APCCache {
     * Class constructor.
     * @param array $config Possible Options:
     *   config['cache_enabled']: default = False
-    *   config['cache_apc_lifetime']: default = 1440
+    *   config['cache_mc_server']: default = ''
+    *   config['cache_mc_port']: default = 11211
+    *   config['cache_mc_lifetime']: default = 1440
     */
     public function __construct($config = array()) {
         $this->config = $config;
     }
 
     /**
-    * Starts the cache. Will throw an exception if an invalid configuration was specified.
+    * Starts the cache. Will throw an exception if memcached is not installed or enabled or if an invalid configuration was specified.
     *
     * @return bool Returns true if all ok.
     */
@@ -48,26 +51,28 @@ class APCCache {
         // Is session handling enabled?
         $this->enabled = !isset($this->config['cache_enabled']) ? True: $this->config['cache_enabled'];
 
-        if ($this->enabled) {
+        if ($this->enabled && !$this->memcached) {
             // Set the default lifetime
-            $this->lifetime = empty($this->config['cache_apc_lifetime']) ? 1440: $this->config['cache_apc_lifetime'];
+            $this->lifetime = empty($this->config['cache_mc_lifetime']) ? 1440: $this->config['cache_mc_lifetime'];
 
-            if (extension_loaded('apc') && ini_get('apc.enabled') && !$this->test_mode) {
+            if (!empty($this->config['cache_mc_server']) && extension_loaded('memcached')  && !$this->test_mode) {
+                $port = empty($this->config['cache_mc_port']) ? 11211: $this->config['cache_mc_port'];
+                $this->memcached = new Memcached();
+                $this->memcached->addServer($this->config['cache_mc_server'], $port);
                 $result = true;
                 $this->started = true;
             } else {
-                throw new EAPCNotAvailableException(__s("Unable to start cache system. APC caching is not installed or is currently disabled."));
+                throw new EMCNotAvailableException(__s("Unable to start cache system, no memcached configuration supplied or memcached not installed."));
             }
         } else {
             $result = true;
             $this->started = true;
         }
-
         return $result;
     }
 
     /**
-    * Writes a value to the cache. Note that the key will be converted to a valid key if the function finds any invalid characters.
+    * Writes a value to the cache. Note that the key will be converted to a valid memcached key if the function finds any invalid characters.
     * Values with empty key's will not be written to the cache.
     *
     * @param $key string Name of the key
@@ -77,7 +82,7 @@ class APCCache {
     * @return bool True if the data was written successfully
     */
     public function set($key, $value, $lifetime = null) {
-        if (!$this->started) throw new EAPCNotStartedException();
+        if (!$this->started) throw new EMCNotStartedException();
 
         if ($this->enabled) {
             // Converts the key to a valid memcached key. This is very important since certain characters
@@ -85,9 +90,9 @@ class APCCache {
             $key = preg_replace("/[^A-Za-z0-9]/", "", $key);
             if (!empty($key)) {
                 if (isset($lifetime)) {
-                    return apc_store($key, $value, $lifetime);
+                    return $this->memcached->set($key, $value, time() + $lifetime);
                 } else {
-                    return apc_store($key, $value, $this->lifetime);
+                    return $this->memcached->set($key, $value, time() + $this->lifetime);
                 }
             } else {
                 return false;
@@ -98,7 +103,7 @@ class APCCache {
     }
 
     /**
-    * Writes multiple values to the cache. Note that the keys will be converted to valid keys if the function finds any invalid characters.
+    * Writes multiple values to the cache. Note that the keys will be converted to valid memcached keys if the function finds any invalid characters.
     * Values with empty key's will not be written to the cache.
     *
     * @param $items array Values to store
@@ -107,9 +112,13 @@ class APCCache {
     * @return bool True if the data was written successfully
     */
     public function setMulti($items, $lifetime = null) {
-        if (!$this->started) throw new EAPCNotStartedException();
+        if (!$this->started) throw new EMCNotStartedException();
 
         if ($this->enabled) {
+            $result = false;
+
+            // Converts the keys to valid memcached keys. This is very important since certain characters
+            // such as spaces will hang the PHP client!!! :O
             $tmp_items = array();
             foreach ($items as $key => $value) {
                 $key = preg_replace("/[^A-Za-z0-9]/", "", $key);
@@ -121,35 +130,33 @@ class APCCache {
             // Now store the items
             if (count($tmp_items) > 0) {
                 if (isset($lifetime)) {
-                    return apc_store($tmp_items, null, $lifetime);
+                    $result = $this->memcached->setMulti($tmp_items, time() + $lifetime);
                 } else {
-                    return apc_store($tmp_items, null, $this->lifetime);
+                    $result = $this->memcached->setMulti($tmp_items, time() + $this->lifetime);
                 }
-            } else {
-                return false;
             }
+
+            return $result;
         } else {
             return true;
         }
     }
 
     /**
-    * Reads a value from the cache. Note that the key will be converted to a valid key if the function finds any invalid characters.
-    * Values with empty key's will not be written to the cache.
+    * Reads a value from the cache. Note that the key will be converted to a valid memcached key if the function finds any invalid characters.
     *
     * @param $key string Name of the key
     * @param $default mixed Default value if the key is not set
     * @return mixed Returned data
     */
     public function get($key, $default = null) {
-        if (!$this->started) throw new EAPCNotStartedException();
+        if (!$this->started) throw new EMCNotStartedException();
 
         if ($this->enabled) {
             $key = preg_replace("/[^A-Za-z0-9]/", "", $key);
             if (!empty($key)) {
-                $success = false;
-                $result = apc_fetch($key, $success);
-                if ($success) {
+                $result = $this->memcached->get($key);
+                if ($this->memcached->getResultCode() == Memcached::RES_SUCCESS) {
                     return $result;
                 } else {
                     return $default;
@@ -163,27 +170,37 @@ class APCCache {
     }
 
     /**
-    * Reads multiple values from the cache. Note that the keys will be converted to valid keys if the function finds any invalid characters.
+    * Reads multiple values from the cache. Note that the keys will be converted to valid memcached keys if the function finds any invalid characters.
     *
     * @param $items array Name of the keys and their default values in the format array('key' => 'default')
-    * @return array Returned data, False if failure
+    * @return mixed Returned data, False if failure
     */
     public function getMulti($items) {
-        if (!$this->started) throw new EAPCNotStartedException();
+        if (!$this->started) throw new EMCNotStartedException();
 
         if ($this->enabled) {
-            $result = array();
+            $result = $items;
+
+            // Converts the keys to valid memcached keys. This is very important since certain characters
+            // such as spaces will hang the PHP client!!! :O
+            $tmp_keys = array();
             foreach ($items as $key => $default) {
-                $fixed_key = preg_replace("/[^A-Za-z0-9]/", "", $key);
-                if (!empty($fixed_key)) {
-                    $success = false;
-                    $value = apc_fetch($fixed_key, $success);
-                    if ($success && isset($value)) {
-                        $result[$key] = $value;
-                    } else {
-                        $result[$key] = $default;
-                    }
+                $key = preg_replace("/[^A-Za-z0-9]/", "", $key);
+                if (!empty($key)) {
+                    $tmp_keys[] = $key;
                 }
+            }
+
+            // Now get the items and set the default values for the items that are empty
+            if (count($tmp_keys) > 0) {
+                $results = $this->memcached->getMulti($tmp_keys);
+                if (is_array($results)) {
+                    // Make sure we include the default keys also by merging the defaults array with the
+                    // results array
+                    $result = array_merge($items, $results);
+                }
+            } else {
+                $result = array();
             }
 
             return $result;
@@ -200,17 +217,13 @@ class APCCache {
     * @return int New value of the incremented number
     */
     public function increment($key, $increment_by = 1) {
-        if (!$this->started) throw new EAPCNotStartedException();
+        if (!$this->started) throw new EMCNotStartedException();
 
         if ($this->enabled) {
             $key = preg_replace("/[^A-Za-z0-9]/", "", $key);
             if (!empty($key)) {
-                // APC does not automatically create the key if it doesn't exist. We could use apc_exists() to check
-                // if it exists first, but apc_exists() is only available for PECL APC v3.1.4 and onwards. So we instead
-                // check for the success flag.
-                $success = false;
-                $result = apc_inc($key, $increment_by, $success);
-                if ($success) {
+                $result = $this->memcached->increment($key, $increment_by);
+                if ($this->memcached->getResultCode() == Memcached::RES_SUCCESS) {
                     return $result;
                 } else {
                     $this->set($key, $increment_by);
@@ -225,29 +238,24 @@ class APCCache {
     }
 
     /**
-    * Decrements an integer value in the cache.  For consistency with other cache systems, the value
-    * can not be decremented to a negative value and will return 0 when attempting to do so.
+    * Decrements an integer value in the cache. Value can not go into negatives and will return 0 if it happens.
     *
     * @param $key string Name of the key
     * @param $decrement_by int By how much to decrement the number (default = 1)
     * @return int New value of the decremented number
     */
     public function decrement($key, $decrement_by = 1) {
-        if (!$this->started) throw new EAPCNotStartedException();
+        if (!$this->started) throw new EMCNotStartedException();
 
         if ($this->enabled) {
             $key = preg_replace("/[^A-Za-z0-9]/", "", $key);
             if (!empty($key)) {
-                $result = $this->get($key, 0);
-                if ($result - $decrement_by < 0) {
+                $result = $this->memcached->decrement($key, $decrement_by);
+                if ($this->memcached->getResultCode() == Memcached::RES_SUCCESS) {
+                    return $result;
+                } else {
                     $this->set($key, 0);
                     return 0;
-                } else {
-                    // APC does not automatically create the key if it doesn't exist. We could use apc_exists() to check
-                    // if it exists first, but apc_exists() is only available for PECL APC v3.1.4 and onwards. So we instead
-                    // check for the success flag.
-                    $this->set($key, $result - $decrement_by);
-                    return $result - $decrement_by;
                 }
             } else{
                 return 0;
@@ -264,13 +272,12 @@ class APCCache {
     * @return bool True if successfull
     */
     public function delete($key) {
-        if (!$this->started) throw new EAPCNotStartedException();
+        if (!$this->started) throw new EMCNotStartedException();
 
         if ($this->enabled) {
             $key = preg_replace("/[^A-Za-z0-9]/", "", $key);
             if (!empty($key)) {
-                $result = apc_delete($key);
-                return $result;
+                return $this->memcached->delete($key);
             } else{
                 return false;
             }
@@ -282,16 +289,14 @@ class APCCache {
     /**
     * Completely clears the cache.
     *
-    * @param $delay int Time to wait for the cache is flushed. (Ignored)
+    * @param $delay int Time to wait for the cache is flushed.
     * @return bool True if successfull
     */
     public function flush($delay = 0) {
-        if (!$this->started) throw new EAPCNotStartedException();
+        if (!$this->started) throw new EMCNotStartedException();
 
         if ($this->enabled) {
-            apc_clear_cache();
-            apc_clear_cache('user');
-            apc_clear_cache('opcode');
+            return $this->memcached->flush($delay);
         } else {
             return true;
         }

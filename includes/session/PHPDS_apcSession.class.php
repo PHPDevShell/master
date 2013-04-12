@@ -20,7 +20,7 @@ class EAPCSNotStartedException extends Exception {
 };
 
 // Implements an APC based session layer
-class APCSession implements SessionIntf {
+class PHPDS_apcSession implements SessionIntf {
 
     public $config;
     public $session_id = 0;

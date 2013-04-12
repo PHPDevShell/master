@@ -9,53 +9,74 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Multi-database Configuration                                         ////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-
 /**
  * Main database connection parameters for default connector.
  * If you install a different database connector you might want to.
  *
  * @global array
  */
-$configuration['database']['main'] = array(
+$configuration['database']['master'] = array(
     /**
      * Database DSN (Data Source Name) string. Used for PDO based connections.
-     * @global string
+     * @var string
      */
     'dsn'        => 'mysql:host=localhost;dbname=phpdev',
-
     /**
      * Database Server Username.
-     * @global string
+     * @var string
      */
     'username'   => 'root',
-
     /**
      * Database Server Password.
-     * @global string
+     * @var string
      */
     'password'   => 'root',
-
     /**
      * Default prefix to use in front of table names.
-     * @global string
+     * @var string
      */
     'prefix'     => '_db_',
-
     /**
      * Alternative driver options.
-     * @global string
+     * @var array
      */
-    'options'     => array(PDO::ATTR_PERSISTENT => true)
+    'options'     => array(PDO::ATTR_PERSISTENT => false),
+    /**
+     * This handy switch allows you to turn off automatic transactions, this is useful for instance
+     * where you want your slave db to only read where not transactions is required.
+     * Transactions will start at the beginning, commit at the end, or rollback on any exception or critical error.
+     * @var bool
+     */
+    'autotransact' => true
+
+    /**
+     * NOTE: Some plugins/connectors might require you to enter a separate host, db name, etc.
+     *       This is only be needed of the 'dsn' string is not supported by any other connector type.
+     */
 );
+/**
+ * The class that handles the database connection found inside includes/db/
+ * @global string
+ */
+$configuration['db_connector'] = 'PHPDS_pdo';
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-// Extra Settings, these settings should be changed only when required.        /////////////
+// Extra Settings, these settings should be changed only when required. ////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * The class that handles the database connection found inside includes/session/
+ * @global string
+ */
+$configuration['session_connector'] = 'PHPDS_fileSession';
+/**
+ * The class that handles the database connection found inside includes/session/
+ * @global string
+ */
+$configuration['cache_connector'] = 'PHPDS_fileCache';
 
 /**
  * When you experience a delay in views updating after changes, enable this to correct it.
  * Note disable this in production as it uses allot of memory.
- *
  * @global integer
  */
 $configuration['force_views_compile'] = false;
@@ -311,7 +332,6 @@ $configuration['error']['noticesAreFatal'] = false;
  */
 $configuration['error']['mask'] = E_ALL | E_STRICT; //  you should change to  E_ALL | E_STRICT to be clean
 
-
 /**
  * Enable some development-related features.
  * 1. Change this to true if you would like to set the theme to use the normal css and javascript instead of minified.
@@ -319,6 +339,13 @@ $configuration['error']['mask'] = E_ALL | E_STRICT; //  you should change to  E_
  * @global boolean
  */
 $configuration['development'] = false;
+
+/**
+ * This is the repository the plugin manager will use to check for updates or install new plugins.
+ *
+ * @global string
+ */
+$configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
 
 /**
  * This is all the settings that will be available in $configuration['value'] loaded from database.
@@ -375,10 +402,3 @@ $configuration['preloaded_settings'] = array(
     'spam_assassin',
     'custom_css'
 );
-
-/**
- * This is the repository the plugin manager will use to check for updates or install new plugins.
- *
- * @global string
- */
-$configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';

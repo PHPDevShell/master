@@ -4,26 +4,51 @@
 // Mandatory Settings, these settings must be changed for the system to work correctly. //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-$master_db = &$configuration['databases'][$configuration['master_database']];
+/**
+ * Main database connection parameters for default connector.
+ * If you install a different database connector you might want to.
+ *
+ * @global array
+ */
+$configuration['database']['master'] = array(
+    /**
+     * Database DSN (Data Source Name) string. Used for PDO based connections.
+     * @var string
+     */
+    'dsn'        => 'mysql:host=localhost;dbname=phpdev',
+    /**
+     * Database Server Username.
+     * @var string
+     */
+    'username'   => 'root',
+    /**
+     * Database Server Password.
+     * @var string
+     */
+    'password'   => 'root',
+    /**
+     * Default prefix to use in front of table names.
+     * @var string
+     */
+    'prefix'     => '_db_',
+    /**
+     * Alternative driver options.
+     * @var array
+     */
+    'options'     => array(PDO::ATTR_PERSISTENT => false),
+    /**
+     * This handy switch allows you to turn off automatic transactions, this is useful for instance
+     * where you want your slave db to only read where not transactions is required.
+     * Transactions will start at the beginning, commit at the end, or rollback on any exception or critical error.
+     * @var bool
+     */
+    'autotransact' => true
 
-/**
- * Database details.
- * MySQL database name.
- * @global string
- */
-$master_db['database'] = 'phpdev';
-/**
- * Database details.
- * MySQL database username.
- * @global string
- */
-$master_db['username'] = 'phpdev';
-/**
- * Database details.
- * MySQL database password.
- * @global string
- */
-$master_db['password'] = 'phpdev';
+    /**
+     * NOTE: Some plugins/connectors might require you to enter a separate host, db name, etc.
+     *       This is only be needed of the 'dsn' string is not supported by any other connector type.
+     */
+);
 
 // NONE MANDATORY.
 // You might want to consider changing these setting while you are developing.

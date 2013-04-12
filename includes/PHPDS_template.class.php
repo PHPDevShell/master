@@ -463,34 +463,6 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * This returns/prints an image of the current script running.
-     *
-     * @param boolean|string $return return or print out method
-     * @return string|void
-     */
-    public function outputScriptIcon($return = false)
-    {
-        $navigation = $this->navigation->navigation;
-        // Create script logo ////////////////////////////////////////////////////////////////////////////
-        if (!empty($navigation[$this->configuration['m']]['node_id'])) {
-            $script_logo_url = $this->scriptLogo($navigation[$this->configuration['m']]['node_link'], $navigation[$this->configuration['m']]['plugin']);
-            //////////////////////////////////////////////////////////////////////////////////////////////////
-            $node_name = $navigation[$this->configuration['m']]['node_name'];
-            // Create HTML.
-            $html = $this->mod->scriptIcon($script_logo_url, $node_name);
-            // Return or print to browser.
-            if ($return == false) {
-                print $html;
-            } else if ($return == true) {
-                return $html;
-            }
-        } else {
-            return false;
-        }
-        return null;
-    }
-
-    /**
      * Prints "subnav" to the template system. Intended to be used by the engine.
      */
     public function outputSubnav()
@@ -1129,14 +1101,34 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Executes the login.
+     * Login heading messages.
      *
      * @param bool $return
      * @return string|void
      */
-    public function loginForm($return = false)
+    public function loginFormHeading($return = false)
     {
-        $HTML = $this->login->loginForm($return);
+        $HTML    = '';
+        $message = '';
+
+        // Create headings for login.
+        if (!empty($this->core->haltController)) {
+            $this->heading(___('Authentication Required'));
+        } else {
+            // Get some default settings.
+            $settings = $this->config->getSettings(array('login_message'));
+
+            // Check if we have a login message to display.
+            if (!empty($settings['login_message'])) {
+                $login_message = $this->message(___($settings['login_message']), 'return');
+            } else {
+                $login_message = '';
+            }
+
+            $this->heading(___('Login'));
+            $HTML .= $login_message;
+            $HTML .= $message;
+        }
 
         if ($return == false) {
             print $HTML;
@@ -1144,6 +1136,56 @@ class PHPDS_template extends PHPDS_dependant
             return $HTML;
         }
         return null;
+    }
+
+    /**
+     * Executes the login html stack.
+     *
+     * @param bool $return
+     * @return string|void
+     */
+    public function loginForm($return = false)
+    {
+        $login_ = $this->login->loginBuilder();
+        $HTML = $this->mod->loginForm(
+            $login_['post_login_url'],
+            ___('Username or Email'),
+            ___('Password'),
+            $login_['redirect_page'],
+            $login_['lost_password_page_id'],
+            ___('Lost Password?'),
+            $login_['registration'],
+            ___('Not registered yet?'),
+            ___('Remember Me?'),
+            $this->postValidation(),
+            ___('Account Detail'),
+            $login_['user_name'],
+            __('Submit'));
+
+        if ($return == false) {
+            print $HTML;
+        } else {
+            return $HTML;
+        }
+        return null;
+    }
+
+    /**
+     * This function creates tag view list with form input fields. Can also store it if available.
+     *
+     * @param string $object
+     * @param string $target
+     * @param array  $taggernames   Array of names posted by the tagger form.
+     * @param array  $taggervalues  Array of values posted by the tagger form.
+     * @param array  $taggerids     Array of updated ids posted by the tagger form.
+     * @return array
+     */
+    public function tagArea($object, $target, $taggernames, $taggervalues, $taggerids)
+    {
+        $taglist = $this->tagger->tagArea($object, $target, $taggernames, $taggervalues, $taggerids);
+        $tagview = $this->mod->taggerArea($taglist, ___('Tag Name'), ___('Tag Value'));
+
+        return $tagview;
     }
 
     /**
@@ -1168,7 +1210,7 @@ class PHPDS_template extends PHPDS_dependant
                 $mod->role($configuration['user_role_name']),
                 $nav->navigation);
         } else {
-            $HTML = $this->login->loginForm($return);
+            $HTML = $this->loginForm($return);
         }
 
         if ($return == false) {
