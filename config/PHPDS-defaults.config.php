@@ -63,6 +63,13 @@ $configuration['db_connector'] = 'PHPDS_pdo';
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Extra Settings, these settings should be changed only when required. ////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
+
+$configuration['driver'] = array(
+    'db' => 'PHPDS_pdo',
+    'cache' => 'PHPDS_fileCache',
+    'session' => 'PHPDS_fileSession'
+);
+
 /**
  * The class that handles the database connection found inside includes/session/
  * @global string
@@ -401,4 +408,27 @@ $configuration['preloaded_settings'] = array(
     'node_behaviour',
     'spam_assassin',
     'custom_css'
+);
+
+/**
+ * Allows a developer to override/extend a core class with his own.
+ * Add extending class inside includes/extend/ folder and register its name by defining a value (NOT KEY) below.
+ * e.g  If PHPDS_auth will be extended by PHPDS_OAuth2 make sure you have includes/extend/PHPDS_OAuth2.class.php
+ *      The class name should then be "class PHPDS_OAuth2 extends PHPDS_auth {}"
+ *
+ * @global array
+ */
+$configuration['extend'] = array(
+    'auth'         => 'PHPDS_auth',
+    'config'       => 'PHPDS_config',
+    'core'         => 'PHPDS_core',
+    'debug'        => 'PHPDS_debug',
+    'errorHandler' => 'PHPDS_errorHandler',
+    'model'        => 'PHPDS_model',
+    'navigation'   => 'PHPDS_navigation',
+    'notif'        => 'PHPDS_notif',
+    'tagger'       => 'PHPDS_tagger',
+    'template'     => 'PHPDS_template',
+    'user'         => 'PHPDS_user',
+    'view'         => 'PHPDS_view'
 );

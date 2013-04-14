@@ -30,7 +30,6 @@ plugins/*
 !plugins/Mustache/
 !plugins/NodeHelper/
 !plugins/PluginManager/
-!plugins/index.php
 !plugins/repository.json
 
 write/cache/*
