@@ -24,6 +24,14 @@ config/*
 !config/PHPDS-defaults.config.php
 !config/single-site.config.php.RENAME
 
+plugins/*
+!plugins/About/
+!plugins/LightModels/
+!plugins/Mustache/
+!plugins/NodeHelper/
+!plugins/PluginManager/
+!plugins/index.php
+!plugins/repository.json
 
 write/cache/*
 !write/cache/index.php
