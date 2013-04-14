@@ -45,7 +45,7 @@ class PHPDS
      *
      * @var object
      */
-    protected $login;
+    protected $auth;
     /**
      * Core cache object.
      *
@@ -328,8 +328,8 @@ class PHPDS
         $this->copySettings($this->configuration['preloaded_settings']); ///////////////////
         ////////////////////////////////////////////////////////////////////////////////////
 
-        // Prepares login. /////////////////////////////////////////////////////////////////
-        $this->PHPDS_user()->controlLogin(); ///////////////////////////////////////////////
+        // Prepare auth. ///////////////////////////////////////////////////////////////////
+        $this->PHPDS_auth()->controller(); /////////////////////////////////////////////////
 
         // Asign locale to use. ////////////////////////////////////////////////////////////
         $this->configuration['locale'] = $this->configuration['user_locale']; //////////////
@@ -523,14 +523,14 @@ class PHPDS
      * Allow access to the global config subsystem
      * One is created if necessary.
      *
-     * @return PHPDS_login
+     * @return PHPDS_auth
      */
-    public function PHPDS_login()
+    public function PHPDS_auth()
     {
-        if (empty($this->login)) {
-            $this->login = $this->_factory('PHPDS_login');
+        if (empty($this->auth)) {
+            $this->auth = $this->_factory('PHPDS_auth');
         }
-        return $this->login;
+        return $this->auth;
     }
 
     /**
@@ -792,16 +792,16 @@ class PHPDS
  * This is a base class for PHPDS subsystems
  * It allows dependency injection and dependency fetching; also mimics multiple inheritance;
  *
- * @property PHPDS_core        $core
- * @property PHPDS_config      $config
- * @property PHPDS_cache       $cache
- * @property PHPDS_navigation  $navigation
- * @property PHPDS_dbInterface $db
- * @property PHPDS_template    $template
- * @property PHPDS_tagger      $tagger
- * @property PHPDS_user        $user
- * @property PHPDS_notif       $notif
- * @property PHPDS_login       $login
+ * @property PHPDS_core             $core
+ * @property PHPDS_config           $config
+ * @property PHPDS_cache            $cache
+ * @property PHPDS_navigation       $navigation
+ * @property PHPDS_dbInterface      $db
+ * @property PHPDS_template         $template
+ * @property PHPDS_tagger           $tagger
+ * @property PHPDS_user             $user
+ * @property PHPDS_notif            $notif
+ * @property PHPDS_auth             $auth
  *
  */
 class PHPDS_dependant

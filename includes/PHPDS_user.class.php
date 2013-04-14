@@ -24,12 +24,14 @@ class PHPDS_user extends PHPDS_dependant
     public function getUser($user_id)
     {
         $sql = "
-            SELECT
-			        t1.user_id, t1.user_display_name, t1.user_password, t1.user_name,
-			        t1.user_email, t1.user_role, t1.language, t1.timezone AS user_timezone, t1.region
-		    FROM    _db_core_users AS t1
+            SELECT    t1.user_id, t1.user_display_name, t1.user_password, t1.user_name,
+			          t1.user_email, t1.user_role, t1.language, t1.timezone AS user_timezone, t1.region,
+			          t2.user_role_name
+		    FROM      _db_core_users AS t1
+		    LEFT JOIN _db_core_user_roles AS t2
+		    ON        t1.user_role = t2.user_role_id
 		    WHERE
-			        t1.user_id = :user_id
+			          t1.user_id = :user_id
         ";
         return $this->db->queryFetchAssocRow($sql, array('user_id' => $user_id));
     }
@@ -342,44 +344,6 @@ class PHPDS_user extends PHPDS_dependant
         } else {
             return false;
         }
-    }
-
-    /**
-     * Simply writes user session data.
-     */
-    public function userConfig()
-    {
-        $conf = $this->configuration;
-
-        $conf['user_id']           = empty($_SESSION['user_id'])                ? 0
-            : $_SESSION['user_id'];
-        $conf['user_name']         = empty($_SESSION['user_name'])              ? ''
-            : $_SESSION['user_name'];
-        $conf['user_display_name'] = empty($_SESSION['user_display_name'])      ? ''
-            : $_SESSION['user_display_name'];
-        $conf['user_role']         = empty($_SESSION['user_role'])              ? 0
-            : $_SESSION['user_role'];
-        $conf['user_email']        = empty($_SESSION['user_email'])             ? ''
-            : $_SESSION['user_email'];
-        $conf['user_language']     = empty($_SESSION['user_language'])          ? ''
-            : $_SESSION['user_language'];
-        $conf['user_region']       = empty($_SESSION['user_region'])            ? ''
-            : $_SESSION['user_region'];
-        $conf['user_timezone']     = empty($_SESSION['user_timezone'])          ? ''
-            : $_SESSION['user_timezone'];
-        $conf['user_locale']       = empty($_SESSION['user_locale'])            ? $this->core->formatLocale()
-            : $_SESSION['user_locale'];
-    }
-
-    /**
-     * Actual processing of login page.
-     */
-    public function controlLogin()
-    {
-        if (!isset($_SESSION['user_id']) || !empty($_POST['login']) || !empty($_REQUEST['logout'])) {
-            $this->login->controlLogin();
-        }
-        $this->userConfig();
     }
 
     /**

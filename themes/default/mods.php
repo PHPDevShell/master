@@ -168,7 +168,7 @@ HTML;
 							<a href="{$lost_password}" data-via-ajax="page">{$lost_password_text}</a><br>
 							{$not_registered_yet}
 						</p>
-						<input type="hidden" name="login" value="login">
+						<input type="hidden" name="PHPDS_login" value="PHPDS_login">
 						{$security}
 					</fieldset>
 				</form>

@@ -6,7 +6,7 @@
  *
  * Note: it does'nt in any deal with template or GUI, the auth plugin must do that
  */
-class PHPDS_login extends PHPDS_dependant
+class PHPDS_auth extends PHPDS_dependant
 {
     /**
      * The original login page.
@@ -27,12 +27,41 @@ class PHPDS_login extends PHPDS_dependant
     public $lostPasswordPageId = 'lost-password';
 
     /**
+     * Controller that will always run from core to check any login attempt or restore exisiting cookie.
+     */
+    public function controller()
+    {
+        if (!isset($_SESSION['user_id']) || !empty($_POST['PHPDS_login']) || !empty($_REQUEST['logout'])) {
+            if (!empty(
+            $this->configuration['allow_remember']) && empty($_SESSION['user_id']) &&
+                isset($_COOKIE['PHPDS_auth']) && empty($_REQUEST['logout']) && empty($_POST['PHPDS_login'])
+            ) {
+                $this->lookupCookie($_COOKIE['PHPDS_auth']);
+            } else {
+                if (!empty($_REQUEST['logout']) && $this->isUserSession()) {
+                    $this->clearSession(true);
+                    $this->createGuestSession();
+                } else {
+                    if (!empty($_POST['PHPDS_login'])) {
+                        $user_name     = empty($_POST['user_name']) ? '' : $_POST['user_name'];
+                        $user_password = empty($_POST['user_password']) ? '' : $_POST['user_password'];
+                        $this->processRequest($user_name, $user_password);
+                    } else {
+                        $this->createGuestSession();
+                    }
+                }
+            }
+        }
+        $this->storeSession();
+    }
+
+    /**
      * Search the database for the given credentials from a persistent cookie
      *
      * @param string $cookie
      * @return array or false the user record
      */
-    public function lookupCookieLogin($cookie)
+    private function lookupCookie($cookie)
     {
         $id_crypt   = substr($cookie, 0, 6);
         $pass_crypt = substr($cookie, 6, 32);
@@ -40,25 +69,23 @@ class PHPDS_login extends PHPDS_dependant
         $user_id    = 0;
 
         $found = false;
-
         $persistent_array = $this->selectCookie($id_crypt);
 
         if (!empty($persistent_array)) {
-            $persistent_item = end($persistent_array);
-            if ($pass_crypt == $persistent_item['pass_crypt']) {
-                $cookie_id = $persistent_item['cookie_id'];
-                $user_id   = $persistent_item['user_id'];
+            if (!empty($persistent_array['pass_crypt']) && ($pass_crypt == $persistent_array['pass_crypt'])) {
+                $cookie_id = $persistent_array['cookie_id'];
+                $user_id   = $persistent_array['user_id'];
                 $found     = true;
             }
         }
 
         if (!empty($found)) {
             $this->deleteCookie($cookie_id);
-            $this->setUserCookie($user_id);
+            $this->setCookie($user_id);
             $user_array = $this->user->getUser($user_id);
-            $this->setLogin($user_array, "Persistent Login");
+            $this->createUserSession($user_array, "Persistent Login");
         } else {
-            $this->setGuest();
+            $this->createGuestSession();
             return false;
         }
         return false;
@@ -70,7 +97,7 @@ class PHPDS_login extends PHPDS_dependant
      * @param string $id_crypt
      * @return array
      */
-    public function selectCookie($id_crypt)
+    private function selectCookie($id_crypt)
     {
         $sql = "
             SELECT  user_id, cookie_id, pass_crypt
@@ -87,7 +114,7 @@ class PHPDS_login extends PHPDS_dependant
      * @param int $user_id
      * @return array or false the user record
      */
-    public function setUserCookie($user_id)
+    private function setCookie($user_id)
     {
         $sql = "
           INSERT INTO _db_core_session (user_id, id_crypt, pass_crypt, timestamp)
@@ -100,7 +127,7 @@ class PHPDS_login extends PHPDS_dependant
         if ($this->db->queryAffects($sql, array(
             'user_id' => $user_id, 'id_crypt' => $id_crypt, 'pass_crypt' => $pass_crypt, 'timestamp' => $timestamp
         ))) {
-            return setcookie('pdspc', $id_crypt . $pass_crypt, $timestamp + 63113852);
+            return setcookie('PHPDS_auth', $id_crypt . $pass_crypt, $timestamp + 63113852);
         } else {
             return false;
         }
@@ -112,7 +139,7 @@ class PHPDS_login extends PHPDS_dependant
      * @param int $cookie_id
      * @return int
      */
-    public function deleteCookie($cookie_id)
+    private function deleteCookie($cookie_id)
     {
         $sql = "
             DELETE FROM _db_core_session
@@ -128,19 +155,19 @@ class PHPDS_login extends PHPDS_dependant
      * @param int $user_id
      * @return boolean
      */
-    public function clearUserCookie($user_id)
+    private function clearCookie($user_id)
     {
         $sql = "
             DELETE FROM _db_core_session
             WHERE       (id_crypt = :id_crypt AND user_id = :user_id)
         ";
 
-        if (!empty($_COOKIE['pdspc'])) {
-            $id_crypt = substr($_COOKIE['pdspc'], 0, 6);
+        if (!empty($_COOKIE['PHPDS_auth'])) {
+            $id_crypt = substr($_COOKIE['PHPDS_auth'], 0, 6);
 
             if ($this->db->queryAffects($sql, array('id_crypt' => $id_crypt, 'user_id' => $user_id)))
             {
-                return setcookie('pdspc', 'false', 0);
+                return setcookie('PHPDS_auth', 'false', 0);
             } else {
                 return false;
             }
@@ -149,28 +176,30 @@ class PHPDS_login extends PHPDS_dependant
     }
 
     /**
-     * Check what to do with login action.
+     * Simply writes user session data.
      */
-    public function controlLogin()
+    private function storeSession()
     {
-        if (!empty(
-            $this->configuration['allow_remember']) && empty($_SESSION['user_id']) &&
-            isset($_COOKIE['pdspc']) && empty($_REQUEST['logout']) && empty($_POST['login'])) {
-            $this->lookupCookieLogin($_COOKIE['pdspc']);
-        } else {
-            if (!empty($_REQUEST['logout']) && $this->isLoggedIn()) {
-                $this->clearLogin(true);
-                $this->setGuest();
-            } else {
-                if (!empty($_POST['login'])) {
-                    $user_name     = empty($_POST['user_name']) ? '' : $_POST['user_name'];
-                    $user_password = empty($_POST['user_password']) ? '' : $_POST['user_password'];
-                    $this->processLogin($user_name, $user_password);
-                } else {
-                    $this->setGuest();
-                }
-            }
-        }
+        $conf = $this->configuration;
+
+        $conf['user_id']           = empty($_SESSION['user_id']) ? 0
+            : $_SESSION['user_id'];
+        $conf['user_name']         = empty($_SESSION['user_name']) ? ''
+            : $_SESSION['user_name'];
+        $conf['user_display_name'] = empty($_SESSION['user_display_name']) ? ''
+            : $_SESSION['user_display_name'];
+        $conf['user_role']         = empty($_SESSION['user_role']) ? 0
+            : $_SESSION['user_role'];
+        $conf['user_email']        = empty($_SESSION['user_email']) ? ''
+            : $_SESSION['user_email'];
+        $conf['user_language']     = empty($_SESSION['user_language']) ? ''
+            : $_SESSION['user_language'];
+        $conf['user_region']       = empty($_SESSION['user_region']) ? ''
+            : $_SESSION['user_region'];
+        $conf['user_timezone']     = empty($_SESSION['user_timezone']) ? ''
+            : $_SESSION['user_timezone'];
+        $conf['user_locale']       = empty($_SESSION['user_locale']) ? $this->core->formatLocale()
+            : $_SESSION['user_locale'];
     }
 
     /**
@@ -179,7 +208,7 @@ class PHPDS_login extends PHPDS_dependant
      * @param array $select_user_array
      * @param bool $persistent
      */
-    public function setLogin($select_user_array, $persistent = false)
+    private function createUserSession($select_user_array, $persistent = false)
     {
         $conf = $this->configuration;
         $user = $this->user;
@@ -234,41 +263,7 @@ class PHPDS_login extends PHPDS_dependant
                                           'logged_by' => $user_display_name_db, 'log_description' => $persistent);
             }
         }
-
         $this->cache->cacheClear();
-    }
-
-    /**
-     * Destroys login session data.
-     *
-     * @param bool $set_guest
-     */
-    public function clearLogin($set_guest = true)
-    {
-        $user = $this->user;
-
-        $this->clearUserCookie($_SESSION['user_id']);
-
-        $user->logArray[] = array('log_type' => 5, 'log_description' => ___('Logged-out'));
-
-        unset($_SESSION['user_email']);
-        unset($_SESSION['user_id']);
-        unset($_SESSION['user_name']);
-        unset($_SESSION['user_role']);
-        unset($_SESSION['user_display_name']);
-        unset($_SESSION['user_role_name']);
-        unset($_SESSION['user_language']);
-        unset($_SESSION['user_timezone']);
-        unset($_SESSION['user_region']);
-        unset($_SESSION['user_locale']);
-
-        $this->cache->cacheClear();
-
-        $_SESSION = array();
-
-        session_destroy();
-
-        if ($set_guest) $this->setGuest();
     }
 
     /**
@@ -276,7 +271,7 @@ class PHPDS_login extends PHPDS_dependant
      *
      * @return string
      */
-    public function setGuest()
+    private function createGuestSession()
     {
         $conf = $this->configuration;
 
@@ -302,11 +297,44 @@ class PHPDS_login extends PHPDS_dependant
     }
 
     /**
+     * Destroys login session data.
+     *
+     * @param bool $set_guest
+     */
+    private function clearSession($set_guest = true)
+    {
+        $user = $this->user;
+
+        $this->clearCookie($_SESSION['user_id']);
+
+        $user->logArray[] = array('log_type' => 5, 'log_description' => ___('Logged-out'));
+
+        unset($_SESSION['user_email']);
+        unset($_SESSION['user_id']);
+        unset($_SESSION['user_name']);
+        unset($_SESSION['user_role']);
+        unset($_SESSION['user_display_name']);
+        unset($_SESSION['user_role_name']);
+        unset($_SESSION['user_language']);
+        unset($_SESSION['user_timezone']);
+        unset($_SESSION['user_region']);
+        unset($_SESSION['user_locale']);
+
+        $this->cache->cacheClear();
+
+        $_SESSION = array();
+
+        session_destroy();
+
+        if ($set_guest) $this->createGuestSession();
+    }
+
+    /**
      * Check is user is logged in, return false if not.
      *
      * @return boolean
      */
-    public function isLoggedIn()
+    private function isUserSession()
     {
         if (empty($_SESSION['user_id'])) {
             return false;
@@ -316,11 +344,11 @@ class PHPDS_login extends PHPDS_dependant
     }
 
     /**
-     * Build login form information for typical use in a login form.
+     * Build request for typical use in a login form.
      *
      * @return array
      */
-    public function loginBuilder()
+    public function buildRequest()
     {
         $settings      = $this->config->essentialSettings;
         $navigation    = $this->navigation;
@@ -330,18 +358,16 @@ class PHPDS_login extends PHPDS_dependant
         if (empty($configuration['m']))
             $configuration['m'] = $this->loginPageId;
 
-        // Determine page to post form too.
+        // Determine page url to post form to.
         if ($configuration['m'] == $this->loginPageId) {
             $post_login_url = $navigation->buildURL($settings['redirect_login']);
         } else {
             $post_login_url = $_SERVER['REQUEST_URI'];
         }
 
-        // Assign reusable username.
         $user_name = (empty($_POST['user_name'])) ? '' : $_POST['user_name'];
 
-        // Determine what to show as per request.
-        if (!$this->isLoggedIn()) {
+        if (!$this->isUserSession()) {
             // Check if not registered link should appear.
             if ((boolean)$settings['allow_registration'] == true) {
                 // Check if we have a custom registration page.
@@ -349,9 +375,8 @@ class PHPDS_login extends PHPDS_dependant
                     $navigation->buildURL($settings['registration_page']) :
                     $navigation->buildURL($this->registrationPageId);
             } else {
-                $registration = false;
+                $registration = null;
             }
-            // Create HTML login fields.
             return array(
                 'post_login_url'        => $post_login_url,
                 'redirect_page'         => $redirect_page,
@@ -369,20 +394,17 @@ class PHPDS_login extends PHPDS_dependant
      * @param string $password
      * @return void
      */
-    public function processLogin($username, $password)
+    private function processRequest($username, $password)
     {
         if (empty($username) || empty($password)) {
             $this->template->notice(___('Provide username and password.'));
         } else {
             if ($this->lookupUsername($username)) {
-                // Simple method to lookup user by providing username and password.
                 $user_array = $this->lookupUser($username, $password);
-
-                // Check if we have a login to process.
                 if (!empty($user_array)) {
-                    $this->setLogin($user_array);
+                    $this->createUserSession($user_array);
                     if ($this->config->essentialSettings['allow_remember'] && isset($_POST['user_remember'])) {
-                        $this->setUserCookie($user_array['user_id']);
+                        $this->setCookie($user_array['user_id']);
                     }
                 } else {
                     $this->core->haltController = array('type' => 'auth', 'message' => ___('Incorrect Password'));
@@ -409,7 +431,7 @@ class PHPDS_login extends PHPDS_dependant
      * @param string $password
      * @return array or false the user record
      */
-    public function lookupUser($username, $password = '')
+    private function lookupUser($username, $password = '')
     {
         $sql = "
             SELECT      t1.user_id, t1.user_display_name, t1.user_password, t1.user_name,
@@ -422,7 +444,7 @@ class PHPDS_login extends PHPDS_dependant
 		    AND         IF(:user_password = '*', 1, t1.user_password = :user_password)
         ";
 
-        $password = is_null($password) ? '*' : PU_hashPassword($password);
+        $password = PU_hashPassword($password);
         return $this->db->queryFetchAssocRow($sql, array('user_name' => $username, 'user_password' => $password));
     }
 
@@ -432,7 +454,7 @@ class PHPDS_login extends PHPDS_dependant
      * @param string $username
      * @return string
      */
-    public function lookupUsername($username)
+    private function lookupUsername($username)
     {
         $sql = "
             SELECT  t1.user_id

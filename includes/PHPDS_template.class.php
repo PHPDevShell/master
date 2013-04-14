@@ -1146,7 +1146,7 @@ class PHPDS_template extends PHPDS_dependant
      */
     public function loginForm($return = false)
     {
-        $login_ = $this->login->loginBuilder();
+        $login_ = $this->auth->buildRequest();
         $HTML = $this->mod->loginForm(
             $login_['post_login_url'],
             ___('Username or Email'),
