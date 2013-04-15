@@ -61,7 +61,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param string $cookie
      * @return array or false the user record
      */
-    private function lookupCookie($cookie)
+    protected function lookupCookie($cookie)
     {
         $id_crypt   = substr($cookie, 0, 6);
         $pass_crypt = substr($cookie, 6, 32);
@@ -97,7 +97,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param string $id_crypt
      * @return array
      */
-    private function selectCookie($id_crypt)
+    protected function selectCookie($id_crypt)
     {
         $sql = "
             SELECT  user_id, cookie_id, pass_crypt
@@ -114,7 +114,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param int $user_id
      * @return array or false the user record
      */
-    private function setCookie($user_id)
+    protected function setCookie($user_id)
     {
         $sql = "
           INSERT INTO _db_core_session (user_id, id_crypt, pass_crypt, timestamp)
@@ -139,7 +139,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param int $cookie_id
      * @return int
      */
-    private function deleteCookie($cookie_id)
+    protected function deleteCookie($cookie_id)
     {
         $sql = "
             DELETE FROM _db_core_session
@@ -155,7 +155,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param int $user_id
      * @return boolean
      */
-    private function clearCookie($user_id)
+    protected function clearCookie($user_id)
     {
         $sql = "
             DELETE FROM _db_core_session
@@ -180,7 +180,7 @@ class PHPDS_auth extends PHPDS_dependant
      *
      * @return void
      */
-    private function storeSession()
+    protected function storeSession()
     {
         $conf = $this->configuration;
 
@@ -211,7 +211,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param bool $persistent
      * @return void
      */
-    private function createUserSession($select_user_array, $persistent = false)
+    protected function createUserSession($select_user_array, $persistent = false)
     {
         $conf = $this->configuration;
         $user = $this->user;
@@ -274,7 +274,7 @@ class PHPDS_auth extends PHPDS_dependant
      *
      * @return string
      */
-    private function createGuestSession()
+    protected function createGuestSession()
     {
         $conf = $this->configuration;
 
@@ -305,7 +305,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param bool $set_guest
      * @return void
      */
-    private function clearSession($set_guest = true)
+    protected function clearSession($set_guest = true)
     {
         $user = $this->user;
 
@@ -338,7 +338,7 @@ class PHPDS_auth extends PHPDS_dependant
      *
      * @return boolean
      */
-    private function isUserSession()
+    protected function isUserSession()
     {
         if (empty($_SESSION['user_id'])) {
             return false;
@@ -399,7 +399,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param string $password
      * @return void
      */
-    private function processRequest($username, $password)
+    protected function processRequest($username, $password)
     {
         if (empty($username) || empty($password)) {
             $this->template->notice(___('Provide username and password.'));
@@ -435,7 +435,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param string $password
      * @return array or false the user record
      */
-    private function lookupUser($username, $password = '')
+    protected function lookupUser($username, $password = '')
     {
         $sql = "
             SELECT      t1.user_id, t1.user_display_name, t1.user_password, t1.user_name,
@@ -458,7 +458,7 @@ class PHPDS_auth extends PHPDS_dependant
      * @param string $username
      * @return string
      */
-    private function lookupUsername($username)
+    protected function lookupUsername($username)
     {
         $sql = "
             SELECT  t1.user_id

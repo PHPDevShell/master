@@ -21,6 +21,30 @@ class PHPDS_config extends PHPDS_dependant
     public $registeredClasses;
 
     /**
+     * Returns a value of a specific key or whole config set if no key are given.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function get($key=null)
+    {
+        if (!isset($key)) return $this->configuration;
+        return $this->configuration->{$key};
+    }
+
+    /**
+     * Temporarily override current settings key value.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return mixed
+     */
+    public function set($key, $value=null)
+    {
+        return $this->configuration->{$key} = $value;
+    }
+
+    /**
      * Stores registered classed into cache and public registry variable.
      *
      * @return array|mixed
@@ -30,7 +54,7 @@ class PHPDS_config extends PHPDS_dependant
         $cache = $this->cache;
 
         if ($cache->cacheEmpty('registeredClasses')) {
-            $pluginR = $this->config->readClassRegistry();
+            $pluginR = $this->readClassRegistry();
             if (!empty($pluginR)) {
                 foreach ($pluginR as $p) {
                     $fileName  = '';
@@ -137,7 +161,7 @@ class PHPDS_config extends PHPDS_dependant
         if ($custom_prefix == '*') {
             $prefix = '%%';
         } else {
-            $prefix = $this->config->settingsPrefix($custom_prefix);
+            $prefix = $this->settingsPrefix($custom_prefix);
         }
 
         if (is_array($settings_required)) {
@@ -195,12 +219,10 @@ class PHPDS_config extends PHPDS_dependant
 
         $this->db->prepare($sql);
 
-        $config = $this->config;
-
         if ($custom_prefix == '*') {
             $prefix = '%';
         } else {
-            $prefix = $config->settingsPrefix($custom_prefix);
+            $prefix = $this->settingsPrefix($custom_prefix);
         }
 
         if (is_array($write_settings)) {
@@ -244,10 +266,12 @@ class PHPDS_config extends PHPDS_dependant
             WHERE       setting_id
         ";
 
+        $delete_settings = null;
+
         if ($custom_prefix == '*') {
             $prefix = '%%';
         } else {
-            $prefix = $this->config->settingsPrefix($custom_prefix);
+            $prefix = $this->settingsPrefix($custom_prefix);
         }
 
         $db_delete_query = false;
@@ -292,9 +316,11 @@ class PHPDS_config extends PHPDS_dependant
                     'version'       => $installed_plugins_array['version']
                 );
             }
-            $this->pluginsInstalled = $plugins_installed;
 
-            $this->cache->cacheWrite('plugins_installed', $plugins_installed);
+            if (! empty($plugins_installed)) {
+                $this->pluginsInstalled = $plugins_installed;
+                $this->cache->cacheWrite('plugins_installed', $plugins_installed);
+            }
         } else {
             $this->pluginsInstalled = $this->cache->cacheRead('plugins_installed');
         }

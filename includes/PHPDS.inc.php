@@ -939,8 +939,6 @@ class PHPDS_dependant
             }
             // if the parent doesn't provide the field, then it's ours
             $this->{$name} = $value;
-            # Below breaks code.
-            #throw new PHPDS_exception('Trying to set non-existent (or maybe masked) field "'.$name.'"');
         } catch (Exception $e) {
             throw new PHPDS_exception("Can't set any '$name' (maybe dependancy is wrong)", 0, $e);
         }

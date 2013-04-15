@@ -68,7 +68,7 @@ class PHPDS_navigation extends PHPDS_dependant
      * @param array $all_user_roles call all user roles.
      * @throws PHPDS_exception
      */
-    private function readNodeTable($all_user_roles)
+    protected function readNodeTable($all_user_roles)
     {
         $sql = "
             SELECT DISTINCT SQL_CACHE
@@ -283,7 +283,7 @@ class PHPDS_navigation extends PHPDS_dependant
      *
      * @param integer
      */
-    private function callbackParentItem($node_id_)
+    protected function callbackParentItem($node_id_)
     {
         $nav = $this->navigation;
         if (!empty($nav[$node_id_]['parent_node_id'])) {
@@ -600,13 +600,13 @@ class PHPDS_navigation extends PHPDS_dependant
     {
         $navigation = $this->navigation;
 
-        // Assign extention value.
+        // Assign extension value.
         $extend_more = $navigation[$extended_node_id]['extend'];
         // Check if we should look higher up for a working node id and prevent endless looping.
         if (!empty($extend_more) && ($extended_node_id != $navigation[$extend_more]['extend'])) {
             $this->extendNodeLoop($extend_more);
         } else {
-            // Final check, to see if we had an endless loop that still has an extention.
+            // Final check, to see if we had an endless loop that still has an extension.
             if (!empty($navigation[$extended_node_id]['extend'])) {
                 if (!empty($navigation[$extended_node_id]['parent_node_id'])) {
                     // Lets look even higher up now that we jumped the endless loop.
