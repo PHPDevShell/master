@@ -9,25 +9,25 @@
 class PHPDS_auth extends PHPDS_dependant
 {
     /**
-     * The original login page.
-     * @var int
+     * The default login node id.
+     * @var string
      */
     public $loginPageId = 'login';
-
     /**
-     * The original registration page.
-     * @var int
+     * The default registration node id.
+     * @var string
      */
     public $registrationPageId = 'register-account';
-
     /**
-     * The original lost password page.
+     * The default lost password node id.
      * @var int
      */
     public $lostPasswordPageId = 'lost-password';
 
     /**
-     * Controller that will always run from core to check any login attempt or restore exisiting cookie.
+     * Controller that will always run from core to check any login attempt or restore existing cookie authentication.
+     *
+     * @return void
      */
     public function controller()
     {
@@ -56,7 +56,7 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Search the database for the given credentials from a persistent cookie
+     * Search the database for the given auth credentials from a persistent cookie.
      *
      * @param string $cookie
      * @return array or false the user record
@@ -150,7 +150,7 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Delete the current persistent cookie from the db and kill the cookie on the user end.
+     * Delete the current persistent cookie from the db and eat the cookie on the user end.
      *
      * @param int $user_id
      * @return boolean
@@ -176,7 +176,9 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Simply writes user session data.
+     * Stores user session data to be used by core system.
+     *
+     * @return void
      */
     private function storeSession()
     {
@@ -203,10 +205,11 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Make the given user the logged in user
+     * Make the given user the logged in user.
      *
      * @param array $select_user_array
      * @param bool $persistent
+     * @return void
      */
     private function createUserSession($select_user_array, $persistent = false)
     {
@@ -267,7 +270,7 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Sets all settings to guest account.
+     * Sets session data as guest auth.
      *
      * @return string
      */
@@ -300,6 +303,7 @@ class PHPDS_auth extends PHPDS_dependant
      * Destroys login session data.
      *
      * @param bool $set_guest
+     * @return void
      */
     private function clearSession($set_guest = true)
     {
@@ -330,7 +334,7 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Check is user is logged in, return false if not.
+     * Check if user session is active, return false if not.
      *
      * @return boolean
      */
@@ -344,7 +348,7 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Build request for typical use in a login form.
+     * Build request array for typical use e.g draw login form with the data returned.
      *
      * @return array
      */
@@ -388,7 +392,8 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Checks to see if user and password is correct and allowed. Then creates session data accordingly.
+     * Checks to see if user and password is correct and allowed.
+     * If correct the results is passes on to creates session data.
      *
      * @param string $username
      * @param string $password
@@ -423,9 +428,8 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
-     * Search the database for the given credentials
-     *
-     * If don't give the password (not the same an empty string), only the username will be checked
+     * Search the database for the given authentication credentials.
+     * If no password is provided, only the username will be checked.
      *
      * @param string $username
      * @param string $password

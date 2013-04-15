@@ -4,13 +4,11 @@ class PHPDS_user extends PHPDS_dependant
 {
     /**
      * Set roles that exists.
-     *
      * @var array
      */
     public $rolesArray;
     /**
      * Array for log data to be written.
-     *
      * @var array
      */
     public $logArray;

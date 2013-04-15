@@ -5,40 +5,88 @@
  *
  * @author Grzegorz Godlewski redone by Jason Schoeman
  */
-
 include_once dirname(__FILE__) . '/PHPDS_exception.class.php';
-
 
 /**
  * Error handler class
- *
  */
 class PHPDS_errorHandler extends PHPDS_dependant
 {
     /**
-     * Error handler options
+     * Should error handler ignores notices.
+     * @var bool
      */
-
-    protected $ignore_notices = false; // - if set to true Error handler ignores notices
-    protected $ignore_warnings = false; // - if set to true Error handler ignores warnings
-    protected $warningsAreFatal = true; // if true warning are handled as Exceptions
-    protected $noticesAreFatal = false; // if true, notices are handled as Exceptions
-
-    protected $serverlog = true; // log to syslog using error_log()
-    protected $file = ''; // - log file
-    protected $mail = ''; // - log mail
-    protected $display = true; // - if set to true Error handler display error to output
-    protected $firebug = false; // - if set to true Error handler send error to firebug
-    protected $firephp = null; // - firephp object
-
-    protected $I_give_up = false; // if this is true something serious is wrong.
-    protected $production = false; // is this a system in production
-
-    public $error_backtrace = false; // - Should a backtrace be created. (Causes problems some times)
-
-    protected $conduits = array(); // array of iPHPDS_errorConduit
-
-    protected $crumbs = array(); // in case they are error AFTER the exception reported is triggered
+    protected $ignore_notices = false;
+    /**
+     * Should error handler ignores warnings.
+     * @var bool
+     */
+    protected $ignore_warnings = false;
+    /**
+     * Should warning are handled as Exceptions.
+     * @var bool
+     */
+    protected $warningsAreFatal = true;
+    /**
+     * Should notices are handled as Exceptions.
+     * @var bool
+     */
+    protected $noticesAreFatal = false;
+    /**
+     * Log to syslog using error_log()
+     * @var bool
+     */
+    protected $serverlog = true;
+    /**
+     * Log folder location.
+     * @var string
+     */
+    protected $file = '';
+    /**
+     * Mail address for exception errors.
+     * @var string
+     */
+    protected $mail = '';
+    /**
+     * Should error handler display error to output.
+     * @var bool
+     */
+    protected $display = true;
+    /**
+     * Should error handler send error to firebug.
+     * @var bool
+     */
+    protected $firebug = false;
+    /**
+     * Firephp instance.
+     * @var object
+     */
+    protected $firephp = null;
+    /**
+     * System switch to halt exceptions as something serious is wrong.
+     * @var bool
+     */
+    protected $I_give_up = false;
+    /**
+     * Error handler handles errors differently in production (safe mode).
+     * @var bool
+     */
+    protected $production = false;
+    /**
+     * Should a backtrace be created. (Causes problems some times)
+     * @var bool
+     */
+    public $error_backtrace = false;
+    /**
+     * Array of iPHPDS_errorConduit
+     * @var array
+     */
+    protected $conduits = array();
+    /**
+     * In case they are error AFTER the exception reported is triggered
+     * @var array
+     */
+    protected $crumbs = array();
 
     /**
      * Constructor

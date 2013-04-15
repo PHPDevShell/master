@@ -7,13 +7,11 @@ class PHPDS_view extends PHPDS_dependant
      * @var object
      */
     public $instance;
-
     /**
      * Array of mixed values to be used in php view class.
      * @var mixed
      */
     public $set;
-
     /**
      * Checks if main class is extended, if not, disable master set property.
      * @var bool

@@ -13,9 +13,25 @@ class PHPDS_debug extends PHPDS_dependant
     const WARN  = 2;
     const ERROR = 1;
     const LOG   = 0;
-    protected $enabled  = false; /* boolean: is the data to be sent, anyway */
-    protected $level    = PHPDS_debug::LOG; /* level of verbosity */
-    protected $domain; /* string (maybe null): to which semantic domain this instance is related */
+    /**
+     * Is the data to be sent.
+     * @var bool
+     */
+    protected $enabled = false;
+    /**
+     * Level of verbosity.
+     * @var int
+     */
+    protected $level = PHPDS_debug::LOG;
+    /**
+     * To which semantic domain this instance is related.
+     * @var
+     */
+    protected $domain;
+    /**
+     * Error handler instance.
+     * @var object
+     */
     protected $conduits = null;
 
     /**

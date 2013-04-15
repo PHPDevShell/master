@@ -11,7 +11,6 @@ class PHPDS_notif extends PHPDS_dependant
      * @var string
      */
     protected $legacy;
-
     /**
      * Message type constant.
      * @var array
@@ -21,7 +20,6 @@ class PHPDS_notif extends PHPDS_dependant
         PHPDS_notif::MESSAGE => array(),
         PHPDS_notif::URGENT  => array()
     );
-
     /**
      * The notification var.
      * @var string
