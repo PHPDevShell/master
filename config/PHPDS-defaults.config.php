@@ -1,14 +1,19 @@
 <?php
 
-/////////////////////////////////////////////////////////////////////////////
-// DEFAULT VALUES FOR SYSTEM USE ONLY ///////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-// DONT MODIFY THIS FILE, CREATE YOUR OWN OR MODIFY single-site.config.php //
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+// DEFAULT VALUES FOR SYSTEM USE ONLY ////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+// DON'T MODIFY THIS FILE, CREATE YOUR OWN OR MODIFY single-site.config.php //
+//////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////
-// Multi-database Configuration                                         ////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+// Database //////////////////////////////////////////////////////////////////
+
+/**
+ * The is the class that handles the db connection found inside includes/db/
+ * @global string
+ */
+$configuration['driver']['db'] = 'PHPDS_pdo';
 /**
  * Main database connection parameters for default connector.
  * If you install a different database connector you might want to.
@@ -54,33 +59,41 @@ $configuration['database']['master'] = array(
      *       This is only be needed of the 'dsn' string is not supported by any other connector type.
      */
 );
-/**
- * The class that handles the database connection found inside includes/db/
- * @global string
- */
-$configuration['db_connector'] = 'PHPDS_pdo';
 
-////////////////////////////////////////////////////////////////////////////////////////////
-// Extra Settings, these settings should be changed only when required. ////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////
-
-$configuration['driver'] = array(
-    'db' => 'PHPDS_pdo',
-    'cache' => 'PHPDS_fileCache',
-    'session' => 'PHPDS_fileSession'
-);
+//////////////////////////////////////////////////////////////////////////////
+// Cache /////////////////////////////////////////////////////////////////////
 
 /**
- * The class that handles the database connection found inside includes/session/
+ * The class that handles the cache connection found inside includes/cache/
  * @global string
  */
-$configuration['session_connector'] = 'PHPDS_fileSession';
+$configuration['driver']['cache'] = 'PHPDS_filecache';
 /**
- * The class that handles the database connection found inside includes/session/
+ * Views cache path.
+ * (Needs to be writable)
+ * @global string $configuration['cache_path']
+ */
+$configuration['cache_path'] = 'write/cache/';
+/**
+ * Cache refresh intervals in seconds.
+ * Helps with overall performance of your system. The higher the value the less queries will be done,
+ * but your settings will be slower to update.
+ * @global integer (seconds)
+ */
+$configuration['cache_refresh_intervals'] = 1440;
+
+//////////////////////////////////////////////////////////////////////////////
+// Session ///////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+// System ////////////////////////////////////////////////////////////////////
+
+/**
+ * The class that handles the session connection found inside includes/session/
+ * Also supports : PHPDS_apcSession, PHPDS_memSession
  * @global string
  */
-$configuration['cache_connector'] = 'PHPDS_fileCache';
-
+$configuration['driver']['session'] = 'PHPDS_fileSession';
 /**
  * When you experience a delay in views updating after changes, enable this to correct it.
  * Note disable this in production as it uses allot of memory.
@@ -99,20 +112,6 @@ $configuration['views_cache'] = false;
  * @global integer
  */
 $configuration['views_cache_lifetime'] = 360;
-/**
- * Cache type, PHPDS currently support main cache systems, its very easy to write your own supporting class for your preferred cache system.
- * Currently PHPDevShell support three types of cache systems, 'PHPDS_sessionCache' and 'PHPDS_memCache'.
- * For no cache please use = 'noCache'
- * The cache names is relative the the class names in includes/cache and more custom cache engine can be added.
- * @global string
- */
-$configuration['cache_type'] = 'PHPDS_sessionCache';
-/**
- * Cache refresh intervals in seconds.
- * Helps with overall performance of your system. The higher the value the less queries will be done, but your settings will be slower to update.
- * @global integer
- */
-$configuration['cache_refresh_intervals'] = 120;
 /**
  * Memcache/APC server details.
  * Only complete this when you are using the memcached/apc extension, this is not needed for file based caching.
@@ -162,12 +161,6 @@ $configuration['session_path'] = 'write/session/';
  */
 $configuration['compile_path'] = 'write/compile/';
 /**
- * Views cache path.
- * (Needs to be writable)
- * @global string $configuration['cache_path']
- */
-$configuration['cache_path'] = 'write/cache/';
-/**
  * Temporary writable folder path.
  * (Needs to be writable)
  * @global string $configuration['tmp_path']
@@ -202,15 +195,105 @@ $configuration['function_files'] = array();
  * @global string
  */
 $configuration['charset'] = 'UTF-8';
+
 /**
- * The ID of the main node, usually a dashboard
+ * This is the repository the plugin manager will use to check for updates or install new plugins.
+ *
  * @global string
  */
-$configuration['dashboard'] = 'readme';
+$configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
 
-////////////////////////////////////////////////////////////////////////////////////////////
-// Debuggin Support. ///////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * This is all the settings that will be available in $configuration['value'] loaded from database.
+ * In general this would never be changed, however a developer
+ * might need to add their own variables they would need on every page.
+ *
+ * @global array
+ */
+$configuration['preloaded_settings'] = array(
+    'scripts_name_version',
+    'redirect_login',
+    'footer_notes',
+    'front_page_id',
+    'front_page_id_out',
+    'front_page_id_in',
+    'loginandout',
+    'custom_logo',
+    'custom_css',
+    'system_down',
+    'demo_mode',
+    'charset_format',
+    'locale_format',
+    'charset',
+    'language',
+    'debug_language',
+    'region',
+    'root_id',
+    'root_role',
+    'root_group',
+    'force_core_changes',
+    'system_logging',
+    'access_logging',
+    'crypt_key',
+    'date_format',
+    'date_format_short',
+    'default_template',
+    'default_theme_id',
+    'printable_template',
+    'split_results',
+    'guest_role',
+    'guest_group',
+    'system_timezone',
+    'setting_admin_email',
+    'email_critical',
+    'sef_url',
+    'queries_count',
+    'allow_registration',
+    'registration_page',
+    'allow_remember',
+    'url_append',
+    'skin',
+    'meta_keywords',
+    'meta_description',
+    'node_behaviour',
+    'spam_assassin',
+    'custom_css'
+);
+
+/**
+ * Allows a developer to override/extend a core class with his own.
+ * Add extending class inside includes/extend/ folder and register its name by defining a value (NOT KEY) below.
+ * e.g  If PHPDS_auth will be extended by PHPDS_OAuth2 make sure you have includes/extend/PHPDS_OAuth2.class.php
+ *      The class name should then be "class PHPDS_OAuth2 extends PHPDS_auth {}"
+ *
+ * @global array
+ */
+$configuration['extend'] = array(
+    'auth'         => 'PHPDS_auth',
+    'config'       => 'PHPDS_config',
+    'core'         => 'PHPDS_core',
+    'debug'        => 'PHPDS_debug',
+    'errorHandler' => 'PHPDS_errorHandler',
+    'model'        => 'PHPDS_model',
+    'navigation'   => 'PHPDS_navigation',
+    'notif'        => 'PHPDS_notif',
+    'tagger'       => 'PHPDS_tagger',
+    'template'     => 'PHPDS_template',
+    'user'         => 'PHPDS_user',
+    'view'         => 'PHPDS_view'
+);
+
+/**
+ * The engine will look in the order they are placed in for classes in possible listed folders.
+ * For instance to look in folders that overrides main classes add 'includes/override' as
+ * first folder and add the override class in includes/override/PHPDS_someclass.class.php
+ * The system will now look in this folder for the engine class first.
+ * @global array
+ */
+$configuration['class_folders'] = array('includes', 'includes/extend');
+
+//////////////////////////////////////////////////////////////////////////////
+// Debugging /////////////////////////////////////////////////////////////////
 
 /**
  * When your system goes to production, set this to TRUE to avoid information leaks.
@@ -346,89 +429,3 @@ $configuration['error']['mask'] = E_ALL | E_STRICT; //  you should change to  E_
  * @global boolean
  */
 $configuration['development'] = false;
-
-/**
- * This is the repository the plugin manager will use to check for updates or install new plugins.
- *
- * @global string
- */
-$configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
-
-/**
- * This is all the settings that will be available in $configuration['value'] loaded from database.
- * In general this would never be changed, however a developer might need to add their own variables they would need on every page.
- *
- * @global array
- */
-$configuration['preloaded_settings'] = array(
-    'scripts_name_version',
-    'redirect_login',
-    'footer_notes',
-    'front_page_id',
-    'front_page_id_out',
-    'front_page_id_in',
-    'loginandout',
-    'custom_logo',
-    'custom_css',
-    'system_down',
-    'demo_mode',
-    'charset_format',
-    'locale_format',
-    'charset',
-    'language',
-    'debug_language',
-    'region',
-    'root_id',
-    'root_role',
-    'root_group',
-    'force_core_changes',
-    'system_logging',
-    'access_logging',
-    'crypt_key',
-    'date_format',
-    'date_format_short',
-    'default_template',
-    'default_theme_id',
-    'printable_template',
-    'split_results',
-    'guest_role',
-    'guest_group',
-    'system_timezone',
-    'setting_admin_email',
-    'email_critical',
-    'sef_url',
-    'queries_count',
-    'allow_registration',
-    'registration_page',
-    'allow_remember',
-    'url_append',
-    'skin',
-    'meta_keywords',
-    'meta_description',
-    'node_behaviour',
-    'spam_assassin',
-    'custom_css'
-);
-
-/**
- * Allows a developer to override/extend a core class with his own.
- * Add extending class inside includes/extend/ folder and register its name by defining a value (NOT KEY) below.
- * e.g  If PHPDS_auth will be extended by PHPDS_OAuth2 make sure you have includes/extend/PHPDS_OAuth2.class.php
- *      The class name should then be "class PHPDS_OAuth2 extends PHPDS_auth {}"
- *
- * @global array
- */
-$configuration['extend'] = array(
-    'auth'         => 'PHPDS_auth',
-    'config'       => 'PHPDS_config',
-    'core'         => 'PHPDS_core',
-    'debug'        => 'PHPDS_debug',
-    'errorHandler' => 'PHPDS_errorHandler',
-    'model'        => 'PHPDS_model',
-    'navigation'   => 'PHPDS_navigation',
-    'notif'        => 'PHPDS_notif',
-    'tagger'       => 'PHPDS_tagger',
-    'template'     => 'PHPDS_template',
-    'user'         => 'PHPDS_user',
-    'view'         => 'PHPDS_view'
-);

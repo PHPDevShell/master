@@ -377,6 +377,11 @@ class PHPDS_queryException extends PHPDS_exception
 
 }
 
+class PHPDS_cacheException extends PHPDS_exception
+{
+
+}
+
 /**
  *  Exception for the session starter
  *
@@ -385,7 +390,6 @@ class PHPDS_queryException extends PHPDS_exception
 class PHPDS_sessionException extends PHPDS_exception
 {
     protected $ignoreLines = 4;
-
     protected $path;
 
     public function __construct($message = "", $code = 0, $previous = null) // CAUTION this declaration is NOT correct but PHP insists on this declaration

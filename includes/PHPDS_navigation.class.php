@@ -44,21 +44,26 @@ class PHPDS_navigation extends PHPDS_dependant
     public function extractNode()
     {
         $cache = $this->cache;
+
         $all_user_roles = $this->user->getRoles($this->configuration['user_id']);
-        if ($cache->cacheEmpty('navigation')) {
+
+        $this->navigation = $cache->get('navigation');
+
+        if (empty($this->navigation)) {
             if (empty($this->navigation)) $this->navigation = array();
             if (empty($this->child)) $this->child = array();
             if (empty($this->navAlias)) $this->navAlias = array();
+
             $this->readNodeTable($all_user_roles);
 
-            $cache->cacheWrite('navigation', $this->navigation);
-            $cache->cacheWrite('child_navigation', $this->child);
-            $cache->cacheWrite('nav_alias', $this->navAlias);
+            $cache->set('navigation', $this->navigation);
+            $cache->set('child_navigation', $this->child);
+            $cache->set('nav_alias', $this->navAlias);
         } else {
-            $this->navigation = $cache->cacheRead('navigation');
-            $this->child      = $cache->cacheRead('child_navigation');
-            $this->navAlias   = $cache->cacheRead('nav_alias');
+            $this->child    = $cache->get('child_navigation');
+            $this->navAlias = $cache->get('nav_alias');
         }
+
         return $this;
     }
 

@@ -54,7 +54,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
                 if (empty($this->configuration['database'][$this->server]))
                     throw new PHPDS_exception('No database configuration found for server : ' . $this->server);
 
-                $cfg = (object) $this->configuration['database'][$this->server];
+                $cfg          = (object)$this->configuration['database'][$this->server];
                 $this->prefix = $cfg->prefix;
 
                 // Connect to the server and database
@@ -63,7 +63,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
                 // Set the error reporting attribute so that SQL errors also generates exceptions
                 $this->connection[$this->server]->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                if (! empty($cfg->autotransact)) {
+                if (!empty($cfg->autotransact)) {
                     $this->autoTransact[$this->server] = true;
                 } else {
                     $this->autoTransact[$this->server] = false;
@@ -209,11 +209,11 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      * @param string $where  Adds a string WHERE on how the sql should be joined with rest of query.
      * @return resource|string Can return the statement resource or complete SQL string.
      */
-    public function queryBuild($sql, $array, $params = null, $join = 'AND', $where='WHERE')
+    public function queryBuild($sql, $array, $params = null, $join = 'AND', $where = 'WHERE')
     {
         $array = array_filter($array, 'strlen');
         $join  = join(" $join ", $array);
-        $sql  .= ($join) ? PHP_EOL . " $where " . PHP_EOL . $join : PHP_EOL;
+        $sql .= ($join) ? PHP_EOL . " $where " . PHP_EOL . $join : PHP_EOL;
 
         return ($params) ? $this->query($sql, $params) : $sql;
     }
@@ -222,18 +222,18 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      * Executes a query without preparing it first, then it fetches the row and returns it as an array or object,
      * depending on the specified mode.
      *
-     * @param string   $sql          The SQL statement to be executed
-     * @param array    $params       The parameters
-     * @param int      $mode         , the return mode
-     * @param string   $classname    The name of the class to instantiate, set the properties of and return.
-     *                               If not specified, a stdClass object is returned. (MODE_OBJECT)
-     * @param resource $statement    , the previously returned statement
+     * @param string   $sql            The SQL statement to be executed
+     * @param array    $params         The parameters
+     * @param int      $mode           , the return mode
+     * @param string   $classname      The name of the class to instantiate, set the properties of and return.
+     *                                 If not specified, a stdClass object is returned. (MODE_OBJECT)
+     * @param resource $statement      , the previously returned statement
      * @return mixed The resulting row (or false is nothing is found)
      * @see DBi::MODE_ASSOC_KEY, DBi::MODE_ASSOC, DBi::MODE_NUM, DBi::MODE_BOTH, DBi::MODE_OBJECT
      */
     public function queryFetchRow($sql, $params = null, $mode = self::MODE_ASSOC_KEY, $classname = "stdClass", $statement = null)
     {
-        $result    = false;
+        $result = false;
         if (!isset($statement)) $statement = $this->query($sql, $params);
         if ($statement) $result = $this->fetch($mode, $classname, $statement);
         return $result;
@@ -243,22 +243,21 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      * Executes a query without preparing it first, then it fetches all rows and returns it as an array or object,
      * depending on the specified mode.
      *
-     * @param string   $sql          The SQL statement to be executed
-     * @param array    $params       The parameters
-     * @param int      $mode         , the return mode
-     * @param string   $classname    The name of the class to instantiate, set the properties of and return.
-     *                               If not specified, a stdClass object is returned. (MODE_OBJECT)
-     * @param resource $statement    , the previously returned statement
+     * @param string   $sql            The SQL statement to be executed
+     * @param array    $params         The parameters
+     * @param int      $mode           , the return mode
+     * @param string   $classname      The name of the class to instantiate, set the properties of and return.
+     *                                 If not specified, a stdClass object is returned. (MODE_OBJECT)
+     * @param resource $statement      , the previously returned statement
      * @return mixed The resulting row (or false is nothing is found)
      * @see DBi::MODE_ASSOC_KEY, DBi::MODE_ASSOC, DBi::MODE_NUM, DBi::MODE_BOTH, DBi::MODE_OBJECT
      */
     public function queryFetchRows($sql, $params = null, $mode = self::MODE_ASSOC_KEY, $classname = "stdClass", $statement = null)
     {
-        $results   = false;
+        $results = false;
         if (!isset($statement)) $statement = $this->query($sql, $params);
         if ($statement) {
-            while ($result = $this->fetch($mode, $classname, $statement))
-            {
+            while ($result = $this->fetch($mode, $classname, $statement)) {
                 $results[] = $result;
             }
         }
@@ -294,8 +293,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
         $results   = array();
         $statement = $this->query($sql, $params);
         if ($statement) {
-            while ($result = $this->fetchAssoc($statement))
-            {
+            while ($result = $this->fetchAssoc($statement)) {
                 $results[] = $result;
             }
         }
@@ -328,10 +326,10 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
     /**
      * Return the next row as an array or object, depending on the specified mode
      *
-     * @param int      $mode         , the return mode
-     * @param string   $classname    The name of the class to instantiate, set the properties of and return.
-     *                               If not specified, a stdClass object is returned. (MODE_OBJECT)
-     * @param resource $statement    , the previously returned statement
+     * @param int      $mode           , the return mode
+     * @param string   $classname      The name of the class to instantiate, set the properties of and return.
+     *                                 If not specified, a stdClass object is returned. (MODE_OBJECT)
+     * @param resource $statement      , the previously returned statement
      * @return mixed The resulting row (or false is nothing is found)
      * @see DBi::MODE_ASSOC_KEY, DBi::MODE_ASSOC, DBi::MODE_NUM, DBi::MODE_BOTH, DBi::MODE_OBJECT
      */
@@ -449,7 +447,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
     public function endTransaction()
     {
         if (!empty($this->autoTransact)) {
-            foreach($this->autoTransact as $server => $autotransact) {
+            foreach ($this->autoTransact as $server => $autotransact) {
                 if ($autotransact && $this->connection[$server]->inTransaction()) {
                     $this->connection[$server]->commit();
                 }
@@ -478,7 +476,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
     public function rollBack()
     {
         if (!empty($this->autoTransact)) {
-            foreach($this->autoTransact as $server => $autotransact) {
+            foreach ($this->autoTransact as $server => $autotransact) {
                 if ($autotransact && $this->connection[$server]->inTransaction()) {
                     $this->connection[$server]->rollBack();
                 }

@@ -20,7 +20,7 @@ class EMCSNotStartedException extends Exception {
 };
 
 // Implements a memcached based session layer
-class PHPDS_memSession implements SessionIntf {
+class PHPDS_memcachedSession implements SessionIntf {
 
     const MODE_NORMAL = 0;
     const MODE_JSON = 1;

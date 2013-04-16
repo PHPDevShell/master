@@ -4,6 +4,8 @@ define('phpdevshell_db_version', '4000');
 
 require_once 'PHPDS_utils.inc.php';
 require_once 'db/PHPDS_dbInterface.class.php';
+require_once 'cache/PHPDS_cacheInterface.class.php';
+require_once 'session/PHPDS_sessionInterface.class.php';
 
 /**
  * Root class of PHPDevShell, binds all methods/plugins together.
@@ -331,7 +333,7 @@ class PHPDS
         // Prepare auth. ///////////////////////////////////////////////////////////////////
         $this->PHPDS_auth()->controller(); /////////////////////////////////////////////////
 
-        // Asign locale to use. ////////////////////////////////////////////////////////////
+        // Assign locale to use. ///////////////////////////////////////////////////////////
         $this->configuration['locale'] = $this->configuration['user_locale']; //////////////
 
         // Set environment. ////////////////////////////////////////////////////////////////
@@ -387,13 +389,15 @@ class PHPDS
 
         // Init main debug instance. //////////////////////////////////////////
         $this->PHPDS_debug(); /////////////////////////////////////////////////
+
         // Various init subroutines. //////////////////////////////////////////
         $this->configSession(); ///////////////////////////////////////////////
+
         // Start database connection. /////////////////////////////////////////
         $this->configDb(); ////////////////////////////////////////////////////
 
         // Connects cache server. /////////////////////////////////////////////
-        $this->PHPDS_cache()->connectCacheServer(); ///////////////////////////
+        $this->PHPDS_cache()->start(); ////////////////////////////////////////
 
         // Starts config class. ///////////////////////////////////////////////
         $this->PHPDS_config()->getEssentialSettings(); ////////////////////////
@@ -537,12 +541,15 @@ class PHPDS
      * Allow access to the global cache subsystem
      * One is created if necessary.
      *
-     * @return PHPDS_cache
+     * @return PHPDS_cacheInterface
      */
     public function PHPDS_cache()
     {
         if (empty($this->cache)) {
-            $this->cache = $this->_factory('PHPDS_cache');
+            $driver = $this->configuration['driver']['cache'];
+            // Hard code, its faster... don't sneak this one.
+            require_once 'includes/cache' . DIRECTORY_SEPARATOR . $driver . '.class.php';
+            $this->cache = $this->_factory($driver);
         }
         return $this->cache;
     }
@@ -594,12 +601,15 @@ class PHPDS
      * Allow access to the global database subsystem
      * One is created if necessary.
      *
-     * @return PHPDS_db
+     * @return PHPDS_cacheInterface
      */
     public function PHPDS_db()
     {
         if (empty($this->db)) {
-            $this->db = $this->_factory($this->configuration['db_connector']);
+            $driver = $this->configuration['driver']['db'];
+            // Hard code, its faster... don't sneak this one.
+            require_once 'includes/db' . DIRECTORY_SEPARATOR . $driver . '.class.php';
+            $this->db = $this->_factory($driver);
         }
         return $this->db;
     }
@@ -732,7 +742,6 @@ class PHPDS
         if (is_file($filename)) {
             include_once ($filename);
             if (class_exists($classname, false)) {
-                $this->log("Autoloading $classname from $filename");
                 return true;
             }
         }
@@ -764,7 +773,7 @@ class PHPDS
         }
 
         // Engine classes default directories
-        $includes = array('includes/override', 'includes', 'includes/extend', 'includes/db');
+        $includes = $configuration['class_folders'];
         foreach ($includes as $path) {
             $engine_include_path = $absolute_path . $path . '/' . $class_name . '.class.php';
             if ($this->sneakClass($class_name, $engine_include_path)) return true;
@@ -794,7 +803,7 @@ class PHPDS
  *
  * @property PHPDS_core             $core
  * @property PHPDS_config           $config
- * @property PHPDS_cache            $cache
+ * @property PHPDS_cacheInterface   $cache
  * @property PHPDS_navigation       $navigation
  * @property PHPDS_dbInterface      $db
  * @property PHPDS_template         $template

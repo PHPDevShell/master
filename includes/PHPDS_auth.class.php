@@ -266,7 +266,7 @@ class PHPDS_auth extends PHPDS_dependant
                                           'logged_by' => $user_display_name_db, 'log_description' => $persistent);
             }
         }
-        $this->cache->cacheClear();
+        $this->cache->flush();
     }
 
     /**
@@ -324,7 +324,7 @@ class PHPDS_auth extends PHPDS_dependant
         unset($_SESSION['user_region']);
         unset($_SESSION['user_locale']);
 
-        $this->cache->cacheClear();
+        $this->cache->flush();
 
         $_SESSION = array();
 

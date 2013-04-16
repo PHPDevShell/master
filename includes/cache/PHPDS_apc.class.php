@@ -20,7 +20,7 @@ class EAPCNotStartedException extends Exception {
 };
 
 // Implements an APC Cache wrapper
-class PHPDS_apcCache {
+class PHPDS_apc {
     public $config;
     public $enabled = False;
     public $lifetime = 1440;

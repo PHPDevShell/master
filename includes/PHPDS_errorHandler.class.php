@@ -542,7 +542,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
                 ///////////////////////////////////
                 // Used in error theme file.
                 $theme['message'] = '';
-                require BASEPATH.'themes/cloud/error.php'; // $message being empty, only a genetic message is output
+                require BASEPATH . 'themes/cloud/error.php'; // $message being empty, only a genetic message is output
             }
             return $output;
         }

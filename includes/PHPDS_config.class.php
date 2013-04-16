@@ -53,7 +53,8 @@ class PHPDS_config extends PHPDS_dependant
     {
         $cache = $this->cache;
 
-        if ($cache->cacheEmpty('registeredClasses')) {
+        $registeredClasses = $cache->get('registeredClasses');
+        if (empty($registeredClasses)) {
             $pluginR = $this->readClassRegistry();
             if (!empty($pluginR)) {
                 foreach ($pluginR as $p) {
@@ -66,15 +67,14 @@ class PHPDS_config extends PHPDS_dependant
                     }
                     $this->registerClass($classname, $p['alias'], $p['plugin_folder'], $fileName);
                 }
-                $cache->cacheWrite('registeredClasses', $this->registeredClasses);
+                $cache->set('registeredClasses', $this->registeredClasses);
             }
         } else {
-            if (!empty($this->registeredClasses)) {
-                $registeredClasses       = $cache->cacheRead('registeredClasses');
+            if (! empty($this->registeredClasses)) {
                 $this->registeredClasses = array_merge($registeredClasses, $this->registeredClasses);
-                $cache->cacheWrite('registeredClasses', $this->registeredClasses);
+                $cache->set('registeredClasses', $this->registeredClasses);
             } else {
-                $this->registeredClasses = $cache->cacheRead('registeredClasses');
+                $this->registeredClasses = $registeredClasses;
             }
         }
 
@@ -131,12 +131,11 @@ class PHPDS_config extends PHPDS_dependant
     public function getEssentialSettings()
     {
         // Pull essential settings and assign it to essential_settings.
-        if ($this->cache->cacheEmpty('essential_settings')) {
+        $this->essentialSettings = $this->cache->get('essential_settings');
+        if (empty($this->essentialSettings)) {
             $this->essentialSettings = $this->getSettings($this->configuration['preloaded_settings'], 'AdminTools');
             // Write essential settings data to cache.
-            $this->cache->cacheWrite('essential_settings', $this->essentialSettings);
-        } else {
-            $this->essentialSettings = $this->cache->cacheRead('essential_settings');
+            $this->cache->set('essential_settings', $this->essentialSettings);
         }
     }
 
@@ -302,7 +301,8 @@ class PHPDS_config extends PHPDS_dependant
      */
     public function installedPlugins()
     {
-        if ($this->cache->cacheEmpty('plugins_installed')) {
+        $this->pluginsInstalled = $this->cache->get('plugins_installed');
+        if (empty($this->pluginsInstalled)) {
             $sql = "
               SELECT  plugin_folder, status, version
               FROM    _db_core_plugin_activation
@@ -319,10 +319,8 @@ class PHPDS_config extends PHPDS_dependant
 
             if (! empty($plugins_installed)) {
                 $this->pluginsInstalled = $plugins_installed;
-                $this->cache->cacheWrite('plugins_installed', $plugins_installed);
+                $this->cache->set('plugins_installed', $plugins_installed);
             }
-        } else {
-            $this->pluginsInstalled = $this->cache->cacheRead('plugins_installed');
         }
     }
 

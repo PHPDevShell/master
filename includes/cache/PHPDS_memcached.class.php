@@ -20,7 +20,7 @@ class EMCNotStartedException extends Exception {
 };
 
 // Implements a memcached wrapper
-class PHPDS_memCached {
+class PHPDS_memcached {
     public $config;
     public $enabled = False;
     public $lifetime = 1440;

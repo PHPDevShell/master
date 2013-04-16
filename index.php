@@ -15,18 +15,16 @@ date_default_timezone_set('America/Los_Angeles'); // this is stupid, but *requir
 // Super high level exception if all else truly fails.
 try {
     define('BASEPATH', realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
-    $includes = array('/includes/', '/includes/legacy/', '/includes/local');
+    $includes = array('/includes/', '/includes/local/');
+
     foreach ($includes as $path) {
         ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . realpath(BASEPATH . $path));
     }
 
-    if (file_exists('./index.local.php')) {
-        require './index.local.php';
-    } else {
-        require 'includes/PHPDS.inc.php';
-        $PHPDS = new PHPDS;
-        $PHPDS->run();
-    }
+    require 'includes/PHPDS.inc.php';
+    $PHPDS = new PHPDS;
+    $PHPDS->run();
+
 } catch (Exception $e) {
     if ($early_debug) {
         error_log('Uncaught exception!' . $e);
