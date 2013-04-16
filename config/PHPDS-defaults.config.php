@@ -81,6 +81,20 @@ $configuration['cache_path'] = 'write/cache/';
  * @global integer (seconds)
  */
 $configuration['cache_refresh_intervals'] = 1440;
+/**
+ * Memcache/APC server details.
+ * Only complete this when you are using the memcached/apc extension, this is not needed for file based caching.
+ * Copy and paste cache server block to create more then one server.
+ * @global mixed
+ */
+$cache_server                          = 1;
+$configuration['cache_host']           = array($cache_server => 'localhost');
+$configuration['cache_port']           = array($cache_server => 11211);
+$configuration['cache_persistent']     = array($cache_server => true);
+$configuration['cache_weight']         = array($cache_server => 1);
+$configuration['cache_timeout']        = array($cache_server => 1);
+$configuration['cache_retry_interval'] = array($cache_server => 15);
+$configuration['cache_status']         = array($cache_server => true);
 
 //////////////////////////////////////////////////////////////////////////////
 // Session ///////////////////////////////////////////////////////////////////
@@ -112,20 +126,6 @@ $configuration['views_cache'] = false;
  * @global integer
  */
 $configuration['views_cache_lifetime'] = 360;
-/**
- * Memcache/APC server details.
- * Only complete this when you are using the memcached/apc extension, this is not needed for file based caching.
- * Copy and paste cache server block to create more then one server.
- * @global mixed
- */
-$cache_server                          = 1;
-$configuration['cache_host']           = array($cache_server => 'localhost');
-$configuration['cache_port']           = array($cache_server => 11211);
-$configuration['cache_persistent']     = array($cache_server => true);
-$configuration['cache_weight']         = array($cache_server => 1);
-$configuration['cache_timeout']        = array($cache_server => 1);
-$configuration['cache_retry_interval'] = array($cache_server => 15);
-$configuration['cache_status']         = array($cache_server => true);
 /**
  * If you are running a very large site, you might want to consider running a dedicated light http server (httpdlight, nginx) that
  * only serves static content like images and static files, call it a CDN if you like.
