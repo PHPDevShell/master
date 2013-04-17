@@ -18,6 +18,8 @@ $configuration['driver']['db'] = 'PHPDS_pdo';
  * Main database connection parameters for default connector.
  * If you install a different database connector you might want to.
  *
+ * Having multiple databases allows you to query with $this->db->in('slave')->query('...sql...');
+ *
  * @global array
  */
 $configuration['database']['master'] = array(
@@ -65,13 +67,19 @@ $configuration['database']['master'] = array(
 
 /**
  * The class that handles the cache connection found inside includes/cache/
- * Also supports PHPDS_memcached (additional server info needed)
+ * Also supports PHPDS_memcached (additional server info needed and server needs to have the memcached extension
+ * installed, please note memcache and memcached extensions are different (this requires memcached))
  * Also supports PHPDS_apc (easier setup than memcached)
+ *
+ * Memcached is a distributed caching system, whereas APC is non-distributed - and mainly an opcode cache.
+ * If (and only if) you have a web application which has to live on different webservers (loadbalancing),
+ * you have to use memcached for distributed caching. If not, just stick to APC. (Stackoverflow)
+ *
  * @global string
  */
-$configuration['driver']['cache'] = 'PHPDS_filecache';
+$configuration['driver']['cache'] = 'PHPDS_apc';
 /**
- * Views cache path.
+ * Views cache path (used by PHPDS_filecache)
  * (Needs to be writable)
  * @global string $configuration['cache_path']
  */
@@ -86,7 +94,7 @@ $configuration['cache_refresh_intervals'] = 1440;
 /**
  * Memcached server details.
  * Only complete this when you are using the memcached driver, this is not needed for file based or apc caching.
- * Duplicate cache server block to create more memcached servers which automatically gets utilised by memcached.
+ * Duplicate cache server block to create more memcached servers which gets utilised by memcached depending on weight.
  * @global array
  */
 $configuration['memcached_cacheserver'][0] = array(
@@ -100,29 +108,10 @@ $configuration['memcached_cacheserver'][0] = array(
      */
     'port'           => 11211,
     /**
-     * Controls the use of a persistent connection. Default to TRUE.
-     */
-    'persistent'     => true,
-    /**
      * Number of buckets to create for this server which in turn control its probability of it being selected.
      * The probability is relative to the total weight of all servers.
      */
-    'weight'         => 1,
-    /**
-     * Value in seconds which will be used for connecting to the daemon.
-     * Think twice before changing the default value of 1 second -
-     * you can lose all the advantages of caching if your connection is too slow.
-     */
-    'timeout'        => 1,
-    /**
-     * Controls how often a failed server will be retried, the default value is 15 seconds.
-     */
-    'retry_interval' => 15,
-    /**
-     * Controls if the server should be flagged as online. Setting this parameter to FALSE and retry_interval to -1
-     * allows a failed server to be kept in the pool so as not to affect the key distribution algorithm.
-     */
-    'status'         => true
+    'weight'         => 0
 );
 
 //////////////////////////////////////////////////////////////////////////////

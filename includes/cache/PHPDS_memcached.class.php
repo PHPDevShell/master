@@ -48,22 +48,21 @@ class PHPDS_memcached extends PHPDS_dependant implements PHPDS_cacheInterface {
             if (empty($this->configuration['memcached_cacheserver']))
                 throw new PHPDS_cacheException('Memcached configuration not set in config file.');
 
-            if (extension_loaded('memcached')  && !$this->testMode) {
+            if (extension_loaded('memcached') && !$this->testMode) {
                 try {
                     $this->memcached = new Memcached();
                     foreach ($this->configuration['memcached_cacheserver'] as $server) {
-                        $this->memcached->addServer(
-                            $server['host'], $server['port'], $server['persistent'], $server['weight'],
-                            $server['timeout'], $server['retry_interval'], $server['persistent'], $server['status']
-                        );
+                        $this->memcached->addServer($server['host'], $server['port'], $server['weight']);
                     }
                 } catch (Exception $e) {
-                    throw new PHPDS_cacheException('a Memcached configuration errror occurred', 0, $e);
+                    throw new PHPDS_cacheException('a Memcached configuration error occurred', 0, $e);
                 }
                 $result = true;
                 $this->started = true;
             } else {
-                throw new PHPDS_cacheException("Unable to start cache system memcached is not installed/started.");
+                throw new  PHPDS_cacheException("Extention memcached is reported to not be loaded for use in PHP,
+                please make sure you have enabled the memcached extention specifically (remember extentions
+                which are different is independent named as memcache and memcached) or consider APC rather.");
             }
         } else {
             $result = true;
@@ -169,7 +168,6 @@ class PHPDS_memcached extends PHPDS_dependant implements PHPDS_cacheInterface {
     public function getMulti($items) {
         if ($this->enabled) {
             $result = $items;
-
             // Converts the keys to valid memcached keys. This is very important since certain characters
             // such as spaces will hang the PHP client!!! :O
             $tmp_keys = array();
