@@ -73,8 +73,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
                 $this->startTransaction();
             }
         } catch (PDOException $e) {
-            $msg = 'Cannot connect to database';
-            throw new PHPDS_databaseException($msg, 0, $e);
+            throw new PHPDS_databaseException('Cannot connect to database', 0, $e);
         }
     }
 

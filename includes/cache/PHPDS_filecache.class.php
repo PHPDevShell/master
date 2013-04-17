@@ -1,6 +1,6 @@
 <?php
 
-class PHPDS_filecache extends PHPDS_dependant
+class PHPDS_filecache extends PHPDS_dependant implements PHPDS_cacheInterface
 {
     /**
      * Should cache be enabled?
@@ -67,10 +67,10 @@ class PHPDS_filecache extends PHPDS_dependant
                     $result        = true;
                     $this->started = true;
                 } else {
-                    throw new PHPDS_cacheException(sprintf(__s("Unable to start cache system, cache directory is not writable. (%s)"), $this->writeDir));
+                    throw new PHPDS_cacheException(sprintf("Unable to start cache system, cache directory is not writable. (%s)"), $this->writeDir);
                 }
             } else {
-                throw new PHPDS_cacheException(__s("Unable to start cache system, cache directory was not specified."));
+                throw new PHPDS_cacheException("Unable to start cache system, cache directory was not specified.");
             }
         } else {
             $this->started = true;

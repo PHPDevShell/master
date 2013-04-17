@@ -65,6 +65,8 @@ $configuration['database']['master'] = array(
 
 /**
  * The class that handles the cache connection found inside includes/cache/
+ * Also supports PHPDS_memcached (additional server info needed)
+ * Also supports PHPDS_apc (easier setup than memcached)
  * @global string
  */
 $configuration['driver']['cache'] = 'PHPDS_filecache';
@@ -82,19 +84,46 @@ $configuration['cache_path'] = 'write/cache/';
  */
 $configuration['cache_refresh_intervals'] = 1440;
 /**
- * Memcache/APC server details.
- * Only complete this when you are using the memcached/apc extension, this is not needed for file based caching.
- * Copy and paste cache server block to create more then one server.
- * @global mixed
+ * Memcached server details.
+ * Only complete this when you are using the memcached driver, this is not needed for file based or apc caching.
+ * Duplicate cache server block to create more memcached servers which automatically gets utilised by memcached.
+ * @global array
  */
-$cache_server                          = 1;
-$configuration['cache_host']           = array($cache_server => 'localhost');
-$configuration['cache_port']           = array($cache_server => 11211);
-$configuration['cache_persistent']     = array($cache_server => true);
-$configuration['cache_weight']         = array($cache_server => 1);
-$configuration['cache_timeout']        = array($cache_server => 1);
-$configuration['cache_retry_interval'] = array($cache_server => 15);
-$configuration['cache_status']         = array($cache_server => true);
+$configuration['memcached_cacheserver'][0] = array(
+    /**
+     * Point to the host where memcached is listening for connections.
+     */
+    'host'           => 'localhost',
+    /**
+     * Point to the port where memcached is listening for connections.
+     * Set this parameter to 0 when using UNIX domain sockets.
+     */
+    'port'           => 11211,
+    /**
+     * Controls the use of a persistent connection. Default to TRUE.
+     */
+    'persistent'     => true,
+    /**
+     * Number of buckets to create for this server which in turn control its probability of it being selected.
+     * The probability is relative to the total weight of all servers.
+     */
+    'weight'         => 1,
+    /**
+     * Value in seconds which will be used for connecting to the daemon.
+     * Think twice before changing the default value of 1 second -
+     * you can lose all the advantages of caching if your connection is too slow.
+     */
+    'timeout'        => 1,
+    /**
+     * Controls how often a failed server will be retried, the default value is 15 seconds.
+     */
+    'retry_interval' => 15,
+    /**
+     * Controls if the server should be flagged as online. Setting this parameter to FALSE and retry_interval to -1
+     * allows a failed server to be kept in the pool so as not to affect the key distribution algorithm.
+     */
+    'status'         => true
+);
 
 //////////////////////////////////////////////////////////////////////////////
 // Session ///////////////////////////////////////////////////////////////////
