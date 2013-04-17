@@ -13,23 +13,35 @@ require_once 'session/PHPDS_sessionInterface.class.php';
 class PHPDS
 {
     /**
+     * Core object.
+     *
+     * @var object
+     */
+    protected $auth;
+    /**
+     * The textual path of PHPDS directory on disk (not the URL).
+     *
+     * @var string
+     */
+    protected $basepath;
+    /**
+     * Core cache object.
+     *
+     * @var object
+     */
+    protected $cache;
+    /**
+     * Main class factory and registry
+     *
+     * @var PHPDS_classFactory
+     */
+    protected $classes;
+    /**
      * Core system configuration settings.
      *
      * @var object
      */
     protected $configuration;
-    /**
-     * Core system language values.
-     *
-     * @var object
-     */
-    protected $lang;
-    /**
-     * Core database object.
-     *
-     * @var object
-     */
-    protected $db;
     /**
      * Core config object.
      *
@@ -43,35 +55,17 @@ class PHPDS
      */
     protected $core;
     /**
-     * Core object.
+     * The higher the less backward-compatible.
      *
-     * @var object
+     * @var int
      */
-    protected $auth;
+    protected $compatMode = 1;
     /**
-     * Core cache object.
+     * Core database object.
      *
      * @var object
      */
-    protected $cache;
-    /**
-     * Core user object.
-     *
-     * @var object
-     */
-    protected $user;
-    /**
-     * Core navigation object.
-     *
-     * @var object
-     */
-    protected $navigation;
-    /**
-     * Core template object.
-     *
-     * @var object
-     */
-    protected $template;
+    protected $db;
     /**
      * Main instance of the debug module, which handles startup init.
      *
@@ -79,9 +73,23 @@ class PHPDS
      */
     protected $debugInstance;
     /**
-     * Main instance of the tagger module
+     * PHPDS is used throught the lib (true) or standalone (false).
+     *
+     * @var boolean
      */
-    protected $tagger;
+    protected $embedded;
+    /**
+     * Core system language values.
+     *
+     * @var object
+     */
+    protected $lang;
+    /**
+     * Core navigation object.
+     *
+     * @var object
+     */
+    protected $navigation;
     /**
      * Main instance of the notification module
      *
@@ -89,35 +97,34 @@ class PHPDS
      */
     protected $notif;
     /**
-     * Main class factory and registry
-     *
-     * @var PHPDS_classFactory
-     */
-    protected $classes;
-    /**
-     * PHPDS is used throught the lib (true) or standalone (false).
-     *
-     * @var boolean
-     */
-    protected $embedded;
-    /**
-     * The textual path of PHPDS directory on disk (not the URL).
-     *
-     * @var string
-     */
-    protected $basepath;
-    /**
-     * The higher the less backward-compatible.
-     *
-     * @var int
-     */
-    protected $compatMode = 1;
-    /**
      * Execution stage (i.e. run level)
      *
      * @var int
      */
-    protected $stage = 1; // 1 => initialization ; 2 => running
+    protected $stage = 1; // 1 => initialization; 2 => running
+    /**
+     * Core session object.
+     *
+     * @var object
+     */
+    protected $session;
+    /**
+     * Core template object.
+     *
+     * @var object
+     */
+    protected $template;
+    /**
+     * Main instance of the tagger module
+     */
+    protected $tagger;
+    /**
+     * Core user object.
+     *
+     * @var object
+     */
+    protected $user;
+
 
     /**
      * Constructor: Initialize the instance and starts the configuration process.
@@ -231,63 +238,17 @@ class PHPDS
             print 'At least one file among those listed below should be readable.<br />';
             print 'Read the install instruction on creating a config file and installing the database.<br>';
             print 'PHPDevShell basepath is "<tt>' . $this->basepath . '</tt>".<br>';
-            print 'All these files were tried:<br><tt>';
+            print 'All these files were tried:<br>';
             print implode('<br>', $configuration['config_files_missing']);
-            print '</tt>';
             exit();
         }
         $this->PHPDS_configuration($configuration);
         spl_autoload_register(array($this, "PHPDS_autoloader"));
-        return $this; // to allow fluent interface
-    }
 
-    /**
-     * Deal with the "session" part of the configuration
-     *
-     * In standalone mode, create the sessions; in embedded mode,
-     * fetch the current session (we hijack the session, we don't create a new one)
-     *
-     * NOTE: in embedded mode you MUST create a session before using PHPDSlib
-     *
-     * @throws PHPDS_sessionException
-     * @return $this
-     */
-    protected function configSession()
-    {
         if (empty($this->configuration['absolute_url'])) {
             $protocol                            = empty($_SERVER['HTTPS']) ? 'http://' : 'https://';
-            $this->configuration['absolute_url'] = $protocol . $_SERVER['HTTP_HOST'] . str_replace('/index.php', '', $_SERVER['PHP_SELF']);
-        }
-
-        try {
-            if ($this->embedded) {
-                $this->configuration['session_name'] = session_name();
-                // TODO: deal with empty session
-            } else {
-                if (!empty($this->configuration['absolute_url']))
-                    $this->configuration['session_name'] = md5($this->configuration['absolute_url']);
-
-                if (!empty($this->configuration['session_name']))
-                    session_name(md5($this->configuration['session_name']));
-                if (!empty($this->configuration['session_path']))
-                    session_save_path($this->configuration['session_path']);
-
-                session_start();
-            }
-
-            // Make sure we don't keep our session longer then it should be.
-            if (!empty($this->configuration['session_life'])) {
-                if (isset($_SESSION['SYSTEM_SESSION_TIME']) && (time() - $_SESSION['SYSTEM_SESSION_TIME']) > $this->configuration['session_life']) {
-                    // Session can now be destroyed.
-                    session_destroy();
-                    session_regenerate_id(true);
-                    $_SESSION = array();
-                } else {
-                    $_SESSION['SYSTEM_SESSION_TIME'] = time();
-                }
-            }
-        } catch (Exception $e) {
-            throw new PHPDS_sessionException(session_save_path(), 0, $e);
+            $this->configuration['absolute_url'] =
+                $protocol . $_SERVER['HTTP_HOST'] . str_replace('/index.php', '', $_SERVER['PHP_SELF']);
         }
 
         return $this; // to allow fluent interface
@@ -390,19 +351,20 @@ class PHPDS
         // Init main debug instance. //////////////////////////////////////////
         $this->PHPDS_debug(); /////////////////////////////////////////////////
 
-        // Various init subroutines. //////////////////////////////////////////
-        $this->configSession(); ///////////////////////////////////////////////
-
         // Start database connection. /////////////////////////////////////////
         $this->configDb(); ////////////////////////////////////////////////////
 
         // Connects cache server. /////////////////////////////////////////////
         $this->PHPDS_cache()->start(); ////////////////////////////////////////
 
+        // Connects session server. ///////////////////////////////////////////
+        $this->PHPDS_session()->start(); //////////////////////////////////////
+
         // Starts config class. ///////////////////////////////////////////////
         $this->PHPDS_config()->getEssentialSettings(); ////////////////////////
 
-        $this->classes->loadRegistry();
+        // Will load all available classes from registry. /////////////////////
+        $this->classes->loadRegistry(); ///////////////////////////////////////
 
         // Loads settings from configuration file. ////////////////////////////
         $this->configCoreSettings(); //////////////////////////////////////////
@@ -552,6 +514,23 @@ class PHPDS
             $this->cache = $this->_factory($driver);
         }
         return $this->cache;
+    }
+
+    /**
+     * Allow access to the global cache subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_sessionInterface
+     */
+    public function PHPDS_session()
+    {
+        if (empty($this->session)) {
+            $driver = $this->configuration['driver']['session'];
+            // Hard code, its faster... don't sneak this one.
+            require_once 'includes/session' . DIRECTORY_SEPARATOR . $driver . '.class.php';
+            $this->session = $this->_factory($driver);
+        }
+        return $this->session;
     }
 
     /**
@@ -804,6 +783,7 @@ class PHPDS
  * @property PHPDS_core             $core
  * @property PHPDS_config           $config
  * @property PHPDS_cacheInterface   $cache
+ * @property PHPDS_sessionInterface $session
  * @property PHPDS_navigation       $navigation
  * @property PHPDS_dbInterface      $db
  * @property PHPDS_template         $template

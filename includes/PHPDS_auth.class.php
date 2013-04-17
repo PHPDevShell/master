@@ -313,22 +313,8 @@ class PHPDS_auth extends PHPDS_dependant
 
         $user->logArray[] = array('log_type' => 5, 'log_description' => ___('Logged-out'));
 
-        unset($_SESSION['user_email']);
-        unset($_SESSION['user_id']);
-        unset($_SESSION['user_name']);
-        unset($_SESSION['user_role']);
-        unset($_SESSION['user_display_name']);
-        unset($_SESSION['user_role_name']);
-        unset($_SESSION['user_language']);
-        unset($_SESSION['user_timezone']);
-        unset($_SESSION['user_region']);
-        unset($_SESSION['user_locale']);
-
         $this->cache->flush();
-
-        $_SESSION = array();
-
-        session_destroy();
+        $this->session->flush();
 
         if ($set_guest) $this->createGuestSession();
     }

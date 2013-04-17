@@ -16,7 +16,7 @@ class PHPDS_filecache extends PHPDS_dependant implements PHPDS_cacheInterface
      * The cache directory to write in.
      * @var string
      */
-    public $writeDir = "";
+    public $writeDir = '';
     /**
      * The extension if to which cache files should be attached to.
      * @var string

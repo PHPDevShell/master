@@ -92,7 +92,7 @@ $configuration['cache_path'] = 'write/cache/';
  */
 $configuration['cache_refresh_intervals'] = 1440;
 /**
- * Memcached server details.
+ * Memcached cache server details.
  * Only complete this when you are using the memcached driver, this is not needed for file based or apc caching.
  * Duplicate cache server block to create more memcached servers which gets utilised by memcached depending on weight.
  * @global array
@@ -116,16 +116,64 @@ $configuration['memcached_cacheserver'][0] = array(
 
 //////////////////////////////////////////////////////////////////////////////
 // Session ///////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-// System ////////////////////////////////////////////////////////////////////
-
 /**
  * The class that handles the session connection found inside includes/session/
- * Also supports : PHPDS_apcSession, PHPDS_memSession
+ * Also supports : PHPDS_apcSession, PHPDS_memcachedSession
  * @global string
  */
-$configuration['driver']['session'] = 'PHPDS_fileSession';
+$configuration['driver']['session'] = 'PHPDS_memcachedSession';
+/**
+ * The lifespan of the session created.
+ * @global integer (seconds) (0 to turn off any sessions)
+ */
+$configuration['session_life'] = 1440;
+/**
+ * Will attempt to protect system against potential session hijacking.
+ * @global bool
+ */
+$configuration['session_protect'] = false;
+/**
+ * Allows you to specify specific runtime configuration options for your servers sessions.
+ * @see http://www.php.net/manual/en/session.configuration.php
+ * You can add additional setting to the array.
+ * @global array
+ */
+$configuration['session_cfg'] = array(
+    //'session.gc_probability' => 1,
+    //'session.gc_divisor' => 100,
+    //'session.gc_maxlifetime' => $configuration['session_life']
+);
+/**
+ * Sets the temp session data save path, false to use default.
+ * (Needs to be writable)
+ * @global string $configuration['session_path']
+ */
+$configuration['session_path'] = 'write/session/';
+/**
+ * Memcached session server details.
+ * Only complete this when you are using the memcached driver, this is not needed for file based or apc sessions.
+ * Duplicate cache server block to create more memcached servers which gets utilised by memcached depending on weight.
+ * USE MAIN MEMCACHED: To use main cache server instance, simply comment this line out.
+ * @global array
+ */
+$configuration['memcached_sessionserver'][0] = array(
+    /**
+     * Point to the host where memcached is listening for connections.
+     */
+    'host'           => 'localhost',
+    /**
+     * Point to the port where memcached is listening for connections.
+     * Set this parameter to 0 when using UNIX domain sockets.
+     */
+    'port'           => 11211,
+    /**
+     * Number of buckets to create for this server which in turn control its probability of it being selected.
+     * The probability is relative to the total weight of all servers.
+     */
+    'weight'         => 0
+);
+//////////////////////////////////////////////////////////////////////////////
+// System ////////////////////////////////////////////////////////////////////
 /**
  * When you experience a delay in views updating after changes, enable this to correct it.
  * Note disable this in production as it uses allot of memory.
@@ -159,19 +207,6 @@ $configuration['static_content_host'] = '';
 $configuration['footer_js'] = <<<JS
 	<!-- Ending Javascript -->
 JS;
-/**
- * Login session life.
- * This is how long the session will be remembered with each new login.
- * To disable, create session life as 0.
- * @global integer
- */
-$configuration['session_life'] = 1800;
-/**
- * Sets the temp session data save path, false to use default.
- * (Needs to be writable)
- * @global string $configuration['session_path']
- */
-$configuration['session_path'] = 'write/session/';
 /**
  * Views compile path.
  * (Needs to be writable)
@@ -248,19 +283,13 @@ $configuration['preloaded_settings'] = array(
     'region',
     'root_id',
     'root_role',
-    'root_group',
-    'force_core_changes',
     'system_logging',
-    'access_logging',
     'crypt_key',
     'date_format',
     'date_format_short',
-    'default_template',
     'default_theme_id',
-    'printable_template',
     'split_results',
     'guest_role',
-    'guest_group',
     'system_timezone',
     'setting_admin_email',
     'email_critical',
@@ -274,7 +303,6 @@ $configuration['preloaded_settings'] = array(
     'meta_keywords',
     'meta_description',
     'node_behaviour',
-    'spam_assassin',
     'custom_css'
 );
 
