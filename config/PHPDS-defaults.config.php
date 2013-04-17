@@ -77,7 +77,7 @@ $configuration['database']['master'] = array(
  *
  * @global string
  */
-$configuration['driver']['cache'] = 'PHPDS_apc';
+$configuration['driver']['cache'] = 'PHPDS_filecache';
 /**
  * Views cache path (used by PHPDS_filecache)
  * (Needs to be writable)
@@ -88,7 +88,7 @@ $configuration['cache_path'] = 'write/cache/';
  * Cache refresh intervals in seconds.
  * Helps with overall performance of your system. The higher the value the less queries will be done,
  * but your settings will be slower to update.
- * @global integer (seconds)
+ * @global integer (seconds) (0 to turn off any cache)
  */
 $configuration['cache_refresh_intervals'] = 1440;
 /**
