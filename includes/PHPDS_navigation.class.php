@@ -35,6 +35,12 @@ class PHPDS_navigation extends PHPDS_dependant
      * @var array
      */
     public $navAlias;
+    /**
+     * Holds all combined node and route information.
+     *
+     * @var array
+     */
+    public $nodes;
 
     /**
      * This methods loads the node structure, this according to permission and conditions.
@@ -45,23 +51,29 @@ class PHPDS_navigation extends PHPDS_dependant
     {
         $cache = $this->cache;
 
-        $all_user_roles = $this->user->getRoles($this->configuration['user_id']);
+        $this->nodes = $cache->get('PHPDS_nodes');
 
-        $this->navigation = $cache->get('navigation');
+        if (empty($this->nodes)) {
+            if (empty($this->navigation))   $this->navigation   = array();
+            if (empty($this->child))        $this->child        = array();
+            if (empty($this->navAlias))     $this->navAlias     = array();
+            if (empty($this->nodes))        $this->nodes        = array();
 
-        if (empty($this->navigation)) {
-            if (empty($this->navigation)) $this->navigation = array();
-            if (empty($this->child)) $this->child = array();
-            if (empty($this->navAlias)) $this->navAlias = array();
+            $this->readNodeTable($this->configuration['user_role']);
 
-            $this->readNodeTable($all_user_roles);
+            $this->nodes['child_navigation'] = $this->child;
+            $this->nodes['nav_alias']        = $this->navAlias;
+            $this->nodes['router_routes']    = $this->router->routes;
+            $this->nodes['router_modules']   = $this->router->modules;
+            $this->nodes['navigation']       = $this->navigation;
 
-            $cache->set('navigation', $this->navigation);
-            $cache->set('child_navigation', $this->child);
-            $cache->set('nav_alias', $this->navAlias);
+            $cache->set('PHPDS_nodes', $this->nodes);
         } else {
-            $this->child    = $cache->get('child_navigation');
-            $this->navAlias = $cache->get('nav_alias');
+            $this->child           = $this->nodes['child_navigation'];
+            $this->navAlias        = $this->nodes['nav_alias'];
+            $this->router->routes  = $this->nodes['router_routes'];
+            $this->router->modules = $this->nodes['router_modules'];
+            $this->navigation      = $this->nodes['navigation'];
         }
 
         return $this;
@@ -70,10 +82,10 @@ class PHPDS_navigation extends PHPDS_dependant
     /**
      * Reads into array all nodes that certain roles have access to.
      *
-     * @param array $all_user_roles call all user roles.
+     * @param int $user_role call all user roles.
      * @throws PHPDS_exception
      */
-    protected function readNodeTable($all_user_roles)
+    protected function readNodeTable($user_role)
     {
         $sql = "
             SELECT DISTINCT SQL_CACHE
@@ -89,14 +101,14 @@ class PHPDS_navigation extends PHPDS_dependant
             ON        t1.node_id = t3.node_id
             LEFT JOIN _db_core_themes AS t6
             ON        t1.theme_id = t6.theme_id
-            WHERE     (t2.user_role_id IN (:roles))
+            WHERE     (t2.user_role_id = :roles)
             ORDER BY  t3.id
             ASC
         ";
 
-        if (empty($all_user_roles)) throw new PHPDS_exception('Cannot extract nodes when no roles are given.');
+        if (empty($user_role)) throw new PHPDS_exception('Cannot extract nodes when no roles are given.');
 
-        $select_nodes = $this->db->queryFAR($sql, array('roles' => $all_user_roles));
+        $select_nodes = $this->db->queryFAR($sql, array('roles' => $user_role));
 
         $config     = $this->configuration;
         $navigation = $this;
@@ -457,6 +469,32 @@ class PHPDS_navigation extends PHPDS_dependant
     }
 
     /**
+     * Check if the current user is allowed the given node
+     * If (s)he's not and $use_default is true, return the ID of the default node
+     *
+     * @param string $nodeID
+     * @param boolean $use_default
+     * @return string|boolean
+     */
+    public function checkNode($nodeID, $use_default = true)
+    {
+        if (empty($this->navigation[$nodeID])) {
+            if ($use_default) {
+                if ($this->user->isLoggedIn()) {
+                   return $this->configuration['front_page_id_in'];
+                } else {
+                   return $this->configuration['front_page_id'];
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return $nodeID;
+        }
+
+    }
+
+    /**
      * Parses the REQUEST_URI to get the page id
      */
     public function parseRequestString($uri = '')
@@ -475,14 +513,16 @@ class PHPDS_navigation extends PHPDS_dependant
 
         if (empty($path)) {
             // no path given, fall back to the what default page has been configured
-            $route = $this->user->isLoggedIn() ? $configuration['front_page_id_in'] : $configuration['front_page_id'];
-            //$route = 0; // default will be picked up later
+            //$route = $this->user->isLoggedIn() ? $configuration['front_page_id_in'] : $configuration['front_page_id'];
+            $route = 0; // default will be picked up later
         } else {
             // first case, old-style "index.php?m=nodeid"
             if ('index.php' == $path) {
                 $m = $_GET['m'];
                 if (!empty($this->navigation[$m])) {
                     $route = $m;
+                } else {
+                    $route = false;
                 }
             } else { // second case, use the router
                 $route = $this->router->matchRoute($path);
@@ -493,7 +533,7 @@ class PHPDS_navigation extends PHPDS_dependant
             }
         }
 
-        if (false === $route) {
+        if ($route === false) {
             return $this->urlAccessError($path, $m);
         }
 

@@ -185,12 +185,6 @@ class PHPDS_debug extends PHPDS_dependant
     /**
      * Push the given error to the error system
      *
-     * @version 1.1
-     *
-     * @date 20120312 (v1.1) (greg) added param $code
-     *
-     * @author  greg <greg@phpdevshell.org>
-     *
      * @param mixed $data
      * @param mixed $code
      * @return $this

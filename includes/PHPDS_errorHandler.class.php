@@ -351,7 +351,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
 
         switch ($level) {
             case PHPDS_debug::ERROR:
-                if ($this->display && !$ajax_error) {
+                if ($this->display && !$this->firephp && !$ajax_error) {
                     if (!method_exists($template, 'error')) echo $this->message($emsg);
                 }
 
@@ -361,7 +361,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
                 break;
 
             case PHPDS_debug::WARN:
-                if ($this->display && !$ajax_error) {
+                if ($this->display && !$this->firephp && !$ajax_error) {
                     if (method_exists($template, 'warning')) echo $template->warning($emsg, 'return');
                     else echo $this->message($emsg);
                 }
@@ -373,7 +373,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
 
             case PHPDS_debug::INFO:
 
-                if ($this->display && !$ajax_error) {
+                if ($this->display && !$this->firephp && !$ajax_error) {
                     if (method_exists($template, 'notice')) echo $template->notice($emsg, 'return');
                     else echo $this->message($emsg);
                 }
@@ -384,7 +384,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
                 break;
 
             case PHPDS_debug::DEBUG:
-                if ($this->display && !$ajax_error) {
+                if ($this->display && !$this->firephp && !$ajax_error) {
                     if (method_exists($template, 'debug')) echo $template->debug($emsg, 'return');
                     else echo $this->message($emsg);
                 }
@@ -395,7 +395,7 @@ class PHPDS_errorHandler extends PHPDS_dependant
                 break;
 
             default:
-                if ($this->display && !$ajax_error) {
+                if ($this->display && !$this->firephp && !$ajax_error) {
                     if (method_exists($template, 'note')) echo $template->note($emsg, 'return');
                     else echo $this->message($emsg);
                 }

@@ -41,7 +41,7 @@ class PHPDS_user extends PHPDS_dependant
      * @return integer
      * @throws PHPDS_exception
      */
-    public function getRoles($user_id = null)
+    public function getRole($user_id = null)
     {
         $sql = "
             SELECT  user_role

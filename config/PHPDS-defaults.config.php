@@ -383,7 +383,6 @@ $configuration['debug']['domains'] = array('core', 'db', 'navigation', 'security
  */
 $configuration['debug']['level'] = 0;
 
-
 // Error settings
 /**
  * Use FirePHP as debugging platform.
@@ -420,7 +419,7 @@ $configuration['error']['email_critical'] = '';
 /**
  * Should messages be shown onscreen in the web browser?
  * Note that messages generated before the View is created will be outputed in a very raw manner.
- * Overriden by 'production' = true.
+ * Override by 'production' = true.
  * Default: true
  *
  * @global boolean

@@ -157,6 +157,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
 
                 $this->lastQuery = $sql;
                 $this->result    = $this->connection[$this->server]->query($sql);
+                $this->debug->debug('Database Query : ' . $sql);
                 return $this->result;
             } else {
                 $this->result = false;

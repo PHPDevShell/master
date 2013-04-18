@@ -1247,3 +1247,32 @@ class PHPDS_classFactory extends PHPDS_dependant
         return empty($data['plugin_folder']) ? false : 'plugins/' . $data['plugin_folder'];
     }
 }
+
+/**
+ * Interface to implement deferred, that is code which can be execute after something else
+ */
+interface iPHPDS_deferred
+{
+    /**
+     * Return something meaningful for the caller to trigger the action
+     *
+     * @return mixed
+     */
+    public function reduce();
+
+    /**
+     * Part to execute if the action triggered was successful
+     *
+     * @param mixed $controller_result whetever was returned by the controller's run
+     *
+     * @return mixed
+     */
+    public function success($controller_result = null);
+
+    /**
+     * Part to execute if the action triggered has failed
+     *
+     * @return mixed
+     */
+    public function failure();
+}

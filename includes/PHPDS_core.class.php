@@ -171,15 +171,29 @@ class PHPDS_core extends PHPDS_dependant
     /**
      * Run default, custom or no template.
      *
-     * @date 20120920 (v2.1.1) (greg) fixed a typo with $url
      * @throws PHPDS_accessException
      */
-    public function startController()
+    public function startController ()
     {
-        $this->setDefaultNodeParams();
+        $configuration = $this->configuration;
+        $node = $configuration['m'];
+
+        // support for deferred, that is code running before and after a controller
+        $deferred = null;
+        if (is_a($node, 'iPHPDS_deferred')) {
+            /* @var iPHPDS_deferred $deferred */
+            $deferred = $node;
+            $node = $deferred->reduce();
+        }
+
+        $configuration['m'] = $this->navigation->checkNode($node);
+
+        $result = false;
         try {
+            $this->setDefaultNodeParams();
+
             ob_start();
-            $this->executeController();
+            $result = $this->executeController();
 
             if (empty($this->data)) {
                 $this->data = ob_get_clean();
@@ -187,52 +201,72 @@ class PHPDS_core extends PHPDS_dependant
                 PU_cleanBuffers();
             }
         } catch (Exception $e) {
-            PU_cleanBuffers();
-            $this->themeFile = '';
-
-            if (is_a($e, 'PHPDS_accessException')) {
-                $logger = $this->factory('PHPDS_debug', 'PHPDS_accessException');
-                $url    = $this->configuration['absolute_url'] . $_SERVER['REQUEST_URI'];
-
-                PU_silentHeaderStatus($e->HTTPcode);
-
-                switch ($e->HTTPcode) {
-                    case 401:
-                        if (!PU_isAJAX()) {
-                            $this->themeFile = 'login.php';
-                        }
-                        $logger->error('URL unauthorized: ' . $url, '401');
-                        break;
-                    case 404:
-                        if (!PU_isAJAX()) {
-                            $this->themeFile = '404.php';
-                        }
-                        $logger->error('URL not found: ' . $url, '404');
-                        break;
-                    case 403:
-                        if (!PU_isAJAX()) {
-                            $this->themeFile = '403.php';
-                        }
-                        $logger->error('URL forbidden ' . $url, '403');
-                        break;
-                    case 418:
-                        if (!PU_isAJAX()) {
-                            $this->themeFile = '418.php';
-                        }
-                        $logger->error('Spambot for ' . $url, '418');
-                        break;
-                    default:
-                        throw $e;
-                }
-
-            } else throw $e;
+            if ($deferred) {
+                $deferred->failure($result);
+                $deferred = null;
+            }
+            $this->pageException($e);
         }
+
+        if ($deferred) {
+            $deferred->success($result);
+        }
+
         // Only if we need a theme.
-        if (!empty($this->themeFile)) {
+        if (! empty($this->themeFile)) {
             $this->loadTheme();
         } else {
             print $this->data;
         }
+    }
+
+    /**
+     * Handles the given exception, dealing with some special cases (page not found, unauthorized, etc)
+     *
+     * @param Exception $e
+     * @throws Exception
+     */
+    protected function pageException(Exception $e)
+    {
+        PU_cleanBuffers();
+        $this->themeFile = '';
+
+        if (is_a($e, 'PHPDS_accessException')) {
+            $logger = $this->factory('PHPDS_debug', 'PHPDS_accessException');
+            $url = $this->configuration['absolute_url'] . $_SERVER['REQUEST_URI'];
+
+            PU_silentHeaderStatus($e->HTTPcode);
+
+            switch ($e->HTTPcode) {
+                case 401:
+                    if (!PU_isAJAX()) {
+                        $this->themeFile = 'login.php';
+                    }
+                    $logger->error('URL unauthorized: ' . $url, '401');
+                    break;
+                case 404:
+                    if (!PU_isAJAX()) {
+                        $this->themeFile = '404.php';
+                    }
+                    $logger->error('URL not found: ' . $url, '404');
+                    break;
+                case 403:
+                    if (!PU_isAJAX()) {
+                        $this->themeFile = '403.php';
+                    }
+                    $logger->error('URL forbidden ' . $url, '403');
+                    break;
+                case 418:
+                    if (!PU_isAJAX()) {
+                        $this->themeFile = '418.php';
+                    }
+                    $logger->error('Spambot for ' . $url, '418');
+                    break;
+                default:
+                    throw $e;
+            }
+
+        } else throw $e;
     }
 
     /**
@@ -242,6 +276,7 @@ class PHPDS_core extends PHPDS_dependant
     {
         $navigation    = $this->navigation->navigation;
         $configuration = $this->configuration;
+        $result        = false;
 
         // Node Types:
         // 1. Standard Page from Plugin
@@ -398,7 +433,7 @@ class PHPDS_core extends PHPDS_dependant
             switch ($node_case) {
                 // Plugin Script.
                 case 1:
-                    $this->mvcNodeStructure($node_id);
+                    $result = $this->mvcNodeStructure($node_id);
                     break;
                 // Link, Jump, Placeholder.
                 case 2:
@@ -408,23 +443,26 @@ class PHPDS_core extends PHPDS_dependant
                         // Get correct frontpage id.
                         ($this->user->isLoggedIn()) ? $node_id = $configuration['front_page_id_in'] : $node_id = $configuration['front_page_id'];
                     }
-                    $this->mvcNodeStructure($node_id);
+                    $result = $this->mvcNodeStructure($node_id);
                     break;
                 // External File.
                 case 4:
                     // Require external file.
-                    if (!$this->loadFile($navigation[$node_id]['node_link'])) {
+                    $result = $this->loadFile($navigation[$node_id]['node_link']);
+                    if (false == $result) {
                         throw new PHPDS_exception(sprintf(___('File could not be found after trying to execute filename : %s'), $navigation[$node_id]['node_link']));
                     }
                     break;
                 // HTTP URL.
                 case 5:
-                    // Redirect to external http url.
+                    $result = true;
+                        // Redirect to external http url.
                     $this->navigation->redirect($navigation[$node_id]['node_link']);
                     break;
                 // iFrame.
                 case 7:
-                    // Clean up height.
+                    $result = true;
+                        // Clean up height.
                     $height = preg_replace('/px/i', '', $navigation[$node_id]['extend']);
                     // Create Iframe.
                     $this->data = $this->template->mod->iFrame($navigation[$node_id]['node_link'], $height, '100%');
@@ -432,7 +470,8 @@ class PHPDS_core extends PHPDS_dependant
                 // Cronjob.
                 case 8:
                     // Require script.
-                    if (!$this->mvcNodeStructure($node_id)) {
+                    $result = $this->mvcNodeStructure($node_id);
+                    if ($result) {
                         $time_now = time();
                         // Update last execution.
                         $sql = "
@@ -445,21 +484,27 @@ class PHPDS_core extends PHPDS_dependant
                     break;
                 // HTML Ajax Widget.
                 case 9:
-                    $this->mvcNodeStructure($node_id);
+                    $result = $this->mvcNodeStructure($node_id);
                     break;
                 // HTML Ajax.
                 case 10:
-                    $this->mvcNodeStructure($node_id);
+                    $result = $this->mvcNodeStructure($node_id);
                     break;
                 // HTML Ajax Lightbox.
                 case 11:
-                    $this->mvcNodeStructure($node_id);
+                    $result = $this->mvcNodeStructure($node_id);
                     break;
                 // Raw Ajax.
                 case 12:
-                    $this->mvcNodeStructure($node_id);
+                    $result = $this->mvcNodeStructure($node_id);
                     break;
+
+                // something went wrong
+                default:
+                    throw new PHPDS_exception('Broken controller node');
             }
+        } else {
+            throw new PHPDS_exception('Controller node not found');
         }
 
         if (isset($this->haltController)) {
@@ -485,6 +530,7 @@ class PHPDS_core extends PHPDS_dependant
                     break;
             }
         }
+        return $result;
     }
 
     /**
@@ -612,35 +658,6 @@ class PHPDS_core extends PHPDS_dependant
         }
 
         return $ut->format($format);
-    }
-
-    /**
-     * Returns the difference in seconds between the currently logged in user's timezone
-     * and the server's configured timezone (under General Settings). If the server
-     * timezone is 2 hours behind the user timezone, it will return -7200 for example. If
-     * the server timezone is 2 hours ahead of the user timezone, it will return 7200.
-     *
-     * @param integer $custom_timestamp Timestamp to compare dates timezones in the future or past.
-     * @return integer The difference between the user's timezone and server timezone (in seconds).
-     */
-    public function userServerTzDiff($custom_timestamp = 0)
-    {
-        $configuration = $this->configuration;
-        if (empty($custom_timestamp)) {
-            $timestamp = $configuration['time'];
-        } else {
-            $timestamp = $custom_timestamp;
-        }
-        if (phpversion() < '5.2.0')
-            return 0;
-        $ut = new DateTime(date('Y-m-d H:i:s', $timestamp));
-        $tz = new DateTimeZone($configuration['user_timezone']);
-        $ut->setTimezone($tz);
-        $user_timezone_sec = $ut->format('Z');
-        $tz                = new DateTimeZone($configuration['system_timezone']);
-        $ut->setTimezone($tz);
-        $server_timezone_sec = $ut->format('Z');
-        return $server_timezone_sec - $user_timezone_sec;
     }
 
     /**

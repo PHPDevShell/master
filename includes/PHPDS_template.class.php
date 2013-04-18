@@ -1,5 +1,11 @@
 <?php
 
+interface iPHPDS_activableGUI
+{
+    public function construct();
+    public function activate();
+}
+
 /**
  * Class responsible to deal with the visual representation of a page.
  *
@@ -728,6 +734,27 @@ class PHPDS_template extends PHPDS_dependant
         foreach (func_get_args() as $plugin) {
             $this->addJsFileToHead($this->mod->jqueryUI($plugin));
         }
+    }
+
+    /**
+     * Activate a GUI plugin, i.e. give the plugin the opportunity to do whatever is needed so be usable from the Javascript code
+     *
+     * @param string $plugin the name of the plugin
+     * @param mixed $parameters (optional) parameters if the plugin have ones
+     *
+     * @return iPHPDS_activableGUI the plugin
+     */
+    public function activatePlugin($plugin, $parameters = null)
+    {
+        $parameters = func_get_args();
+        $path = $this->classFactory->classFolder($plugin);
+
+        $plugin = $this->factory(array('classname' => $plugin, 'factor' => 'singleton'), $path);
+        if (is_a($plugin, 'iPHPDS_activableGUI')) {
+            $plugin->activate($parameters);
+        }
+
+        return $plugin;
     }
 
     /**

@@ -19,23 +19,19 @@ class PHPDS_router extends PHPDS_dependant
      * This is a plain array so we can handle identical patterns - route are matched in order.
      * @var array
      */
-    protected $routes = array();
-
+    public $routes = array();
     /**
      * List of route descriptors, gathered by modules.
-     * This is an associative array, they is the module name.
+     * This is an associative array
      * The routes with no modules are not here.
      * @var array
      */
-
-    protected $modules = array();
-
+    public $modules = array();
     /**
      * A simple associative array with the parameters (ie URL variables) found in the URL.
      * @var array
      */
     protected $parameters = array();
-
     /**
      * Defaults values
      * @var array
@@ -135,7 +131,7 @@ class PHPDS_router extends PHPDS_dependant
      * @param $url
      * @return array
      */
-    public function splitURL($url)
+    protected function splitURL($url)
     {
         $parts = explode('/', $url);
         if ((count($parts) > 1) && empty($this->modules[$parts[0]])) {
