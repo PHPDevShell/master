@@ -15,10 +15,6 @@
  * @param functionName string, the name of the function to call (ie. method "ajax"+functionName of the controller)
  * @param params array, data to be serialized and sent via POST
  * @param extParams array (optional), data to be serialized and sent via GET
- *
- * TODO: possibility of calling a method from another controller
- * TODO: handle errors gracefully
- *
  */
 function PHPDS_remoteCall(functionName, params, extParams) {
     var url = document.URL;

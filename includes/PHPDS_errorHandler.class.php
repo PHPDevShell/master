@@ -450,16 +450,8 @@ class PHPDS_errorHandler extends PHPDS_dependant
 
     /**
      * Display an Exception
-     *
      * This function will load a predefined template page (in PHP form) in order to warn the user something has gone wrong.
-     *
      * If an exception is provided, it will be detailed as much as possible ; if not, only a generic message will be displayed
-     *
-     * @date 20100918
-     * @date 20120511 (v1.1) (greg) output is captured in case we want to save it
-     * @date 20120724 (v1.2) (greg) added "probable origin"
-     * @version 1.2
-     * @author  greg <greg@phpdevshell.org>
      *
      * @return string the whole output
      *
@@ -566,10 +558,6 @@ class PHPDS_backtrace
     /**
      * Returns a formatted string with the last line of the backtrace
      *
-     * @see     http://php.net/manual/en/function.debug-backtrace.php
-     * @version 1.0
-     * @author  greg <greg@phpdevshell.org>
-     *
      * @param array $backtrace (optional) a backtrace array, like debug_backtrace() gives
      * @return string
      */
@@ -587,11 +575,7 @@ class PHPDS_backtrace
     /**
      * Returns a text-only backtrace, suitable for text-only supports (like logfiles)
      *
-     * @see     http://php.net/manual/en/function.debug-backtrace.php
-     * @version 1.0
-     * @author  greg <greg@phpdevshell.org>
-     *
-     * @param integer $ignore    number of lines to ignore at the beginning of the backtrace (TODO not implemented)
+     * @param integer $ignore    number of lines to ignore at the beginning of the backtrace
      * @param array   $backtrace (optional) a backtrace array, like debug_backtrace() gives
      * @return string
      */
@@ -637,20 +621,8 @@ class PHPDS_backtrace
         return $trace;
     }
 
-    public function asArray($ignore = 0, $backtrace = null)
-    {
-        // TODO
-    }
-
     /**
      * Returns a html backtrace, suitable for displaying in a browser
-     *
-     * TODO: link to online API documentation
-     *
-     * @see     http://php.net/manual/en/function.debug-backtrace.php
-     * @version 1.1
-     * @date 20120724 (v1.1) (greg) $ignore is actually a marker for a frame to highlight
-     * @author  greg <greg@phpdevshell.org>
      *
      * @param integer $ignore    number of a stack frame to highlight
      * @param array   $backtrace (optional) a backtrace array, like debug_backtrace() gives
@@ -738,9 +710,6 @@ HTML;
     /**
      * Format a html output of an code fragment (seven lines before and after) around the give line of the given source file
      *
-     * @version 1.0
-     * @author  greg <greg@phpdevshell.org>
-     *
      * @param string  $filepath path to the source file
      * @param integer $lineno   line number of the interesting line
      * @return string html formatted string
@@ -770,9 +739,6 @@ HTML;
 
     /**
      * Format the given code string as pretty html
-     *
-     * @version 1.0
-     * @author  greg <greg@phpdevshell.org>
      *
      * @param string  $string the code string to format
      * @param integer $lineno (optional) a line number to prefix

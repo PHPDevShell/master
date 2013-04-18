@@ -228,7 +228,6 @@ class PHPDS_controller extends PHPDS_dependant
      */
     public function runAJAX()
     {
-        // TODO: catch exception and signal back to the ajax caller
         if (isset($_SERVER["HTTP_X_REMOTE_CALL"])) {
             $f = 'ajax' . $_SERVER["HTTP_X_REMOTE_CALL"];
             if (method_exists($this, $f)) {

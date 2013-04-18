@@ -10,8 +10,6 @@ $early_debug = false;
 
 $start_time = microtime(true);
 
-date_default_timezone_set('America/Los_Angeles'); // this is stupid, but *required* by PHP :(   TODO: make it better! if possible...
-
 // Super high level exception if all else truly fails.
 try {
     define('BASEPATH', realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
