@@ -3,11 +3,11 @@
 interface PHPDS_sessionInterface {
     /**
      * Starts a session. See: http://php.net/manual/en/function.session-start.php
-     * @param object $storage Not used with this session manager.
+     *
      * @return bool
      * @throws PHPDS_sessionException
      */
-    public function start($storage = null);
+    public function start();
     /**
      * Saves the current session.
      * @return void

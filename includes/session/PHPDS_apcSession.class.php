@@ -1,76 +1,68 @@
 <?php
-/**
- * Delphex Web Framework Core
- *
- * @link http://www.delphexonline.com
- * @copyright Copyright (C) 2012 Delphex Technologies CC, All rights reserved.
- * @author Don Schoeman
- *
- * Copyright notice: See readme/notice
- * By using DWF you agree to notice and license, if you dont agree to this notice/license you are not allowed to use DWF.
- *
- */
 
-class EAPCSNotAvailableException extends Exception {}
-class EAPCSNotStartedException extends Exception {
-    public function __construct($message = "", $code = 0 , $previous = null) {
-        parent::__construct($message, $code, $previous);
-        $message = __s("Session not started properly. APCSession::start() not called or failed to start cache properly.");
-    }
-};
-
-// Implements an APC based session layer
-class PHPDS_apcSession implements SessionIntf {
-
-    public $config;
-    public $session_id = 0;
-    public $old_session_id = 0;
-    public $enabled = False;
-    public $started = false;
-    public $lifetime = 0;
-
+class PHPDS_apcSession extends PHPDS_dependant implements PHPDS_sessionInterface
+{
     /**
-    * Class constructor.
-    * @param array $config Possible Options:
-    *   config['session_enabled']: default = False
-    *   config['session_write_mode']: default = 0 (0 = Normal, 1 = JSON Storage mode)
-    *   config['session_protect']: default = True
-    *   config['session_lifetime']: default = 1440
-    *   config['session_gc_maxlifetime']: default = 1
-    *   config['session_gc_probability']: default = 100
-    *   config['session_gc_maxlifetime']: default = 1440
-    */
-    public function __construct($config = array()) {
-        $this->config = $config;
-    }
+     * Should session be enabled?
+     * @var bool
+     */
+    public $enabled = false;
+    /**
+     * At what intervals should session be refreshed.
+     * @var int
+     */
+    public $lifetime = 1440;
+    /**
+     * Holds latest fresh session id.
+     * @var int
+     */
+    public $sessionId = 0;
+    /**
+     * Hold previous session id before refresh.
+     * @var int
+     */
+    public $oldSessionId = 0;
+    /**
+     * Should session be in test mode.
+     * @var bool
+     */
+    public $testMode = false;
+    /**
+     * Auto property to tell rest of system if cache system was started.
+     * @var bool
+     */
+    public $started = false;
 
     /**
      * Destructor
      */
-    public function __destruct() {
+    public function __destruct()
+    {
         session_write_close();
     }
 
     /**
-    * Starts a session. See: http://php.net/manual/en/function.session-start.php
-    * @param object $storage Not used with this session manager.
-    *
-    * @return bool
-    */
-    public function start($storage = null) {
+     * Starts a session. See: http://php.net/manual/en/function.session-start.php
+     *
+     * @return bool
+     * @throws PHPDS_sessionException
+     */
+    public function start()
+    {
         $result = false;
+        $config = $this->configuration;
 
         // Is session handling enabled?
-        $this->enabled = !isset($this->config['session_enabled']) ? True: $this->config['session_enabled'];
+        $this->enabled = !isset($config['session_life']) ? true : $config['session_life'];
 
         if ($this->enabled) {
-            $this->write_mode = empty($this->config['session_write_mode']) ? 0: $this->config['session_write_mode'];
-
-            if (!empty($this->config['session_gc_probability'])) ini_set('session.gc_probability', $this->config['session_gc_probability']);
-            if (!empty($this->config['session_gc_divisor'])) ini_set('session.gc_divisor', $this->config['session_gc_divisor']);
-            if (!empty($this->config['session_gc_maxlifetime'])) ini_set('session.gc_maxlifetime', $this->config['session_gc_maxlifetime']);
-
-            $this->lifetime = (!empty($this->config['session_lifetime'])) ? $this->config['session_lifetime']: ini_get('session.gc_maxlifetime');
+            if (!empty($config['session_cfg'])) {
+                foreach ($config['session_cfg'] as $skey => $svalue) {
+                    ini_set($skey, $svalue);
+                }
+            }
+            $this->lifetime = (!empty($config['session_life']))
+                ? $config['session_life'] : ini_get('session.gc_maxlifetime');
 
             if (!$this->started) {
                 if (!isset($_SESSION)) {
@@ -89,14 +81,13 @@ class PHPDS_apcSession implements SessionIntf {
                     $result = session_start();
 
                     // When protect is enabled we make sure to regenerate a new session id
-                    $protect = !isset($this->config['session_protect']) ? True: $this->config['session_protect'];
-                    if ($protect && !isset($_SESSION['session']))
-                    {
+                    $protect = empty($config['session_protect']) ? true : $config['session_protect'];
+                    if ($protect && !isset($_SESSION['PHPDS_session'])) {
                         // Basic session hijacking prevention
-                        $this->old_session_id = session_id();
+                        $this->oldSessionId = session_id();
                         session_regenerate_id();
-                        $this->session_id = session_id();
-                        $_SESSION['session'] = true;
+                        $this->sessionId           = session_id();
+                        $_SESSION['PHPDS_session'] = true;
                     }
                 }
             } else {
@@ -105,29 +96,28 @@ class PHPDS_apcSession implements SessionIntf {
         } else {
             $result = true;
         }
-
         return $result;
     }
 
     /**
-    * Saves the current session.
-    *
-    */
-    public function save() {
+     * Saves the current session.
+     *
+     * @return void
+     */
+    public function save()
+    {
         session_write_close();
     }
 
     /**
-    * Writes a value to the current session
-    *
-    * @param $key string Name of the key
-    * @param $value mixed Value to store
-    *
-    * @return bool True if the data was written successfuly
-    */
-    public function set($key, $value) {
-        if (!$this->started) throw new EAPCSNotStartedException();
-
+     * Writes a value to the current session
+     *
+     * @param string $key    Name of the key
+     * @param mixed  $value  Value to store
+     * @return bool True if the data was written successfully
+     */
+    public function set($key, $value)
+    {
         if ($this->enabled) {
             if (!empty($key)) {
                 $_SESSION[$key] = $value;
@@ -141,19 +131,17 @@ class PHPDS_apcSession implements SessionIntf {
     }
 
     /**
-    * Reads a value from the current session.
-    *
-    * @param $key string Name of the key
-    * @param $default mixed Default value if the key is not set
-    *
-    * @return mixed Returned data
-    */
-    public function get($key, $default = null) {
-        if (!$this->started) throw new EAPCSNotStartedException();
-
+     * Reads a value from the current session.
+     *
+     * @param string $key      Name of the key
+     * @param mixed  $default  Default value if the key is not set
+     * @return mixed Returned data
+     */
+    public function get($key, $default = null)
+    {
         if ($this->enabled) {
             if (!empty($key)) {
-                return (isset($_SESSION[$key])) ? $_SESSION[$key]: $default;
+                return (isset($_SESSION[$key])) ? $_SESSION[$key] : $default;
             } else {
                 return $default;
             }
@@ -163,18 +151,17 @@ class PHPDS_apcSession implements SessionIntf {
     }
 
     /**
-    * Completely destroys a session. Useful when clearing the current user's session completely after a log-out
-    *
-    * @param $force bool Force a flush, whether the session is enabled or not
-    */
-    public function flush($force = false) {
-        if (!$this->started && !$force) throw new EAPCSNotStartedException();
-
+     * Completely destroys a session. Useful when clearing the current user's session completely after a log-out
+     *
+     * @param bool $force Force a flush, whether the session is enabled or not
+     */
+    public function flush($force = false)
+    {
         if ($this->enabled || $force) {
             @session_unset();
             @session_destroy();
             @session_write_close();
-            @setcookie(session_name(),'',0,'/');
+            @setcookie(session_name(), '', 0, '/');
             @session_regenerate_id(true);
             unset($_SESSION);
         }
@@ -183,33 +170,38 @@ class PHPDS_apcSession implements SessionIntf {
     /**
      * Open the session handler
      *
+     * @param string $savePath
+     * @param string $sessionName
      * @return bool True if everything succeed
+     * @throws PHPDS_sessionException
      */
-    public function open($savePath, $sessionName) {
+    public function open($savePath, $sessionName)
+    {
         if ($this->enabled) {
-            if (extension_loaded('apc') && ini_get('apc.enabled')) {
+            if (extension_loaded('apc') && ini_get('apc.enabled') && !$this->testMode) {
                 $this->started = true;
             } else {
-                throw new EAPCSNotAvailableException(__s("Unable to start session. APC extension is not available or not installed."));
+                throw new PHPDS_sessionException("Unable to start APC system.
+                    APC caching is not installed or is currently disabled in your PHP config.");
             }
         }
-
         return true;
     }
 
     /**
-     * Called when the session is started, reads the data from APC based on the session id
+     * Called when the session is started, reads the data from apc based on the session id
      *
-     * @param string The Session ID
+     * @param string $id The Session ID
      * @return string The session data that is currently stored
      */
-    public function read($id) {
+    public function read($id)
+    {
         if ($this->enabled && $this->started) {
             $tmp_session = $_SESSION;
-            $success = false;
-            $_SESSION = apc_fetch("sessions/{$id}", $success);
+            $success     = false;
+            $_SESSION    = apc_fetch("sessions/{$id}", $success);
             if ($success) {
-                if(isset($_SESSION) && !empty($_SESSION)) {
+                if (isset($_SESSION) && !empty($_SESSION)) {
                     $new_data = session_encode();
                     $_SESSION = $tmp_session;
                     return $new_data;
@@ -227,11 +219,12 @@ class PHPDS_apcSession implements SessionIntf {
     /**
      * Writes the session data, convert to json before storing. Called when the session needs to be saved and closed.
      *
-     * @param string $id The Session ID
+     * @param string $id   The Session ID
      * @param string $data The data to store, already serialized by PHP
-     * @return bool True if APC was able to write the session data
+     * @return bool True if apc was able to write the session data
      */
-    public function write($id, $data) {
+    public function write($id, $data)
+    {
         if ($this->enabled) {
             if ($this->started) {
                 $tmp_session = $_SESSION;
@@ -251,9 +244,10 @@ class PHPDS_apcSession implements SessionIntf {
      * Called when a session is destroyed and its data needs to be removed.
      *
      * @param string $id The Session ID
-     * @return bool True if APC was able delete the session data successfully
+     * @return bool True if apc was able delete the session data successfully
      */
-    public function destroy($id) {
+    public function destroy($id)
+    {
         if ($this->enabled && $this->started) {
             return apc_delete("sessions/{$id}");
         } else {
@@ -264,9 +258,11 @@ class PHPDS_apcSession implements SessionIntf {
     /**
      * Close gc
      *
+     * @param int $lifetime
      * @return bool Always true
      */
-    public function gc($lifetime) {
+    public function gc($lifetime)
+    {
         return true;
     }
 
@@ -275,7 +271,8 @@ class PHPDS_apcSession implements SessionIntf {
      *
      * @return bool Always true
      */
-    public function close() {
+    public function close()
+    {
         return true;
     }
 

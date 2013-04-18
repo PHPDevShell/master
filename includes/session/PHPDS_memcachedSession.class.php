@@ -1,7 +1,6 @@
 <?php
 
 /**
- * Class PHPDS_memcachedSession
  * @property Memcached $memcached
  */
 class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInterface
@@ -52,11 +51,11 @@ class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInt
 
     /**
      * Starts a session. See: http://php.net/manual/en/function.session-start.php
-     * @param object $storage Not used with this session manager.
+     *
      * @return bool
      * @throws PHPDS_sessionException
      */
-    public function start($storage = null)
+    public function start()
     {
         $result = false;
         $config = $this->configuration;
@@ -64,7 +63,7 @@ class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInt
         // Is session handling enabled?
         $this->enabled = !isset($config['session_life']) ? true : $config['session_life'];
 
-        if ($this->enabled && !$this->started) {
+        if ($this->enabled) {
             if (!empty($config['session_cfg'])) {
                 foreach ($config['session_cfg'] as $skey => $svalue) {
                     ini_set($skey, $svalue);
@@ -73,40 +72,44 @@ class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInt
             $this->lifetime = (!empty($config['session_life']))
                 ? $config['session_life'] : ini_get('session.gc_maxlifetime');
 
-            if (!isset($_SESSION)) {
-                // Replace the default session handler functions
-                session_set_save_handler(
-                    array($this, "open"),
-                    array($this, "close"),
-                    array($this, "read"),
-                    array($this, "write"),
-                    array($this, "destroy"),
-                    array($this, "gc")
-                );
+            if (!$this->started) {
+                if (!isset($_SESSION)) {
+                    // Replace the default session handler functions
+                    session_set_save_handler(
+                        array($this, "open"),
+                        array($this, "close"),
+                        array($this, "read"),
+                        array($this, "write"),
+                        array($this, "destroy"),
+                        array($this, "gc")
+                    );
 
-                // Make sure that the session is closed when all objects are free'd
-                register_shutdown_function('session_write_close');
-                $result = session_start();
+                    // Make sure that the session is closed when all objects are free'd
+                    register_shutdown_function('session_write_close');
+                    $result = session_start();
 
-                // When protect is enabled we make sure to regenerate a new session id
-                $protect = empty($config['session_protect']) ? true : $config['session_protect'];
-                if ($protect && !isset($_SESSION['PHPDS_session'])) {
-                    // Basic session hijacking prevention
-                    $this->oldSessionId = session_id();
-                    session_regenerate_id();
-                    $this->sessionId           = session_id();
-                    $_SESSION['PHPDS_session'] = true;
+                    // When protect is enabled we make sure to regenerate a new session id
+                    $protect = empty($config['session_protect']) ? true : $config['session_protect'];
+                    if ($protect && !isset($_SESSION['PHPDS_session'])) {
+                        // Basic session hijacking prevention
+                        $this->oldSessionId = session_id();
+                        session_regenerate_id();
+                        $this->sessionId           = session_id();
+                        $_SESSION['PHPDS_session'] = true;
+                    }
                 }
+            } else {
+                $result = true;
             }
         } else {
             $result = true;
         }
-
         return $result;
     }
 
     /**
      * Saves the current session.
+     *
      * @return void
      */
     public function save()
@@ -158,7 +161,7 @@ class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInt
     /**
      * Completely destroys a session. Useful when clearing the current user's session completely after a log-out
      *
-     * @param  bool $force Force a flush, whether the session is enabled or not
+     * @param bool $force Force a flush, whether the session is enabled or not
      */
     public function flush($force = false)
     {
@@ -186,7 +189,7 @@ class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInt
             if (!$this->memcached) {
                 if (empty($this->configuration['memcached_sessionserver']) && !empty($this->cache->memcached)) {
                     $this->memcached = $this->cache->memcached;
-                    $this->started = true;
+                    $this->started   = true;
                     return true;
                 }
                 if (extension_loaded('memcached') && !$this->testMode) {
@@ -208,7 +211,6 @@ class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInt
                 $this->started = true;
             }
         }
-
         return true;
     }
 
@@ -222,7 +224,7 @@ class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInt
     {
         if ($this->enabled && $this->started) {
             $tmp_session = $_SESSION;
-             $_SESSION = $this->memcached->get("sessions/{$id}");
+            $_SESSION    = $this->memcached->get("sessions/{$id}");
             if (isset($_SESSION) && !empty($_SESSION)) {
                 $new_data = session_encode();
                 $_SESSION = $tmp_session;
@@ -276,6 +278,7 @@ class PHPDS_memcachedSession extends PHPDS_dependant implements PHPDS_sessionInt
 
     /**
      * Close gc
+     *
      * @param int $lifetime
      * @return bool Always true
      */

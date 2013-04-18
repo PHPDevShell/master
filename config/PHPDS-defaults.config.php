@@ -77,7 +77,7 @@ $configuration['database']['master'] = array(
  *
  * @global string
  */
-$configuration['driver']['cache'] = 'PHPDS_filecache';
+$configuration['driver']['cache'] = 'PHPDS_apc';
 /**
  * Views cache path (used by PHPDS_filecache)
  * (Needs to be writable)
@@ -121,7 +121,7 @@ $configuration['memcached_cacheserver'][0] = array(
  * Also supports : PHPDS_apcSession, PHPDS_memcachedSession
  * @global string
  */
-$configuration['driver']['session'] = 'PHPDS_memcachedSession';
+$configuration['driver']['session'] = 'PHPDS_apcSession';
 /**
  * The lifespan of the session created.
  * @global integer (seconds) (0 to turn off any sessions)
@@ -153,25 +153,25 @@ $configuration['session_path'] = 'write/session/';
  * Memcached session server details.
  * Only complete this when you are using the memcached driver, this is not needed for file based or apc sessions.
  * Duplicate cache server block to create more memcached servers which gets utilised by memcached depending on weight.
- * USE MAIN MEMCACHED: To use main cache server instance, simply comment this line out.
+ * USE MAIN MEMCACHED INSTANCE: To use main cache server instance, simply comment this line out.
  * @global array
  */
-$configuration['memcached_sessionserver'][0] = array(
+//$configuration['memcached_sessionserver'][0] = array(
     /**
      * Point to the host where memcached is listening for connections.
      */
-    'host'           => 'localhost',
+    //'host'           => 'localhost',
     /**
      * Point to the port where memcached is listening for connections.
      * Set this parameter to 0 when using UNIX domain sockets.
      */
-    'port'           => 11211,
+    //'port'           => 11211,
     /**
      * Number of buckets to create for this server which in turn control its probability of it being selected.
      * The probability is relative to the total weight of all servers.
      */
-    'weight'         => 0
-);
+    //'weight'         => 0
+//);
 //////////////////////////////////////////////////////////////////////////////
 // System ////////////////////////////////////////////////////////////////////
 /**

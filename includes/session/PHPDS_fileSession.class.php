@@ -53,8 +53,10 @@ class PHPDS_fileSession extends PHPDS_dependant implements PHPDS_sessionInterfac
 
         if ($this->enabled) {
             if (!empty($config['session_path'])) {
+
                 $this->writeDir = BASEPATH . $config['session_path'];
                 if (is_dir($this->writeDir) && is_writable($this->writeDir) && !$this->testMode) {
+
                     if (!$this->started) {
                         if (!empty($config['session_cfg'])) {
                             foreach ($config['session_cfg'] as $skey => $svalue) {

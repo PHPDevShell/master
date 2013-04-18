@@ -29,7 +29,7 @@ class PHPDS_auth extends PHPDS_dependant
      *
      * @return void
      */
-    public function controller()
+    public function start()
     {
         if (!isset($_SESSION['user_id']) || !empty($_POST['PHPDS_login']) || !empty($_REQUEST['logout'])) {
             if (!empty(
