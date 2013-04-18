@@ -61,6 +61,7 @@ CREATE TABLE `_db_core_node_items` (
   `alias`          VARCHAR(255) DEFAULT NULL,
   `layout`         VARCHAR(255) DEFAULT NULL,
   `params`         VARCHAR(1024) DEFAULT NULL,
+  `route`          VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (`node_id`),
   KEY `index` (`parent_node_id`, `node_link`, `plugin`, `alias`),
   KEY `params` (`params`(255)) USING BTREE
@@ -69,8 +70,8 @@ CREATE TABLE `_db_core_node_items` (
   DEFAULT CHARSET = utf8;
 
 -- Insert default node items.;
-INSERT INTO `_db_core_node_items` VALUES ('readme', '0', 'Readme', 'readme.php', 'About', '1', null, '0', '1', '0', 'default', 'readme', null, null);
-INSERT INTO `_db_core_node_items` VALUES ('plugin-admin', '0', 'Plugins', 'plugin-admin.php', 'PluginManager', '1', null, '0', '15', '0', 'default', 'plugins-admin', null, null);
+INSERT INTO `_db_core_node_items` VALUES ('readme', '0', 'Readme', 'readme.php', 'About', '1', null, '0', '1', '0', 'default', 'readme', null, null, null);
+INSERT INTO `_db_core_node_items` VALUES ('plugin-admin', '0', 'Plugins', 'plugin-admin.php', 'PluginManager', '1', null, '0', '15', '0', 'default', 'plugins-admin', null, null, null);
 
 -- Create node tree structure.;
 CREATE TABLE `_db_core_node_structure` (
@@ -153,53 +154,53 @@ CREATE TABLE `_db_core_settings` (
   DEFAULT CHARSET = utf8;
 
 -- Insert default settings to make system work.;
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_allow_remember', '1', 'Should users be allowed to login with remember.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_banned_role', '6', 'The banned role. No access allowed.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_charset', 'UTF-8', 'Site wide charset.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_charset_format', '.{charset}', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_cmod', '0777', 'Writable folder permissions');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_crypt_key', 'eDucDjodz8ZiMqFe8zeJ', 'General crypt key to protect system.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_custom_logo', '', 'Default system logo.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format', 'F j, Y, g:i a O', 'Date format according to DateTime function of PHP.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_short', 'Y-m-d', 'Shorter date format.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_show', 'September 17, 2010, 12:59 pm +0000', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_date_format_show_short', '2010-09-17', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_debug_language', '', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_theme', 'default', 'Default theme for all nodes.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_theme_id', 'default', 'Default theme id.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_default_upload_directory', 'write/upload/', 'Writable upload directory.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_demo_mode', '0', 'Should system be set into demo mode, no transactions will occur.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_from_email', 'no-reply@phphdevshell.org', 'From Email address.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_front_page_id', 'readme', 'The page to show when site is access.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_guest_role', '4', 'The systems guest role.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_language', 'en', 'Default language.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_languages_available', 'en', 'List of language codes available');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_locale_format', '{lang}_{region}{charset}', 'Complete locale format.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_loginandout', 'login', 'The page to use to log-in and log-out.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_login_message', '', 'a Default message to welcome users loging in.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_meta_description', 'Administrative user interface based on AdminTools and other modern technologies.', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_meta_keywords', 'administrative, administrator, AdminTools, interface, ui, user', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_queries_count', '0', 'Should queries be counted and info show.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_redirect_login', 'readme', 'When a user logs in, where should he be redirected to?');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_region', 'US', 'Region settings.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_regions_available', 'US', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_root_id', '1', 'Root User.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_root_role', '1', 'Root Role.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_save', 'save', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_scripts_name_version', 'Powered by PHPDevShell', 'Footer message.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_sef_url', '0', 'Should SEF urls be enabled, not rename to .htaccess in root.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_sendmail_path', '/usr/sbin/sendmail', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_setting_admin_email', 'admin@phpdevshell.org', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_setting_support_email', 'default:System Support Query,default:General Query', 'Allows you to have multiple option for a email query.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_split_results', '30', 'When viewing paged results, how many results should be shown.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_system_down', '0', 'Is system currently down for development.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_system_down_message', '%s is currently down for maintenance. Some important features are being updated. Please return soon.', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_system_logging', '1', 'Should logs be written to database.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_system_timezone', 'UTC', 'Timezone.');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_trim_logs', '1000000', '');
-INSERT INTO `_db_core_settings` VALUES ('AdminTools_url_append', '.html', 'The url extension in the end.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_allow_remember', '1', 'Should users be allowed to login with remember.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_banned_role', '6', 'The banned role. No access allowed.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_charset', 'UTF-8', 'Site wide charset.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_charset_format', '.{charset}', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_cmod', '0777', 'Writable folder permissions');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_crypt_key', 'eDucDjodz8ZiMqFe8zeJ', 'General crypt key to protect system.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_custom_logo', '', 'Default system logo.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format', 'F j, Y, g:i a O', 'Date format according to DateTime function of PHP.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format_short', 'Y-m-d', 'Shorter date format.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format_show', 'September 17, 2010, 12:59 pm +0000', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format_show_short', '2010-09-17', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_debug_language', '', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_theme', 'default', 'Default theme for all nodes.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_theme_id', 'default', 'Default theme id.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_upload_directory', 'write/upload/', 'Writable upload directory.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_demo_mode', '0', 'Should system be set into demo mode, no transactions will occur.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_from_email', 'no-reply@phphdevshell.org', 'From Email address.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_front_page_id', 'readme', 'The page to show when site is access.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_guest_role', '4', 'The systems guest role.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_language', 'en', 'Default language.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_languages_available', 'en', 'List of language codes available');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_locale_format', '{lang}_{region}{charset}', 'Complete locale format.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_loginandout', 'login', 'The page to use to log-in and log-out.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_login_message', '', 'a Default message to welcome users loging in.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_meta_description', 'Administrative user interface based on PHPDS and other modern technologies.', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_meta_keywords', 'administrative, administrator, PHPDS, interface, ui, user', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_queries_count', '0', 'Should queries be counted and info show.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_redirect_login', 'readme', 'When a user logs in, where should he be redirected to?');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_region', 'US', 'Region settings.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_regions_available', 'US', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_root_id', '1', 'Root User.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_root_role', '1', 'Root Role.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_save', 'save', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_scripts_name_version', 'Powered by PHPDevShell', 'Footer message.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_sef_url', '0', 'Should SEF urls be enabled, not rename to .htaccess in root.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_sendmail_path', '/usr/sbin/sendmail', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_setting_admin_email', 'admin@phpdevshell.org', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_setting_support_email', 'default:System Support Query,default:General Query', 'Allows you to have multiple option for a email query.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_split_results', '30', 'When viewing paged results, how many results should be shown.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_down', '0', 'Is system currently down for development.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_down_message', '%s is currently down for maintenance. Some important features are being updated. Please return soon.', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_logging', '1', 'Should logs be written to database.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_timezone', 'UTC', 'Timezone.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_trim_logs', '1000000', '');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_url_append', '.html', 'The url extension in the end.');
 
 -- Create tags table for tagging data.;
 CREATE TABLE `_db_core_tags` (

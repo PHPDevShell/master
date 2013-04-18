@@ -382,7 +382,7 @@ class PHPDS_navigation extends PHPDS_dependant
                 $plugin = $navigation[$extend]['plugin'];
         }
         if (empty($plugin))
-            $plugin = 'AdminTools';
+            $plugin = 'PHPDS';
         if (empty($node_link))
             $node_link = '';
         return array($plugin, $node_link);
@@ -698,7 +698,7 @@ class PHPDS_navigation extends PHPDS_dependant
      */
     public function pageNotFound()
     {
-        $node_id = $this->config->getSettings(array('404_error_page'), 'AdminTools');
+        $node_id = $this->config->getSettings(array('404_error_page'), 'PHPDS');
         return $this->buildURL($node_id['404_error_page']);
     }
 }

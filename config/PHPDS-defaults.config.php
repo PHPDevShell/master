@@ -288,6 +288,7 @@ $configuration['preloaded_settings'] = array(
     'date_format',
     'date_format_short',
     'default_theme_id',
+    'default_theme',
     'split_results',
     'guest_role',
     'system_timezone',

@@ -20,6 +20,24 @@ $package  = 'V-' . $version;
 $doit     = true; // RUN REAL QUERIES?
 // Include modules.
 include '../includes/PHPDS_utils.inc.php';
+//include '../includes/PHPDS_exception.class.php';
+include '../includes/db/PHPDS_dbInterface.class.php';
+include '../includes/db/PHPDS_pdo.class.php';
+
+class PHPDS_dependant
+{
+    public $configuration;
+}
+
+class PHPDS_databaseException extends PDOException
+{
+
+}
+
+class PHPDS_queryException extends PDOException
+{
+
+}
 
 function warningHeadPrint($message)
 {
@@ -118,7 +136,7 @@ function displayField($label, $field)
     print <<<HTML
 		<p>
 			<label for="$field">$label</label>
-			<input id="$field" type="text" class="$class" size="30" name="$field" value="{$data[$field]}" required="required" title="$label">
+			<input id="$field" type="text" class="$class input-xlarge" name="$field" value="{$data[$field]}" required="required" title="$label">
 		</p>
 HTML;
 }
@@ -352,8 +370,7 @@ function guest_role()
 
 function checkConfigFiles()
 {
-    global $data;
-    global $errors;
+    global $data, $errors, $pdo;
 
     $configFolder = '../config/';
     $config_file  = $configFolder . $data['config_file'];
@@ -370,20 +387,26 @@ function checkConfigFiles()
             addError('config', _('Could not load the configuration files.'));
         }
 
-        $db_settings = PU_GetDBSettings($configuration);
+        $db_settings        = $configuration['database']['master'];
+
+        try {
+            $pdo = new PHPDS_pdo;
+            $pdo->configuration = $configuration;
+            $pdo->connect();
+        } catch (Exception $e) {
+            addError(kMYSQLconnect, sprintf(_('Error occured and returned "%s" make sure all the details are correct and that the database is running.'), $e->getMessage()));
+            return false;
+        }
 
         // Check if we have a matching configuration file.
-        if ($data['db_name'] != $db_settings['database']) {
-            addError('db_name', _('Mismatching database name with the one provided in the config.php file.'));
+        if ($data['db_dsn'] != $db_settings['dsn']) {
+            addError('db_name', _('Mismatching dsn with the one provided in the config.php file.'));
         }
         if ($data['db_username'] != $db_settings['username']) {
             addError('db_username', _('Mismatching database username with the one provided in the config.php file.'));
         }
         if ($data['db_password'] != $db_settings['password']) {
             addError('db_password', _('Mismatching database password with the one provided in the config.php file.'));
-        }
-        if ($data['db_server'] != $db_settings['host']) {
-            addError('db_server', _('Mismatching database server address (host) with the one provided in the config.php file.'));
         }
         if ($data['db_prefix'] != $db_settings['prefix']) {
             addError('db_prefix', _('Mismatching database prefix with the one provided in the config.php file.'));
@@ -415,24 +438,10 @@ function checkConfigFiles()
  */
 function stuffMYSQL()
 {
-    global $data, $doit, $type, $db_version, $version;
-
-    // Going deeper, lets see if we can make a db connection.
-    $connect_mysql = mysql_connect($data['db_server'], $data['db_username'], $data['db_password']);
-    if (empty($connect_mysql)) {
-        addError(kMYSQLconnect, sprintf(_('Unable to connect to the MySQL database %s, please make sure you entered all the relevant details correctly and that the MySQL server is currently running.'), mysql_error()));
-        return false;
-    }
-
-    // Check if we can select our database.
-    if (!mysql_select_db($data['db_name'])) {
-        addError(kMYSQLselectDB, sprintf(_('Unable to select the specified database (%s). please make sure you entered all the relevant details correctly. The database should exists and be accessible by the user provided'), $data['db_name']));
-        return false;
-    }
+    global $pdo, $doit, $type, $db_version, $version;
 
     // Check if the databas is not perhaps already installed.
-    $table_list = mysql_query('SHOW TABLES');
-    $tables     = @mysql_numrows($table_list);
+    $tables = $pdo->queryFetchRows('SHOW TABLES');
     if ($type == 'install') {
         if (!empty($tables)) {
             addError(kMYSQLnotempty, _('There are tables in this database already, perhaps a previous PHPDevShell installation?. This Installation script can not be used over an existing PHPDevShell installation.'));
@@ -450,12 +459,6 @@ function stuffMYSQL()
         }
     }
 
-    // Check if the database version is up to date.
-    if (mysql_get_server_info() < '5.0') {
-        addError(kMYSQLversion, sprintf(_('This version of PHPDevShell only supports MySQL version %s and later. You are currently running version %s.'), '5.0', mysql_get_server_info()));
-        return false;
-    }
-
     displayDBfilling();
     print "\n\n";
     ob_flush();
@@ -467,12 +470,12 @@ function stuffMYSQL()
     $i   = 0;
     $max = count($queries);
 
-    mysql_query('START TRANSACTION');
-    $e = mysql_errno();
+    $pdo->startTransaction();
+    $e = false;
     if (!$e)
         foreach ($queries as $query) {
             if (!empty($query) && $doit) {
-                if (!mysql_query($query))
+                if (!$pdo->query($query))
                     $em = mysql_error();
                 usleep(8000);
             } else {
@@ -521,8 +524,7 @@ function stuffMYSQL()
     print "<script type=\"text/javascript\">updateProgress(100);</script>\n\n";
     ob_flush();
     flush();
-    mysql_query('COMMIT');
-
+    $pdo->endTransaction();
     return true;
 }
 
@@ -542,8 +544,8 @@ function doStage2()
         displayWarnings();
         if (checkFields()) {
             if (checkConfigFiles()) {
-                if (doInstall())
-                    return true;
+                //if (doInstall())
+                    //return true;
             }
         }
         displayErrors();

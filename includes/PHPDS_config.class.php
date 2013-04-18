@@ -133,7 +133,7 @@ class PHPDS_config extends PHPDS_dependant
         // Pull essential settings and assign it to essential_settings.
         $this->essentialSettings = $this->cache->get('essential_settings');
         if (empty($this->essentialSettings)) {
-            $this->essentialSettings = $this->getSettings($this->configuration['preloaded_settings'], 'AdminTools');
+            $this->essentialSettings = $this->getSettings($this->configuration['preloaded_settings'], 'PHPDS');
             // Write essential settings data to cache.
             $this->cache->set('essential_settings', $this->essentialSettings);
         }

@@ -70,10 +70,9 @@ function displayFields()
                 <fieldset>
                     <legend>Database Information</legend>
                     <?php
-                    displayField('Database Name', 'db_name');
-                    displayField('Database User Name', 'db_username');
-                    displayField('Database User Password', 'db_password');
-                    displayField('Database Server', 'db_server');
+                    displayField('Database DSN', 'db_dsn');
+                    displayField('Database Username', 'db_username');
+                    displayField('Database Password', 'db_password');
                     displayField('Database Prefix', 'db_prefix');
                     ?>
                 </fieldset>
@@ -96,12 +95,11 @@ function checkFields()
 {
     global $data, $errors;
 
-    checkField('db_name', _('Please supply the Database Name.'), 'phpdev');
-    checkField('db_username', _('Please supply the Database Username.'), 'root');
-    checkField('db_password', _('Please supply the Database Password.'), 'root');
-    checkField('db_server', _('Please supply the Database Server Address.'), 'localhost');
-    checkField('db_prefix', _('Please supply theDatabase Prefix.'), '_db_');
-    checkField('config_file', _('Please supply the Config File.'), 'single-site.config.php');
+    checkField('db_dsn', _('Please supply the database dsn.'), 'mysql:host=localhost;dbname=phpdev');
+    checkField('db_username', _('Please supply the database username.'), 'root');
+    checkField('db_password', _('Please supply the database password.'), 'root');
+    checkField('db_prefix', _('Please supply the database prefix.'), '_db_');
+    checkField('config_file', _('Please supply the config file.'), 'single-site.config.php');
 
     return (count($errors) == 0);
 }
@@ -127,7 +125,7 @@ function get_queries()
     }
 
     // Update version at the end of the query batch
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_plugin_activation` VALUES ('AdminTools', 'install', '" . $db_version . "', '1');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_plugin_activation` VALUES ('PHPDS', 'install', '" . $db_version . "', '1');";
 
     return $query;
 }

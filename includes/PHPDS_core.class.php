@@ -81,6 +81,7 @@ class PHPDS_core extends PHPDS_dependant
                     $this->themeFile = '';
                     $this->loadMods();
                     $this->ajaxType = 'html';
+                    break;
                 // HTML Ajax Lightbox.
                 case 'lightbox':
                     $this->themeFile = '';
@@ -754,7 +755,7 @@ class PHPDS_core extends PHPDS_dependant
         if (!empty($configuration['m']) && !empty($navigation->navigation[$configuration['m']]['plugin'])) {
             return $navigation->navigation[$this->configuration['m']]['plugin'];
         } else {
-            return 'AdminTools';
+            return 'PHPDS';
         }
     }
 
