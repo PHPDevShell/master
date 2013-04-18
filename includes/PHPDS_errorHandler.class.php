@@ -98,11 +98,18 @@ class PHPDS_errorHandler extends PHPDS_dependant
         }
 
         $flags = E_ALL;
+        $cfg = $this->configuration;
+        $this->production = !empty($cfg['production']);
 
-        $this->production = !empty($this->configuration['production']);
+        if ($this->production) {
+            $cfg['debug']['enable']  = false;
+            $cfg['error']['firePHP'] = false;
+            $cfg['error']['display'] = false;
+            $cfg['debug']['level']   = 1;
+        }
 
-        if (isset($this->configuration['error'])) {
-            $configuration = $this->configuration['error'];
+        if (isset($cfg['error'])) {
+            $configuration = $cfg['error'];
 
             if ($configuration['mask']) $flags = intval($configuration['mask']);
 

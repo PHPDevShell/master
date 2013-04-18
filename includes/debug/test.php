@@ -1,5 +1,5 @@
 <?php
 require_once('FirePHPCore/FirePHP.class.php');
 $firephp = FirePHP::getInstance(true);
-$firephp->log('Plain Message');
-echo "FirePHP Test!";
+$firephp->log('FirePHP is working without PHPDevShell');
+echo "<h1>FirePHP Test!</h1>";

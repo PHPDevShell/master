@@ -2,9 +2,6 @@
 
 /**
  * Exception extension.
- *
- * @version 1.1
- * @date 20120807 (v1.1) (greg) added "more info" ; support for factory (hence dependancy)
  */
 class PHPDS_exception extends Exception
 {
@@ -255,10 +252,6 @@ class PHPDS_pageException418 extends PHPDS_accessException
     public $HTTPcode = 418;
 }
 
-
-/**
- * This exception is sent when PU_sprintf() cannot operate
- */
 class PHPDS_sprintfnException extends PHPDS_exception
 {
     protected $ignoreLines = 5;
@@ -354,12 +347,6 @@ class PHPDS_extendNodeException extends PHPDS_exception
     }
 }
 
-
-/**
- *  Exception for PHPDS_query
- *
- * @date 20120724 (v1.0) (greg) added
- */
 class PHPDS_queryException extends PHPDS_exception
 {
     protected $ignoreLines = 5;
@@ -382,50 +369,7 @@ class PHPDS_cacheException extends PHPDS_exception
 
 }
 
-/**
- *  Exception for the session starter
- *
- * @date 20120724 (v1.0) (greg) added
- */
 class PHPDS_sessionException extends PHPDS_exception
 {
-    protected $ignoreLines = 4;
-    protected $path;
 
-    public function __construct($message = "", $code = 0, $previous = null) // CAUTION this declaration is NOT correct but PHP insists on this declaration
-    {
-        $this->path = $message;
-        $msg        = 'Unable to start the session.';
-
-        parent::__construct($msg, $code, $previous);
-    }
-
-    /**
-     * some Exception may choose to display some possible cause for the error, to help tracking down the error
-     */
-    public function hasCauses()
-    {
-        return true;
-    }
-
-    /**
-     *  returns a special message and a list of possible causes
-     */
-    public function getCauses()
-    {
-        $path   = realpath($this->path);
-        $result = array(
-            'The session manager of PHP could not be started',
-            array(
-                array('The session folder is not writable or missing',
-                    'check that the folder "<em>' . $path . '</em>" is present and writable, then reload this page.'
-                ),
-                array('The session file exists and is protected',
-                    'check that in the folder "<em>' . $path . '</em>", there is no file named as given below.'
-                )
-            )
-        );
-
-        return $result;
-    }
 }

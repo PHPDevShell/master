@@ -73,7 +73,7 @@ class PHPDS
      */
     protected $debugInstance;
     /**
-     * PHPDS is used throught the lib (true) or standalone (false).
+     * PHPDS is used through the lib (true) or standalone (false).
      *
      * @var boolean
      */
@@ -556,8 +556,7 @@ class PHPDS
     public function PHPDS_debug()
     {
         if (empty($this->debug)) {
-            $domain      = ($this->embedded ? 'authlib' : 'skel');
-            $this->debug = $this->_factory($this->configuration['extend']['debug'], $domain);
+            $this->debug = $this->_factory($this->configuration['extend']['debug']);
         }
         return $this->debug;
     }

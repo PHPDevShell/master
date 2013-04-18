@@ -24,11 +24,6 @@ class PHPDS_debug extends PHPDS_dependant
      */
     protected $level = PHPDS_debug::LOG;
     /**
-     * To which semantic domain this instance is related.
-     * @var
-     */
-    protected $domain;
-    /**
      * Error handler instance.
      * @var object
      */
@@ -37,19 +32,15 @@ class PHPDS_debug extends PHPDS_dependant
     /**
      * Constructor.
      *
-     * @param $domain string the semantic domain of the debug object (to match (or not) the filters are set in configuration)
      * @return boolean
      */
-    public function construct($domain = null)
+    public function construct()
     {
         $this->conduits = $this->errorHandler;
-        $this->domain(empty($domain) ? '!' : $domain);
 
-        if ($this->enabled) {
-            $configuration = $this->configuration['debug'];
-            $this->enabled = !empty($configuration['enable']);
-            $this->level   = empty($configuration['level']) ? PHPDS_debug::LOG : intval($configuration['level']);
-        }
+        $configuration = $this->configuration['debug'];
+        $this->enabled = empty($configuration['enable']) ? false : true;
+        $this->level   = empty($configuration['level']) ? PHPDS_debug::LOG : intval($configuration['level']);
 
         return true;
     }
@@ -131,7 +122,7 @@ class PHPDS_debug extends PHPDS_dependant
     }
 
     /**
-     * Log the data to the backends with the LOG level (the smallest, most often seen)
+     * Log the data to the backend with the LOG level (the smallest, most often seen)
      *
      * @param string $data
      * @param string $label
@@ -141,7 +132,6 @@ class PHPDS_debug extends PHPDS_dependant
         if (!$this->enabled || ($this->level < PHPDS_debug::LOG)) return;
 
         if (empty($label)) $label = $this->domain;
-
 
         $this->conduits->conductor($data, PHPDS_debug::LOG, $this->domain . ': ' . $label);
     }

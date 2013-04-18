@@ -77,7 +77,7 @@ $configuration['database']['master'] = array(
  *
  * @global string
  */
-$configuration['driver']['cache'] = 'PHPDS_apc';
+$configuration['driver']['cache'] = 'PHPDS_filecache';
 /**
  * Views cache path (used by PHPDS_filecache)
  * (Needs to be writable)
@@ -97,22 +97,22 @@ $configuration['cache_refresh_intervals'] = 1440;
  * Duplicate cache server block to create more memcached servers which gets utilised by memcached depending on weight.
  * @global array
  */
-$configuration['memcached_cacheserver'][0] = array(
+//$configuration['memcached_cacheserver'][0] = array(
     /**
      * Point to the host where memcached is listening for connections.
      */
-    'host'           => 'localhost',
+    //'host'           => 'localhost',
     /**
      * Point to the port where memcached is listening for connections.
      * Set this parameter to 0 when using UNIX domain sockets.
      */
-    'port'           => 11211,
+    //'port'           => 11211,
     /**
      * Number of buckets to create for this server which in turn control its probability of it being selected.
      * The probability is relative to the total weight of all servers.
      */
-    'weight'         => 0
-);
+    //'weight'         => 0
+//);
 
 //////////////////////////////////////////////////////////////////////////////
 // Session ///////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ $configuration['memcached_cacheserver'][0] = array(
  * Also supports : PHPDS_apcSession, PHPDS_memcachedSession
  * @global string
  */
-$configuration['driver']['session'] = 'PHPDS_apcSession';
+$configuration['driver']['session'] = 'PHPDS_fileSession';
 /**
  * The lifespan of the session created.
  * @global integer (seconds) (0 to turn off any sessions)
@@ -467,11 +467,3 @@ $configuration['error']['noticesAreFatal'] = false;
  * @global string
  */
 $configuration['error']['mask'] = E_ALL | E_STRICT; //  you should change to  E_ALL | E_STRICT to be clean
-
-/**
- * Enable some development-related features.
- * 1. Change this to true if you would like to set the theme to use the normal css and javascript instead of minified.
- *
- * @global boolean
- */
-$configuration['development'] = false;
