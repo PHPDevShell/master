@@ -221,7 +221,7 @@ class PHPDS_controller extends PHPDS_dependant
     }
 
     /**
-     * Run a controller when called with ajax
+     * Run a controller when called with ajax.
      *
      * @return mixed
      * @throws PHPDS_exception
@@ -254,13 +254,7 @@ class PHPDS_controller extends PHPDS_dependant
     }
 
     /**
-     * Deal with the controller's output
-     *
-     * @version 1.1
-     * @since   3.0.5
-     * @author  greg <greg@phpdevshell.org>
-     *
-     * @date 20120717 (v1.1) (greg) now used for both ajax and regular requests
+     * Deal with the controller's output.
      *
      * @param mixed $raw_data
      * @return mixed

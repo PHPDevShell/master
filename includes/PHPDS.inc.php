@@ -31,7 +31,7 @@ class PHPDS
      */
     protected $cache;
     /**
-     * Main class factory and registry
+     * Main class factory and registry.
      *
      * @var PHPDS_classFactory
      */
@@ -73,18 +73,6 @@ class PHPDS
      */
     protected $debugInstance;
     /**
-     * PHPDS is used through the lib (true) or standalone (false).
-     *
-     * @var boolean
-     */
-    protected $embedded;
-    /**
-     * Core system language values.
-     *
-     * @var object
-     */
-    protected $lang;
-    /**
      * Core navigation object.
      *
      * @var object
@@ -96,6 +84,12 @@ class PHPDS
      * @var PHPDS_notif
      */
     protected $notif;
+    /**
+     * Core router object.
+     *
+     * @var object
+     */
+    protected $router;
     /**
      * Execution stage (i.e. run level)
      *
@@ -171,10 +165,8 @@ class PHPDS
             $configuration['config_files_missing'][] = $path;
             return false;
         }
-        $this->log("Loading config file $path");
-
         include_once $path;
-
+        $this->log("Loading config file $path");
         $configuration['config_files_used'][] = $path;
         return true;
     }
@@ -426,66 +418,6 @@ class PHPDS
     }
 
     /**
-     * Allow access to configuration, either read (no param) or write
-     * This makes possible to start with a forced configuration, for testing for example
-     * It returns the configuration array
-     * CAUTION: an array is not an object so be careful to use & if you need to modify it
-     *
-     * @param array $configuration possibly a new configuration array
-     * @return array the configuration array
-     */
-    public function PHPDS_configuration($configuration = null)
-    {
-        if (empty($this->configuration) && is_array($configuration)) {
-            $this->configuration         = new PHPDS_array($configuration);
-            $this->configuration['time'] = time();
-        }
-        return $this->configuration;
-    }
-
-    /**
-     * Custom Error Handler.
-     * One is created if necessary.
-     *
-     * @return PHPDS_errorHandler
-     */
-    public function PHPDS_errorHandler()
-    {
-        if (empty($this->errorHandler)) {
-            $this->errorHandler = $this->_factory('PHPDS_errorHandler');
-        }
-        return $this->errorHandler;
-    }
-
-    /**
-     * Allow access to the global core subsystem
-     * One is created if necessary.
-     *
-     * @return PHPDS_core
-     */
-    public function PHPDS_core()
-    {
-        if (empty($this->core)) {
-            $this->core = $this->_factory($this->configuration['extend']['core']);
-        }
-        return $this->core;
-    }
-
-    /**
-     * Allow access to the global config subsystem
-     * One is created if necessary.
-     *
-     * @return PHPDS_config
-     */
-    public function PHPDS_config()
-    {
-        if (empty($this->config)) {
-            $this->config = $this->_factory($this->configuration['extend']['config']);
-        }
-        return $this->config;
-    }
-
-    /**
      * Allow access to the global config subsystem
      * One is created if necessary.
      *
@@ -517,62 +449,49 @@ class PHPDS
     }
 
     /**
-     * Allow access to the global cache subsystem
+     * Allow access to the global config subsystem
      * One is created if necessary.
      *
-     * @return PHPDS_sessionInterface
+     * @return PHPDS_config
      */
-    public function PHPDS_session()
+    public function PHPDS_config()
     {
-        if (empty($this->session)) {
-            $driver = $this->configuration['driver']['session'];
-            // Hard code, its faster... don't sneak this one.
-            require_once 'includes/session' . DIRECTORY_SEPARATOR . $driver . '.class.php';
-            $this->session = $this->_factory($driver);
+        if (empty($this->config)) {
+            $this->config = $this->_factory($this->configuration['extend']['config']);
         }
-        return $this->session;
+        return $this->config;
     }
 
     /**
-     * Allow access to the global user subsystem
-     * One is created if necessary.
+     * Allow access to configuration, either read (no param) or write
+     * This makes possible to start with a forced configuration, for testing for example
+     * It returns the configuration array
+     * CAUTION: an array is not an object so be careful to use & if you need to modify it
      *
-     * @return PHPDS_user
+     * @param array $configuration possibly a new configuration array
+     * @return array the configuration array
      */
-    public function PHPDS_user()
+    public function PHPDS_configuration($configuration = null)
     {
-        if (empty($this->user)) {
-            $this->user = $this->_factory($this->configuration['extend']['user']);
+        if (empty($this->configuration) && is_array($configuration)) {
+            $this->configuration         = new PHPDS_array($configuration);
+            $this->configuration['time'] = time();
         }
-        return $this->user;
+        return $this->configuration;
     }
 
     /**
-     * Allow access to the global debugging subsystem
+     * Allow access to the global core subsystem
      * One is created if necessary.
      *
-     * @return PHPDS_debug instance
+     * @return PHPDS_core
      */
-    public function PHPDS_debug()
+    public function PHPDS_core()
     {
-        if (empty($this->debug)) {
-            $this->debug = $this->_factory($this->configuration['extend']['debug']);
+        if (empty($this->core)) {
+            $this->core = $this->_factory($this->configuration['extend']['core']);
         }
-        return $this->debug;
-    }
-
-    /**
-     * Allow access to the global navigation subsystem
-     * One is created if necessary.
-     *
-     * @return PHPDS_navigation
-     */
-    public function PHPDS_navigation()
-    {
-        if (empty($this->navigation)) {
-            $this->navigation = $this->_factory($this->configuration['extend']['navigation']);
-        }
-        return $this->navigation;
+        return $this->core;
     }
 
     /**
@@ -590,6 +509,93 @@ class PHPDS
             $this->db = $this->_factory($driver);
         }
         return $this->db;
+    }
+
+    /**
+     * Allow access to the global debugging subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_debug instance
+     */
+    public function PHPDS_debug()
+    {
+        if (empty($this->debug)) {
+            $this->debug = $this->_factory($this->configuration['extend']['debug']);
+        }
+        return $this->debug;
+    }
+
+    /**
+     * Custom Error Handler.
+     * One is created if necessary.
+     *
+     * @return PHPDS_errorHandler
+     */
+    public function PHPDS_errorHandler()
+    {
+        if (empty($this->errorHandler)) {
+            $this->errorHandler = $this->_factory('PHPDS_errorHandler');
+        }
+        return $this->errorHandler;
+    }
+
+    /**
+     * Allow access to the global navigation subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_navigation
+     */
+    public function PHPDS_navigation()
+    {
+        if (empty($this->navigation)) {
+            $this->navigation = $this->_factory($this->configuration['extend']['navigation']);
+        }
+        return $this->navigation;
+    }
+
+    /**
+     * Allow access to the asynchronous notifications subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_notif
+     */
+    public function PHPDS_notif()
+    {
+        if (empty($this->notif)) {
+            $this->notif = $this->_factory(($this->configuration['extend']['notif']));
+        }
+        return $this->notif;
+    }
+
+    /**
+     * Allow access to the global navigation subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_router
+     */
+    public function PHPDS_router()
+    {
+        if (empty($this->router)) {
+            $this->router = $this->_factory($this->configuration['extend']['router']);
+        }
+        return $this->router;
+    }
+
+    /**
+     * Allow access to the global cache subsystem
+     * One is created if necessary.
+     *
+     * @return PHPDS_sessionInterface
+     */
+    public function PHPDS_session()
+    {
+        if (empty($this->session)) {
+            $driver = $this->configuration['driver']['session'];
+            // Hard code, its faster... don't sneak this one.
+            require_once 'includes/session' . DIRECTORY_SEPARATOR . $driver . '.class.php';
+            $this->session = $this->_factory($driver);
+        }
+        return $this->session;
     }
 
     /**
@@ -623,17 +629,17 @@ class PHPDS
     }
 
     /**
-     * Allow access to the asynchronous notifications subsystem
+     * Allow access to the global user subsystem
      * One is created if necessary.
      *
-     * @return PHPDS_notif
+     * @return PHPDS_user
      */
-    public function PHPDS_notif()
+    public function PHPDS_user()
     {
-        if (empty($this->notif)) {
-            $this->notif = $this->_factory(($this->configuration['extend']['notif']));
+        if (empty($this->user)) {
+            $this->user = $this->_factory($this->configuration['extend']['user']);
         }
-        return $this->notif;
+        return $this->user;
     }
 
     /**
@@ -658,8 +664,9 @@ class PHPDS
      */
     public function log($data)
     {
-        if (!empty($this->debug)) $this->PHPDS_debug()->debug($data);
-        else {
+        if (!empty($this->debug)) {
+            $this->PHPDS_debug()->debug($data);
+        } else {
             if (!empty($GLOBALS['early_debug'])) error_log('EARLY INFO: ' . $data);
         }
     }
@@ -720,6 +727,7 @@ class PHPDS
         if (is_file($filename)) {
             include_once ($filename);
             if (class_exists($classname, false)) {
+                $this->log("Autoloading $classname from $filename");
                 return true;
             }
         }
@@ -784,6 +792,7 @@ class PHPDS
  * @property PHPDS_cacheInterface   $cache
  * @property PHPDS_sessionInterface $session
  * @property PHPDS_navigation       $navigation
+ * @property PHPDS_router           $router
  * @property PHPDS_dbInterface      $db
  * @property PHPDS_template         $template
  * @property PHPDS_tagger           $tagger
@@ -929,6 +938,24 @@ class PHPDS_dependant
             $this->{$name} = $value;
         } catch (Exception $e) {
             throw new PHPDS_exception("Can't set any '$name' (maybe dependancy is wrong)", 0, $e);
+        }
+        return false;
+    }
+
+    /**
+     * Magic PHP function to determine if a field is set. Used to deal with parent's fields
+     * @param $name
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        // if not found, but the property exists, give a read-only access
+        if (property_exists($this, $name)) {
+            return true;
+        }
+        // try to find a field in the parent
+        elseif (!empty($this->parent) && (isset($this->parent->{$name}) || property_exists($this->parent, $name))) {
+            return true;
         }
         return false;
     }

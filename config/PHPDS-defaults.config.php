@@ -323,6 +323,7 @@ $configuration['extend'] = array(
     'model'        => 'PHPDS_model',
     'navigation'   => 'PHPDS_navigation',
     'notif'        => 'PHPDS_notif',
+    'router'       => 'PHPDS_router',
     'tagger'       => 'PHPDS_tagger',
     'template'     => 'PHPDS_template',
     'user'         => 'PHPDS_user',

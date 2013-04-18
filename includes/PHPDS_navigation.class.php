@@ -98,41 +98,41 @@ class PHPDS_navigation extends PHPDS_dependant
 
         $select_nodes = $this->db->queryFAR($sql, array('roles' => $all_user_roles));
 
+        $config     = $this->configuration;
         $navigation = $this;
-        $aburl      = $this->configuration['absolute_url'];
-        $sef        = !empty($this->configuration['sef_url']);
-        $append     = $this->configuration['url_append'];
+        $aburl      = $config['absolute_url'];
+        $sef        = !empty($config['sef_url']);
+        $append     = $config['url_append'];
+        $charset    = $config['charset'];
 
         foreach ($select_nodes as $mr) {
+            $nid = $mr['node_id'];
             ////////////////////////
             // Create node items. //
             ////////////////////////
             $new_node = array();
-            PU_copyArray($mr, $new_node, array(
-                'node_id', 'parent_node_id', 'alias', 'node_link', 'rank', 'hide', 'new_window',
-                'is_parent', 'type', 'theme_folder', 'layout', 'plugin', 'node_type', 'extend', 'params'
-            ));
-            $new_node['node_name'] = $navigation->determineNodeName(
-                $mr['node_name'], $mr['node_link'], $mr['node_id'], $mr['plugin']
-            );
+            PU_copyArray($mr, $new_node, array('node_id', 'parent_node_id', 'alias', 'node_link', 'rank', 'hide', 'new_window', 'is_parent', 'type', 'theme_folder', 'layout', 'plugin', 'node_type', 'extend'));
+            $new_node['node_name'] = $navigation->determineNodeName($mr['node_name'], $mr['node_link'], $mr['node_id'], $mr['plugin']);
+
+            $new_node['params'] = !empty($mr['params']) ? html_entity_decode($mr['params'], ENT_COMPAT, $charset) : '';
             $new_node['plugin_folder'] = 'plugins/' . $mr['plugin'] . '/';
-            if ($sef && !empty($mr['alias'])) {
-                $navigation->navAlias[$mr['alias']]
-                    = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
-                $new_node['href']
-                    = $aburl . '/' . $mr['alias'] . $append;
+            if ($sef && ! empty($mr['alias'])) {
+                $navigation->navAlias[$mr['alias']] = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
+                $new_node['href'] = $aburl . '/' . $mr['alias'].$append;
             } else {
-                $new_node['href']
-                    = $aburl . '/index.php?m=' . ($mr['node_type']
-                    != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend']);
+                $new_node['href'] = $aburl.'/index.php?m='.($mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend']);
             }
 
             // Writing children for single level dropdown.
-            if (!empty($mr['parent_node_id'])) {
-                $navigation->child[$mr['parent_node_id']][] = $mr['node_id'];
+            if (! empty($mr['parent_node_id'])) {
+                $navigation->child[$mr['parent_node_id']][] = $nid;
             }
 
-            $navigation->navigation[$mr['node_id']] = $new_node;
+            $navigation->navigation[$nid] = $new_node;
+
+            if (!empty($mr['alias'])) {
+                $this->router->addRoute($nid, $mr['alias'], $mr['plugin']);
+            }
         }
     }
 
@@ -466,88 +466,40 @@ class PHPDS_navigation extends PHPDS_dependant
         }
 
         $configuration = $this->configuration;
+        $route = null;
+        $m = 0;
 
-        if ($this->user->isLoggedIn()) {
-            $configuration['m'] = $configuration['front_page_id_in'];
+        $basepath = parse_url($configuration['absolute_url'], PHP_URL_PATH);
+        $absolute_path = parse_url($uri, PHP_URL_PATH);
+        $path = trim(str_replace($basepath, '', $absolute_path), '/');
+
+        if (empty($path)) {
+            // no path given, fall back to the what default page has been configured
+            $route = $this->user->isLoggedIn() ? $configuration['front_page_id_in'] : $configuration['front_page_id'];
+            //$route = 0; // default will be picked up later
         } else {
-            $configuration['m'] = $configuration['front_page_id'];
-        }
-        if (!empty($_GET['m'])) {
-            $configuration['m'] = $_GET['m'];
-            $get_node_id        = $_GET['m'];
-        } else {
-            $get_node_id = null;
-        }
-        if (!empty($configuration['sef_url'])) {
-
-            if (!empty($uri)) {
-
-                //list($req) = explode('?', $uri);
-
-                $basepath = parse_url($configuration['absolute_url'], PHP_URL_PATH);
-                $req      = parse_url($uri, PHP_URL_PATH);
-
-                $req = trim(str_replace($basepath, '', $req), '/');
-
-                $uriarray = explode('/', $req);
-
-                $alias = array_shift($uriarray);
-
-                foreach ($uriarray as $get) {
-                    if (empty($key)) {
-                        $key = $get;
-                    } else {
-                        $getarray[$key] = $get;
-                        $key            = '';
-                    }
+            // first case, old-style "index.php?m=nodeid"
+            if ('index.php' == $path) {
+                $m = $_GET['m'];
+                if (!empty($this->navigation[$m])) {
+                    $route = $m;
                 }
-
-                if (!empty($getarray)) {
-                    if (!empty($_GET)) $_GET = array_merge($getarray, $_GET);
-                    else $_GET = $getarray;
-                }
-
-                if (!empty($alias) && ($alias != 'index.php')) {
-                    if (!empty($configuration['url_append'])) $alias = str_replace($configuration['url_append'], '', $alias);
-
-                    if (isset($this->navAlias[$alias])) {
-                        $configuration['m'] = $this->navAlias[$alias];
-                        return true;
-                    } else {
-                        return $this->urlAccessError($alias, $get_node_id);
-                    }
-                } else {
-                    // This is used when sef url is on but normal url is used.
-                    if (!empty($get_node_id)) {
-                        if (empty($this->navigation["$get_node_id"])) {
-                            return $this->urlAccessError(null, $get_node_id);
-                        } else {
-                            return true;
-                        }
-                    } else {
-                        if (empty($this->navigation["{$configuration['m']}"])) {
-                            return $this->urlAccessError(null, $configuration['m']);
-                        } else {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else {
-            if (!empty($get_node_id)) {
-                if (empty($this->navigation["$get_node_id"])) {
-                    return $this->urlAccessError(null, $get_node_id);
-                } else {
-                    return true;
-                }
-            } else {
-                if (empty($this->navigation["{$configuration['m']}"])) {
-                    return $this->urlAccessError(null, $configuration['m']);
-                } else {
-                    return true;
+            } else { // second case, use the router
+                $route = $this->router->matchRoute($path);
+                if (empty($route)) { // strip off the extension if necessary
+                    $path = str_replace($configuration['url_append'], '', $path);
+                    $route = $this->router->matchRoute($path);
                 }
             }
         }
+
+        if (false === $route) {
+            return $this->urlAccessError($path, $m);
+        }
+
+        $configuration['m'] = $route;
+
+        return $route;
     }
 
     /**

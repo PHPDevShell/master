@@ -1254,7 +1254,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Returns some debug info to the frontend, at the bottom of the page
+     * Returns some debug info to the frontend, at the bottom of the page.
      */
     public function debugInfo()
     {
@@ -1270,7 +1270,7 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
-     * Prints some debug info to the frontend, at the bottom of the page
+     * Prints some debug info to the frontend, at the bottom of the page.
      */
     public function outputDebugInfo()
     {

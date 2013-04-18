@@ -753,7 +753,7 @@ class PHPDS_core extends PHPDS_dependant
         if (!empty($navigation->navigation[$this->configuration['m']]['theme_folder'])) {
             return $navigation->navigation[$this->configuration['m']]['theme_folder'];
         } else {
-            return $settings['default_template'];
+            return $settings['default_theme'];
         }
     }
 
@@ -782,8 +782,9 @@ class PHPDS_core extends PHPDS_dependant
      */
     public function loadFile($path, $required = false, $relative = true, $once_only = true, $from_template = false)
     {
-        $core = $this->core;
+        // These vars are assigned to deal with inline files using them directly.
         if ($from_template) $template = $this->template;
+        $core          = $this->core;
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
 
@@ -834,36 +835,5 @@ class PHPDS_core extends PHPDS_dependant
     public function logConfig()
     {
         $this->log((array)$this->configuration);
-    }
-
-
-    /**
-     * Alternative charset aliases.
-     * @param $charset
-     * @return null|string
-     */
-    public function mangleCharset($charset)
-    {
-        $configuration = $this->configuration;
-
-        $charsetList = !empty($configuration['charsetList']) ? $configuration['charsetList'] :
-            array(
-                'utf8'       => 'UTF-8',
-                'latin1'     => 'ISO-8859-1',
-                'latin5'     => 'ISO-8859-5',
-                'big5'       => 'BIG5',
-                'koi8r'      => 'KOI8-R',
-                'macroman'   => 'MacRoman',
-                'sjis'       => 'Shift_JIS',
-
-                'UTF-8'      => 'utf8',
-                'ISO-8859-1' => 'latin1',
-                'ISO-8859-5' => 'latin5',
-                'BIG5'       => 'big5',
-                'KOI8-R'     => 'koir8r',
-                'MacRoman'   => 'macroman',
-                'Shift_JIS'  => 'sjis'
-            );
-        return empty($charsetList[$charset]) ? null : $charsetList[$charset];
     }
 }
