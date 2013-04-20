@@ -59,7 +59,8 @@ class PHPDS_navigation extends PHPDS_dependant
             if (empty($this->navAlias))     $this->navAlias     = array();
             if (empty($this->nodes))        $this->nodes        = array();
 
-            $this->readNodeTable($this->configuration['user_role']);
+            $user_role = $this->user->getRole($this->configuration['user_id']);
+            $this->readNodeTable($user_role);
 
             $this->nodes['child_navigation'] = $this->child;
             $this->nodes['nav_alias']        = $this->navAlias;

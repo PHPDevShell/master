@@ -188,6 +188,22 @@ class PHPDS
     }
 
     /**
+     * Load plugin-specific configuration files.
+     * This allows plugins to provide a configuration, for example when 1 plugin <=> 1 site
+     *
+     */
+    protected function loadPluginsConfig(&$configuration)
+    {
+        $files = glob($this->basepath('plugins') . '*/config/plugin.config.php');
+        if (! empty($files)) {
+            foreach($files as $filename) {
+                $this->log("Looking for plugin config file \"$filename\"");
+                $this->includeConfigFile($filename, $configuration);
+            }
+        }
+    }
+
+    /**
      * Create a config array from the config files, and store it in the instance field
      *
      * The actual configuration is loaded from two files (one is generic, the other is custom)
@@ -217,6 +233,8 @@ class PHPDS
         $this->loadConfigFile('PHPDS-defaults', $configuration);
         $this->loadConfigFile('multi-host', $configuration);
         $this->loadConfigFile('single-site', $configuration);
+
+        $this->loadPluginsConfig($configuration);
 
         if (!empty($_SERVER['SERVER_NAME'])) {
             if (!empty($configuration['host'][$_SERVER['SERVER_NAME']])) {
