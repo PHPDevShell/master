@@ -9,7 +9,7 @@ define('SERVICEPATH', realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR) . DIRECT
 define('BASEPATH', realpath(str_replace('service/', '', SERVICEPATH)));
 
 $db_version  = 4000;
-$db_versions = array(1100, 2100, 2500, 2600, 2620, 2710, 2800, 3000, 3001, 3002, 3004, 3110, 3120, 3130, 3140, 4000);
+$db_versions = array(4000);
 $time        = time();
 
 $version = '4.0.0-Beta-1';
@@ -20,7 +20,6 @@ $package  = 'V-' . $version;
 $doit     = true; // RUN REAL QUERIES?
 // Include modules.
 include '../includes/PHPDS_utils.inc.php';
-//include '../includes/PHPDS_exception.class.php';
 include '../includes/db/PHPDS_dbInterface.class.php';
 include '../includes/db/PHPDS_pdo.class.php';
 
@@ -31,12 +30,12 @@ class PHPDS_dependant
 
 class PHPDS_databaseException extends PDOException
 {
-
+    // Give the pdo master something to extend.
 }
 
 class PHPDS_queryException extends PDOException
 {
-
+    // Give the pdo master something to extend.
 }
 
 function warningHeadPrint($message)
@@ -69,7 +68,6 @@ function displayDBfilling()
 function headHTML()
 {
     global $TITLE, $aurl, $package;
-    $skin = 'flick';
     ?>
     <!DOCTYPE HTML>
     <html lang="en">
@@ -122,7 +120,7 @@ function modPrint($moduleName) // more arguments can be provided
 {
     global $module;
     $strings = func_get_args();
-    $dep     = array_shift($strings); // get rid of module name
+    array_shift($strings); // get rid of module name
     $result  = empty($module[$moduleName]) ? implode($strings) : vsprintf($module[$moduleName], $strings);
     return $result;
 }
@@ -145,7 +143,7 @@ function dumpEnv($content = '')
 {
     $path = BASEPATH . DIRECTORY_SEPARATOR . 'write' . DIRECTORY_SEPARATOR . 'private';
     date_default_timezone_set('UTC');
-    $file = 'envdump.' . date('YmdHis') . '.txt';
+    $file = 'envdump.' . date('YmdHis') . '.log';
     $path .= DIRECTORY_SEPARATOR . $file;
 
     ob_start();
@@ -339,38 +337,28 @@ function addWarning($code, $description)
 
 function get_db_version()
 {
-    global $data;
+    global $data, $pdo;
     $db_prefix = $data['db_prefix'];
-    $result    = mysql_query("SELECT version FROM {$db_prefix}core_plugin_activation WHERE UPPER (plugin_folder) = 'PHPDEVSHELL'");
-    if ($result) {
-        $row = mysql_fetch_row($result);
-        if ($row) {
-            $result = $row[0];
-        } else {
-            $result = false;
-        }
-    }
-
-    return $result;
+    return $pdo->querySingle("SELECT version FROM {$db_prefix}core_plugin_activation WHERE UPPER (plugin_folder) = 'PHPDS'");
 }
 
 function root_role()
 {
-    global $data;
+    global $data, $pdo;
     $db_prefix = $data['db_prefix'];
-    return @mysql_result(mysql_query("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_id='PHPDevShell_root_role'"), 0);
+    return $pdo->querySingle("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_id='PHPDS_root_role'");
 }
 
 function guest_role()
 {
-    global $data;
+    global $data, $pdo;
     $db_prefix = $data['db_prefix'];
-    return @mysql_result(mysql_query("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_id='PHPDevShell_guest_role'"), 0);
+    return $pdo->querySingle("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_id='PHPDS_guest_role'");
 }
 
 function checkConfigFiles()
 {
-    global $data, $errors, $pdo;
+    global $data, $errors, $configuration;
 
     $configFolder = '../config/';
     $config_file  = $configFolder . $data['config_file'];
@@ -387,16 +375,8 @@ function checkConfigFiles()
             addError('config', _('Could not load the configuration files.'));
         }
 
-        $db_settings        = $configuration['database']['master'];
-
-        try {
-            $pdo = new PHPDS_pdo;
-            $pdo->configuration = $configuration;
-            $pdo->connect();
-        } catch (Exception $e) {
-            addError(kMYSQLconnect, sprintf(_('Error occured and returned "%s" make sure all the details are correct and that the database is running.'), $e->getMessage()));
-            return false;
-        }
+        /** The $configuration var is found in the config file being included. */
+        $db_settings = $configuration['database']['master'];
 
         // Check if we have a matching configuration file.
         if ($data['db_dsn'] != $db_settings['dsn']) {
@@ -438,7 +418,19 @@ function checkConfigFiles()
  */
 function stuffMYSQL()
 {
-    global $pdo, $doit, $type, $db_version, $version;
+    global $pdo, $doit, $type, $db_version, $version, $configuration;
+
+    // Now we can try to connect.
+    try {
+        $pdo                = new PHPDS_pdo;
+        $pdo->configuration = $configuration;
+        $pdo->connect();
+    } catch (PDOException $e) {
+        $except_message_main = '<h4>' . $e->getMessage() . '</h4>';
+        $e                   = $e->getPrevious();
+        addError(kMYSQLconnect, $except_message_main . sprintf(_('Error occured and returned "%s" make sure all the details are correct and that the database is running.'), $e->getMessage()));
+        return false;
+    }
 
     // Check if the databas is not perhaps already installed.
     $tables = $pdo->queryFetchRows('SHOW TABLES');
@@ -471,12 +463,29 @@ function stuffMYSQL()
     $max = count($queries);
 
     $pdo->startTransaction();
-    $e = false;
-    if (!$e)
+    $ecode = false;
+    if (!$ecode)
         foreach ($queries as $query) {
             if (!empty($query) && $doit) {
-                if (!$pdo->query($query))
-                    $em = mysql_error();
+                try {
+                    $pdo->queryAffects($query);
+                } catch (PDOException $e) {
+                    $em    = $e->getPrevious();
+                    $ecode = $pdo->errorCode();
+                    if ($ecode) {
+                        $matches = array();
+                        if (preg_match('#^\s*/\*\[([\d\,]+)\]\*/(.*)$#', $query, $matches)) {
+                            $accepted = explode(',', $matches[1]);
+                            if (in_array($ecode, $accepted)) {
+                                noticePrint(_('Accepting error') . ' ' . $ecode . ' ("' . $matches[2] . '")');
+                            } else {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
                 usleep(8000);
             } else {
                 usleep(8000);
@@ -484,19 +493,6 @@ function stuffMYSQL()
             if (connection_aborted()) {
                 error_log('aborted');
                 exit;
-            }
-            if ($e = mysql_errno()) {
-                $matches = array();
-                if (preg_match('#^\s*/\*\[([\d\,]+)\]\*/(.*)$#', $query, $matches)) {
-                    $accepted = explode(',', $matches[1]);
-                    if (in_array($e, $accepted)) {
-                        noticePrint(_('Accepting error') . ' ' . $e . ' ("' . $matches[2] . '")');
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
             }
             $i++;
             $p = intval($i * 100 / $max);
@@ -513,11 +509,11 @@ function stuffMYSQL()
                 flush();
             }
         }
-    if ($e) {
-        mysql_query('ROLLBACK');
+    if ($ecode) {
+        $pdo->rollBack();
         $error = sprintf(_('An error occurred trying to send the queries (query %d/%d).'), $i, $max);
-        $error .= '<br>' . _('The error was') . ': [' . $e . '] ' . $em;
-        $error .= '<br>' . _('The offending query was') . ': "' . $query . '"';
+        $error .= '<hr>' . _('The error was') . ': [' . $ecode . '] ' . $em . '<hr>';
+        $error .= _('The offending query was') . ': "' . $query . '"';
         addError(kMYSQLquery, $error);
         return false;
     }
@@ -544,8 +540,8 @@ function doStage2()
         displayWarnings();
         if (checkFields()) {
             if (checkConfigFiles()) {
-                //if (doInstall())
-                    //return true;
+                if (doInstall())
+                    return true;
             }
         }
         displayErrors();

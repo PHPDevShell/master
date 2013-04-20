@@ -157,7 +157,8 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
 
                 $this->lastQuery = $sql;
                 $this->result    = $this->connection[$this->server]->query($sql);
-                $this->debug->debug('Database Query : ' . $sql);
+                if (!empty($this->debug))
+                    $this->debug->debug('Database Query : ' . $sql);
                 return $this->result;
             } else {
                 $this->result = false;
@@ -311,7 +312,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
     }
 
     /**
-     * Returns a single string result of a for from a single column.
+     * Returns a single string result from a single column.
      *
      * @param string $sql    The SQL statement to be executed
      * @param array  $params The parameters
@@ -485,6 +486,32 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
         } else {
             return false;
         }
+    }
+
+    /**
+     * Fetch the SQLSTATE associated with the last operation on the database handle.
+     *
+     * @return mixed
+     */
+    public function errorCode()
+    {
+        if (! empty($this->result))
+            return $this->result->errorCode();
+        else
+            return false;
+    }
+
+    /**
+     * Fetch extended error information associated with the last operation on the database handle.
+     *
+     * @return mixed
+     */
+    public function errorInfo()
+    {
+        if (!empty($this->result))
+            return $this->result->errorInfo();
+        else
+            return false;
     }
 
     /**

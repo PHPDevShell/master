@@ -147,7 +147,7 @@ interface PHPDS_dbInterface
      */
     public function queryFAR($sql, $params = null);
     /**
-     * Returns a single string result of a for from a single column.
+     * Returns a single string result from a single column.
      *
      * @param string $sql    The SQL statement to be executed
      * @param array  $params The parameters
@@ -225,6 +225,20 @@ interface PHPDS_dbInterface
      * @return bool
      */
     public function rollBack();
+
+    /**
+     * Fetch the SQLSTATE associated with the last operation on the database handle.
+     *
+     * @return mixed
+     */
+    public function errorCode();
+
+    /**
+     * Fetch extended error information associated with the last operation on the database handle.
+     *
+     * @return mixed
+     */
+    public function errorInfo();
     /**
      * Protect a string from SQL injection. This function should only be used when not preparing statements as PDO
      * will protect any parameters when preparing them. This function emulates the mysql_real_escape_string() function

@@ -108,7 +108,7 @@ function displayFields()
 
 function checkFields()
 {
-    global $data, $errors;
+    global $errors;
 
     $name  = (gethostname()) ? gethostname() : 'Your Application Name V - 1.0.0';
     $email = (gethostname()) ? 'admin@' . gethostname() : 'admin@example.com';
@@ -147,12 +147,12 @@ function get_queries()
     $crypt_key      = create_random_string(30);
 
     // Other queries.
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDevShell_crypt_key', '" . $crypt_key . "', '');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_crypt_key', '" . $crypt_key . "', '');";
 
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDevShell_from_email', '" . $data['admin_email'] . "', '');";
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDevShell_scripts_name_version', '" . $data['application_name'] . "', '');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_from_email', '" . $data['admin_email'] . "', '');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_scripts_name_version', '" . $data['application_name'] . "', '');";
 
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDevShell_setting_admin_email', '" . $data['admin_email'] . "', '');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_setting_admin_email', '" . $data['admin_email'] . "', '');";
     $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_users` VALUES ('1', 'Root User', '" . $data['admin_username'] . "', '" . $admin_password . "', '" . $data['admin_email'] . "', '1', '" . $time . "', 'en', 'UTC', 'US');";
 
     // Update version.
