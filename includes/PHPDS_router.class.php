@@ -56,9 +56,9 @@ class PHPDS_router extends PHPDS_dependant
             return false;
         }
 
-        $route = array(
+        $route          = array(
             'catcher'  => $catcher,
-            'pattern'  => $pattern,
+            'pattern'  => trim($pattern, '/'),
             'module'   => $module,
             'defaults' => $defaults
         );
@@ -76,7 +76,7 @@ class PHPDS_router extends PHPDS_dependant
     /**
      * Test a url path to find a matching node.
      *
-     * @param $path string the path part of the URL.
+     * @param string $path the path part of the URL.
      *
      * @return string|bool, the ID of the matching node, or false if none have been found.
      */
@@ -84,13 +84,14 @@ class PHPDS_router extends PHPDS_dependant
     {
         $parts  = $this->splitURL($path);
         $module = !empty($this->modules[$parts[0]]) ? array_shift($parts) : $this->defaults['module'];
-
         $result = false;
         $routes = $module ? $this->modules[$module] : $this->routes;
-        foreach ($routes as $route) {
-            if ($this->match1Route($route['pattern'], $parts)) {
-                $result = $route;
-                break;
+        if (is_array($parts)) {
+            foreach ($routes as $route) {
+                if ($this->match1Route($route['pattern'], $parts)) {
+                    $result = $route;
+                    break;
+                }
             }
         }
         return $result ? $result['catcher'] : false;
@@ -99,12 +100,13 @@ class PHPDS_router extends PHPDS_dependant
     /**
      * Try to match a given route pattern to the url path.
      *
-     * @param $route string, the route pattern.
-     * @param $parts array, the pieces of the url path (split on slash).
+     * @param string $route         the route pattern.
+     * @param array  $parts         the pieces of the url path (split on slash).
+     * @param string $match_pattern the regular expression for matching defined routes
      *
      * @return bool, true if they match
      */
-    public function match1Route($route, array $parts)
+    public function match1Route($route, array $parts, $match_pattern = '/\<:(?<varname>[[:alnum:]]+)\>/')
     {
         if (($route == $parts[0]) || ($route == '/' . $parts[0])) {
             return true;
@@ -113,7 +115,7 @@ class PHPDS_router extends PHPDS_dependant
         $pieces   = $this->splitURL($route);
         foreach ($pieces as $piece) {
             $matches = array();
-            if (preg_match('/\<:(?<varname>[[:alnum:]]+)\>/', $piece, $matches)) {
+            if (preg_match($match_pattern, $piece, $matches)) {
                 $this->parameters[$matches['varname']] = array_shift($parts);
             } else {
                 $part = array_shift($parts);
@@ -128,26 +130,34 @@ class PHPDS_router extends PHPDS_dependant
     }
 
     /**
-     * @param $url
+     * Internal function to split array segments up.
+     *
+     * @param string $url
      * @return array
      */
     protected function splitURL($url)
     {
         $parts = explode('/', $url);
-        if ((count($parts) > 1) && empty($this->modules[$parts[0]])) {
-            array_shift($parts);
-        }
         return $parts;
     }
 
     /**
      * Read only accessor to the parameters found in the URL
      *
-     * @return array, associative array of (name=>value)
+     * @param string $param Possible single value of a url parameter
+     * @return array|string|int, associative array of (name=>value) or value of param
      */
-    public function parameters()
+    public function parameters($param = null)
     {
-        return $this->parameters;
+        if (!empty($param)) {
+            if (!empty($this->parameters[$param])) {
+                return $this->parameters[$param];
+            } else {
+                return null;
+            }
+        } else {
+            return $this->parameters;
+        }
     }
 
     /**

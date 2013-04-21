@@ -349,7 +349,7 @@ class PHPDS_user extends PHPDS_dependant
      *
      * @return int
      */
-    public function logThis()
+    public function logActions()
     {
         $sql = "
             INSERT INTO _db_core_logs

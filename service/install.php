@@ -140,7 +140,7 @@ function get_queries()
         fclose($fp);
     }
 
-    $queries = preg_replace('/pds_core_/', $data['db_prefix'] . 'core_', $queries);
+    $queries = preg_replace('/_db_core_/', $data['db_prefix'] . 'core_', $queries);
     $query   = explode(';', $queries);
     array_pop($query);
     $admin_password = md5($data['admin_password']);
@@ -156,7 +156,7 @@ function get_queries()
     $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_users` VALUES ('1', 'Root User', '" . $data['admin_username'] . "', '" . $admin_password . "', '" . $data['admin_email'] . "', '1', '" . $time . "', 'en', 'UTC', 'US');";
 
     // Update version.
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_plugin_activation` VALUES ('PHPDS', 'install', '" . $db_version . "', '1');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_db_version', '" . $db_version . "', 'PHPDevShell Database Version');";
 
     return $query;
 }

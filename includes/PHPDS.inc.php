@@ -417,7 +417,7 @@ class PHPDS
             // Run template as required.
             $this->core->startController();
             // Write collected logs to database.
-            $this->user->logThis();
+            $this->PHPDS_user()->logActions();
             $this->db->endTransaction();
         } catch (Exception $e) {
             $this->PHPDS_errorHandler()->doHandleException($e);

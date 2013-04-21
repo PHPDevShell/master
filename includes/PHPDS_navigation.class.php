@@ -92,7 +92,7 @@ class PHPDS_navigation extends PHPDS_dependant
             SELECT DISTINCT SQL_CACHE
                       t1.node_id, t1.parent_node_id, t1.node_name, t1.node_link, t1.plugin,
                       t1.node_type, t1.extend, t1.new_window, t1.rank, t1.hide, t1.theme_id,
-                      t1.alias, t1.layout, t1.params,
+                      t1.alias, t1.layout, t1.params, t1.route,
                       t3.is_parent, t3.type,
                       t6.theme_folder
             FROM      _db_core_node_items AS t1
@@ -124,16 +124,23 @@ class PHPDS_navigation extends PHPDS_dependant
             // Create node items. //
             ////////////////////////
             $new_node = array();
-            PU_copyArray($mr, $new_node, array('node_id', 'parent_node_id', 'alias', 'node_link', 'rank', 'hide', 'new_window', 'is_parent', 'type', 'theme_folder', 'layout', 'plugin', 'node_type', 'extend'));
-            $new_node['node_name'] = $navigation->determineNodeName($mr['node_name'], $mr['node_link'], $mr['node_id'], $mr['plugin']);
+            PU_copyArray($mr, $new_node,
+                array('node_id', 'parent_node_id', 'alias', 'node_link', 'rank', 'hide',
+                      'new_window', 'is_parent', 'type', 'theme_folder', 'layout', 'plugin',
+                      'node_type', 'extend', 'route'));
+            $new_node['node_name'] =
+                $navigation->determineNodeName($mr['node_name'], $mr['node_link'], $mr['node_id'], $mr['plugin']);
 
             $new_node['params'] = !empty($mr['params']) ? html_entity_decode($mr['params'], ENT_COMPAT, $charset) : '';
             $new_node['plugin_folder'] = 'plugins/' . $mr['plugin'] . '/';
             if ($sef && ! empty($mr['alias'])) {
-                $navigation->navAlias[$mr['alias']] = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
+                $navigation->navAlias[$mr['alias']]
+                    = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
                 $new_node['href'] = $aburl . '/' . $mr['alias'].$append;
             } else {
-                $new_node['href'] = $aburl.'/index.php?m='.($mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend']);
+                $new_node['href']
+                    = $aburl.'/index.php?m='.($mr['node_type']
+                    != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend']);
             }
 
             // Writing children for single level dropdown.
@@ -144,7 +151,8 @@ class PHPDS_navigation extends PHPDS_dependant
             $navigation->navigation[$nid] = $new_node;
 
             if (!empty($mr['alias'])) {
-                $this->router->addRoute($nid, $mr['alias'], $mr['plugin']);
+                $route = (empty($mr['route'])) ? '' : '/' . $mr['route'];
+                $this->router->addRoute($nid, $mr['alias'] . $route, $mr['plugin']);
             }
         }
     }
@@ -507,7 +515,6 @@ class PHPDS_navigation extends PHPDS_dependant
         $configuration = $this->configuration;
         $route = null;
         $m = 0;
-
         $basepath = parse_url($configuration['absolute_url'], PHP_URL_PATH);
         $absolute_path = parse_url($uri, PHP_URL_PATH);
         $path = trim(str_replace($basepath, '', $absolute_path), '/');
@@ -553,7 +560,6 @@ class PHPDS_navigation extends PHPDS_dependant
     public function urlAccessError($alias = null, $get_node_id = null)
     {
         $required_node_id = $this->confirmNodeExist($alias, $get_node_id);
-
         if (empty($required_node_id)) {
             $this->core->haltController = array('type' => '404', 'message' => ___('Page not found'));
             return false;
@@ -579,12 +585,13 @@ class PHPDS_navigation extends PHPDS_dependant
     public function confirmNodeExist($alias, $node_id)
     {
         $sql = "
-            SELECT  t1.node_id
-		    FROM    _db_core_node_items AS t1
-		    WHERE   t1.alias   = :alias
-		    OR      t1.node_id = :node_id
+            SELECT  node_id
+		    FROM    _db_core_node_items
+		    WHERE   alias   = :alias
+		    OR      node_id = :node_id
         ";
-
+        if (empty($node_id)) $node_id = '';
+        if (empty($alias))   $alias = '';
         return $this->db->querySingle($sql, array('alias' => $alias, 'node_id' => $node_id));
     }
 

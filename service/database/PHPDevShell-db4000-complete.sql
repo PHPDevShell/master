@@ -1,4 +1,9 @@
-CREATE TABLE `pds_core_cron` (
+-- ****************************************************************************************
+-- FOR AUTOMATED ONE CLICK INSTALLATION SQL FOR SERVICES e.g CPanel Please see End of File;
+-- THIS SQL FILE CAN BE EXECUTED/IMPORTED DIRECTLY INTO MYSQL DATABASE
+-- ****************************************************************************************
+
+CREATE TABLE `_db_core_cron` (
   `node_id`   VARCHAR(64) NOT NULL,
   `cron_desc` VARCHAR(255) DEFAULT NULL,
   `cron_type` INT(1) DEFAULT NULL,
@@ -61,7 +66,7 @@ CREATE TABLE `_db_core_node_items` (
   `alias`          VARCHAR(255) DEFAULT NULL,
   `layout`         VARCHAR(255) DEFAULT NULL,
   `params`         VARCHAR(1024) DEFAULT NULL,
-  `route`          VARCHAR(255) DEFAULT NULL,
+  `route`          VARCHAR(300) DEFAULT NULL,
   PRIMARY KEY (`node_id`),
   KEY `index` (`parent_node_id`, `node_link`, `plugin`, `alias`),
   KEY `params` (`params`(255)) USING BTREE
@@ -106,7 +111,6 @@ INSERT INTO `_db_core_plugin_activation` VALUES ('LightModels', 'install', '1000
 INSERT INTO `_db_core_plugin_activation` VALUES ('PluginManager', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('NodeHelper', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('About', 'install', '1000', '0');
-INSERT INTO `_db_core_plugin_activation` VALUES ('StandardLogin', 'install', '1000', '0');
 
 -- Create classes available from default plugins.;
 CREATE TABLE `_db_core_plugin_classes` (
@@ -155,28 +159,21 @@ CREATE TABLE `_db_core_settings` (
 
 -- Insert default settings to make system work.;
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_allow_remember', '1', 'Should users be allowed to login with remember.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_banned_role', '6', 'The banned role. No access allowed.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_banned_role', '4', 'The banned role. No access allowed.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_charset', 'UTF-8', 'Site wide charset.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_charset_format', '.{charset}', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_cmod', '0777', 'Writable folder permissions');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_crypt_key', 'eDucDjodz8ZiMqFe8zeJ', 'General crypt key to protect system.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_custom_logo', '', 'Default system logo.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format', 'F j, Y, g:i a O', 'Date format according to DateTime function of PHP.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format_short', 'Y-m-d', 'Shorter date format.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format_show', 'September 17, 2010, 12:59 pm +0000', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format_show_short', '2010-09-17', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_debug_language', '', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_theme', 'default', 'Default theme for all nodes.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_theme_id', 'default', 'Default theme id.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_upload_directory', 'write/upload/', 'Writable upload directory.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_demo_mode', '0', 'Should system be set into demo mode, no transactions will occur.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_from_email', 'no-reply@phphdevshell.org', 'From Email address.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_front_page_id', 'readme', 'The page to show when site is access.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_guest_role', '4', 'The systems guest role.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_guest_role', '3', 'The systems guest role.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_language', 'en', 'Default language.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_languages_available', 'en', 'List of language codes available');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_locale_format', '{lang}_{region}{charset}', 'Complete locale format.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_loginandout', 'login', 'The page to use to log-in and log-out.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_login_message', '', 'a Default message to welcome users loging in.');
@@ -188,19 +185,13 @@ INSERT INTO `_db_core_settings` VALUES ('PHPDS_region', 'US', 'Region settings.'
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_regions_available', 'US', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_root_id', '1', 'Root User.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_root_role', '1', 'Root Role.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_save', 'save', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_scripts_name_version', 'Powered by PHPDevShell', 'Footer message.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_sef_url', '0', 'Should SEF urls be enabled, not rename to .htaccess in root.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_sendmail_path', '/usr/sbin/sendmail', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_setting_admin_email', 'admin@phpdevshell.org', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_setting_support_email', 'default:System Support Query,default:General Query', 'Allows you to have multiple option for a email query.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_split_results', '30', 'When viewing paged results, how many results should be shown.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_split_results', '15', 'When viewing paged results, how many results should be shown.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_down', '0', 'Is system currently down for development.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_down_message', '%s is currently down for maintenance. Some important features are being updated. Please return soon.', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_logging', '1', 'Should logs be written to database.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_timezone', 'UTC', 'Timezone.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_trim_logs', '1000000', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_url_append', '.html', 'The url extension in the end.');
+INSERT INTO `_db_core_settings` VALUES ('PHPDS_url_append', '', 'The url extension in the end.');
 
 -- Create tags table for tagging data.;
 CREATE TABLE `_db_core_tags` (
@@ -258,10 +249,9 @@ CREATE TABLE `_db_core_user_roles` (
 
 -- Insert primary roles table a user can belong to.;
 INSERT INTO `_db_core_user_roles` VALUES ('1', 'Super Admin', null);
-INSERT INTO `_db_core_user_roles` VALUES ('2', 'Registered User', null);
-INSERT INTO `_db_core_user_roles` VALUES ('3', 'Awaiting Confirmation', null);
-INSERT INTO `_db_core_user_roles` VALUES ('4', 'Guest User', null);
-INSERT INTO `_db_core_user_roles` VALUES ('5', 'Disabled', null);
+INSERT INTO `_db_core_user_roles` VALUES ('2', 'Normal User', null);
+INSERT INTO `_db_core_user_roles` VALUES ('3', 'Guest User', null);
+INSERT INTO `_db_core_user_roles` VALUES ('4', 'Disabled', null);
 
 -- Create security role permissions table.;
 CREATE TABLE `_db_core_user_role_permissions` (
@@ -275,7 +265,19 @@ CREATE TABLE `_db_core_user_role_permissions` (
 -- Insert default user permissions.;
 INSERT INTO _db_core_user_role_permissions VALUES ('1', 'readme');
 INSERT INTO _db_core_user_role_permissions VALUES ('2', 'readme');
-INSERT INTO _db_core_user_role_permissions VALUES ('4', 'readme');
+INSERT INTO _db_core_user_role_permissions VALUES ('3', 'readme');
 
 INSERT INTO _db_core_user_role_permissions VALUES ('1', 'plugin-admin');
 
+-- IF DEFAULT INSTALLATION PHPDS SERVICE WILL NOT BE USED AND REPLACED WITH e.g CPanel ALSO RUN QUERIES:
+-- Add default root user (default username/password root/root);
+INSERT INTO _db_core_users
+(user_id, user_display_name, user_name, user_password, user_email, user_role, date_Registered, language, timezone, region)
+VALUES ('1', 'Root User', 'root', '63a9f0ea7bb98050796b649e85481845', 'admin@phpdevshell.org', '1', '1366524462', 'en', 'UTC', 'US');
+-- Add extra custom settings;
+INSERT INTO _db_core_settings VALUES ('PHPDS_crypt_key', 'ASKjjFHS223DjjLLPSfjsaDiEED', 'Crypt Key');
+INSERT INTO _db_core_settings VALUES ('PHPDS_from_email', 'admin@phpdevshell.org', 'Where emails are shows to be sent from');
+INSERT INTO _db_core_settings VALUES ('PHPDS_scripts_name_version', 'PHPDevShell', 'The name of the newly launched application');
+INSERT INTO _db_core_settings VALUES ('PHPDS_setting_admin_email', 'admin@phpdevshell.org', 'Administrator email');
+INSERT INTO _db_core_settings VALUES ('PHPDS_db_version', 4000, 'PHPDevShell Database Version');
+-- That's it.

@@ -339,7 +339,7 @@ function get_db_version()
 {
     global $data, $pdo;
     $db_prefix = $data['db_prefix'];
-    return $pdo->querySingle("SELECT version FROM {$db_prefix}core_plugin_activation WHERE UPPER (plugin_folder) = 'PHPDS'");
+    return $pdo->querySingle("SELECT setting_value FROM {$db_prefix}core_settings WHERE setting_id = 'PHPDS_db_version'");
 }
 
 function root_role()
@@ -428,7 +428,7 @@ function stuffMYSQL()
     } catch (PDOException $e) {
         $except_message_main = '<h4>' . $e->getMessage() . '</h4>';
         $e                   = $e->getPrevious();
-        addError(kMYSQLconnect, $except_message_main . sprintf(_('Error occured and returned "%s" make sure all the details are correct and that the database is running.'), $e->getMessage()));
+        addError(kMYSQLconnect, $except_message_main . sprintf(_('Error occurred and returned "%s" make sure all the details are correct and that the database is running.'), $e->getMessage()));
         return false;
     }
 
@@ -441,7 +441,7 @@ function stuffMYSQL()
         }
     } else if ($type == 'upgrade') {
         if (empty($tables)) {
-            addError(kMYSQLempty, _('There are no existing tables in this database, are you sure PHPDevShell is installed?.'));
+            addError(kMYSQLempty, _('There are no existing tables in this database, are you sure PHPDevShell is installed and can be upgraded?'));
             return false;
         }
         $phpds_db_ver = get_db_version();

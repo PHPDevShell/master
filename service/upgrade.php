@@ -43,7 +43,7 @@ function displaySuccess()
 
 function displayFields()
 {
-    global $data, $doit;
+    global $doit;
 
     okPrint(_('<i class="icon-ok"></i> Your server meets all the upgrade requirements.'));
     if ($doit == false) warningPrint('<i class="icon-warning-sign"></i> Upgrade is in developer mode, set $doit = true.');
@@ -93,7 +93,7 @@ function displayFields()
 
 function checkFields()
 {
-    global $data, $errors;
+    global $errors;
 
     checkField('db_dsn', _('Please supply the database dsn.'), 'mysql:host=localhost;dbname=phpdev');
     checkField('db_username', _('Please supply the database username.'), 'root');
@@ -119,13 +119,13 @@ function get_queries()
         }
     }
     if (!empty($queries)) {
-        $queries = preg_replace('/pds_core_/', $data['db_prefix'] . 'core_', $queries);
+        $queries = preg_replace('/_db_core_/', $data['db_prefix'] . 'core_', $queries);
         $query   = explode(';', $queries);
         array_pop($query);
     }
-
+    // INSERT INTO `_db_core_settings` VALUES ('PHPDS_save', 'save', '');
     // Update version at the end of the query batch
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_plugin_activation` VALUES ('PHPDS', 'install', '" . $db_version . "', '1');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_db_version', '" . $db_version . "', 'PHPDevShell Database Version');";
 
     return $query;
 }
