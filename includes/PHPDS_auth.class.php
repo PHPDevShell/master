@@ -279,7 +279,7 @@ class PHPDS_auth extends PHPDS_dependant
         $conf = $this->configuration;
 
         if (empty($_SESSION['user_name'])) {
-            $settings_array = $this->config->essentialSettings;
+            $config = $this->configuration;
 
             if (!empty($conf['system_timezone'])) {
                 $user_timezone = $conf['system_timezone'];
@@ -289,7 +289,7 @@ class PHPDS_auth extends PHPDS_dependant
             $_SESSION['user_name']         = 'guest';
             $_SESSION['user_display_name'] = 'Guest User';
             $_SESSION['user_role_name']    = '';
-            $_SESSION['user_role']         = $settings_array['guest_role'];
+            $_SESSION['user_role']         = $config['guest_role'];
             $_SESSION['user_email']        = '';
             $_SESSION['user_language']     = $conf['language'];
             $_SESSION['user_region']       = $conf['region'];
@@ -340,7 +340,6 @@ class PHPDS_auth extends PHPDS_dependant
      */
     public function buildRequest()
     {
-        $settings      = $this->config->essentialSettings;
         $navigation    = $this->navigation;
         $configuration = $this->configuration;
         $redirect_page = '';
@@ -350,7 +349,7 @@ class PHPDS_auth extends PHPDS_dependant
 
         // Determine page url to post form to.
         if ($configuration['m'] == $this->loginPageId) {
-            $post_login_url = $navigation->buildURL($settings['redirect_login']);
+            $post_login_url = $navigation->buildURL($configuration['redirect_login']);
         } else {
             $post_login_url = $_SERVER['REQUEST_URI'];
         }
@@ -359,10 +358,10 @@ class PHPDS_auth extends PHPDS_dependant
 
         if (!$this->isUserSession()) {
             // Check if not registered link should appear.
-            if ((boolean)$settings['allow_registration'] == true) {
+            if (!empty($configuration['allow_registration'])) {
                 // Check if we have a custom registration page.
-                $registration = (!empty($settings['registration_page'])) ?
-                    $navigation->buildURL($settings['registration_page']) :
+                $registration = (!empty($configuration['registration_page'])) ?
+                    $navigation->buildURL($configuration['registration_page']) :
                     $navigation->buildURL($this->registrationPageId);
             } else {
                 $registration = null;
@@ -394,7 +393,7 @@ class PHPDS_auth extends PHPDS_dependant
                 $user_array = $this->lookupUser($username, $password);
                 if (!empty($user_array)) {
                     $this->createUserSession($user_array);
-                    if ($this->config->essentialSettings['allow_remember'] && isset($_POST['user_remember'])) {
+                    if ($this->configuration['allow_remember'] && isset($_POST['user_remember'])) {
                         $this->setCookie($user_array['user_id']);
                     }
                 } else {

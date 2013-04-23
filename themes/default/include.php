@@ -1,6 +1,5 @@
 <?php
 (!empty($aurl)) ? $url = $aurl : $url = $template->outputAbsoluteURL('return');
-if (empty($skin)) $skin = $template->outputSkin('return');
 ?>
 <meta charset="<?php $template->outputCharset() ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">

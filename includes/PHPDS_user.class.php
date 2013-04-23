@@ -50,7 +50,6 @@ class PHPDS_user extends PHPDS_dependant
         ";
 
         $configuration = $this->configuration;
-        $config        = $this->config;
 
         if (empty($user_id))
             $user_id = (!empty($configuration['user_id'])) ? $configuration['user_id'] : 0;
@@ -64,8 +63,7 @@ class PHPDS_user extends PHPDS_dependant
                 return $role;
             }
         } else {
-            $settings   = $config->essentialSettings;
-            $guest_role = $settings['guest_role'];
+            $guest_role = $configuration['guest_role'];
             if (empty($guest_role)) throw new PHPDS_exception('Unable to get the GUEST ROLE from essential settings.');
             return $guest_role;
         }

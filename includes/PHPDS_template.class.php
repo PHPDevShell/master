@@ -1285,7 +1285,7 @@ class PHPDS_template extends PHPDS_dependant
      */
     public function debugInfo()
     {
-        if ($this->configuration['queries_count']) {
+        if ($this->configuration['page_loadtimes']) {
             if (!empty($this->core->themeFile)) {
                 $memory_used = memory_get_usage();
                 $time_spent  = intval((microtime(true) - $GLOBALS['start_time']) * 1000);

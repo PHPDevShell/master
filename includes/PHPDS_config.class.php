@@ -3,11 +3,6 @@
 class PHPDS_config extends PHPDS_dependant
 {
     /**
-     * Contains array of all essential stored settings.
-     * @var array
-     */
-    public $essentialSettings;
-    /**
      * Contains array of all the plugins installed.
      *
      * @var array
@@ -131,12 +126,13 @@ class PHPDS_config extends PHPDS_dependant
     public function getEssentialSettings()
     {
         // Pull essential settings and assign it to essential_settings.
-        $this->essentialSettings = $this->cache->get('essential_settings');
-        if (empty($this->essentialSettings)) {
-            $this->essentialSettings = $this->getSettings($this->configuration['preloaded_settings'], 'PHPDS');
+        $settings = $this->cache->get('PHPDS_settings');
+        if (empty($settings)) {
+            $settings = $this->getSettings(null, 'PHPDS_');
             // Write essential settings data to cache.
-            $this->cache->set('essential_settings', $this->essentialSettings);
+            $this->cache->set('PHPDS_settings', $settings);
         }
+        return $settings;
     }
 
     /**
@@ -144,10 +140,11 @@ class PHPDS_config extends PHPDS_dependant
      * Class will always use plugin name as prefix for settings if no custom prefix is provided.
      *
      * @param mixed  $settings_required
-     * @param string $custom_prefix This allows you to use a prefix value of your choice to select a setting from another plugin, otherwise PHPDevShell will be used.
+     * @param string $custom_prefix This allows you to use a prefix value of your choice to
+     *        select a setting from another plugin.
      * @return array An array will be returned containing all the values requested.
      */
-    public function getSettings($settings_required = false, $custom_prefix = null)
+    public function getSettings($settings_required = null, $custom_prefix = null)
     {
         $sql = "
                 SELECT SQL_CACHE setting_id, setting_value
@@ -159,6 +156,8 @@ class PHPDS_config extends PHPDS_dependant
 
         if ($custom_prefix == '*') {
             $prefix = '%%';
+        } else if (isset($custom_prefix)) {
+            $prefix = $custom_prefix;
         } else {
             $prefix = $this->settingsPrefix($custom_prefix);
         }
@@ -301,11 +300,11 @@ class PHPDS_config extends PHPDS_dependant
      */
     public function installedPlugins()
     {
-        $this->pluginsInstalled = $this->cache->get('plugins_installed');
+        $this->pluginsInstalled = $this->cache->get('PHPDS_plugins_installed');
         if (empty($this->pluginsInstalled)) {
             $sql = "
-              SELECT  plugin_folder, status, version
-              FROM    _db_core_plugin_activation
+              SELECT SQL_CACHE plugin_folder, status, version
+              FROM             _db_core_plugin_activation
             ";
             $installed_plugins_db = $this->db->queryFAR($sql);
 
@@ -319,7 +318,7 @@ class PHPDS_config extends PHPDS_dependant
 
             if (! empty($plugins_installed)) {
                 $this->pluginsInstalled = $plugins_installed;
-                $this->cache->set('plugins_installed', $plugins_installed);
+                $this->cache->set('PHPDS_plugins_installed', $plugins_installed);
             }
         }
     }

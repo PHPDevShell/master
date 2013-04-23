@@ -771,7 +771,7 @@ class PHPDS_core extends PHPDS_dependant
         if (!empty($navigation->navigation[$this->configuration['m']]['theme_folder'])) {
             return $navigation->navigation[$this->configuration['m']]['theme_folder'];
         } else {
-            return $settings['default_theme'];
+            return $settings['default_theme_id'];
         }
     }
 

@@ -278,14 +278,11 @@ class PHPDS
     }
 
     /**
-     * Copy settings from the database-loaded array. Converts and defaults to false if the value isn't set
-     *
-     * @param array $settings
-     * @param mixed $type the type of value to cast (currently only boolean or null for everything else)
+     * Copy settings from the database-loaded array.
      */
-    protected function copySettings($settings, $type = null)
+    protected function copySettingsFromDb()
     {
-        PU_copyArray($this->PHPDS_config()->essentialSettings, $this->configuration, $settings, $type);
+        PU_copyArray($this->PHPDS_config()->getEssentialSettings(), $this->configuration);
     }
 
     /**
@@ -298,8 +295,9 @@ class PHPDS
     {
         // Set core settings. //////////////////////////////////////////////////////////////
         $this->configuration['absolute_path'] = $this->basepath(); /////////////////////////
-        $this->copySettings($this->configuration['preloaded_settings']); ///////////////////
-        ////////////////////////////////////////////////////////////////////////////////////
+
+        // Assign all core db settings to configuration. ///////////////////////////////////
+        $this->copySettingsFromDb(); ///////////////////////////////////////////////////////
 
         // Prepare auth. ///////////////////////////////////////////////////////////////////
         $this->PHPDS_auth()->start(); //////////////////////////////////////////////////////
@@ -369,9 +367,6 @@ class PHPDS
 
         // Connects session server. ///////////////////////////////////////////
         $this->PHPDS_session()->start(); //////////////////////////////////////
-
-        // Starts config class. ///////////////////////////////////////////////
-        $this->PHPDS_config()->getEssentialSettings(); ////////////////////////
 
         // Will load all available classes from registry. /////////////////////
         $this->classes->loadRegistry(); ///////////////////////////////////////

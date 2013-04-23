@@ -175,38 +175,18 @@ $configuration['session_path'] = 'write/session/';
 //////////////////////////////////////////////////////////////////////////////
 // System ////////////////////////////////////////////////////////////////////
 /**
- * When you experience a delay in views updating after changes, enable this to correct it.
- * Note disable this in production as it uses allot of memory.
- * @global integer
+ * Should URLs be rewritten to use neat search engine friendly URLS?
+ * Please note you must rename the rename.htaccess file to .htaccess
+ * You also need to have mod_rewrite installed on your server, this generally does not work on Windows.
+ * @global boolean
  */
-$configuration['force_views_compile'] = false;
+$configuration['sef_url'] = false;
 /**
- * Enables views caching.
- * When triggered in view, the page will be static. Note this is aggressive caching and will not work on dynamic pages without proper configuration.
- * @global integer
- */
-$configuration['views_cache'] = false;
-/**
- * Views cache refresh intervals in seconds.
- * When enabled, this will rewrites views cache every som many seconds.
- * @global integer
- */
-$configuration['views_cache_lifetime'] = 360;
-/**
- * If you are running a very large site, you might want to consider running a dedicated light http server (httpdlight, nginx) that
- * only serves static content like images and static files, call it a CDN if you like.
- * By adding a host here 'http://192.34.22.33/project/cdn', all images etc, of PHPDevShell will be loaded from this address.
- * NO TRAILING SLASH
+ * What suffix should be added to the end of a node name, e.g .html, .php, .asp etc. whatever you like.
+ * Leave this blank to have a no suffix like e.g example.com/somenode
  * @global string
  */
-$configuration['static_content_host'] = '';
-/**
- * If you have a website tracking, analytics or affiliate script you may add it here, it will be added at the end of the body tag.
- * @global string
- */
-$configuration['footer_js'] = <<<JS
-	<!-- Ending Javascript -->
-JS;
+$configuration['url_append'] = '';
 /**
  * Views compile path.
  * (Needs to be writable)
@@ -226,17 +206,6 @@ $configuration['tmp_path'] = 'write/tmp/';
  */
 $configuration['upload_path'] = 'write/upload/';
 /**
- * Force system down bypass.
- * If your session expired while system was set to down/maintenance in the config gui, you can gain login access again by setting this option true.
- * @global boolean $configuration['system_down_bypass']
- */
-$configuration['system_down_bypass'] = false;
-/**
- * If true $lang variables will also be converted to constants.
- * @global boolean $configuration['constant_conversion']
- */
-$configuration['constant_conversion'] = false;
-/**
  * Select extra functions to load in engine. Functions in these files will always be available.
  * Example : utils.php
  * @global array
@@ -248,65 +217,36 @@ $configuration['function_files'] = array();
  * @global string
  */
 $configuration['charset'] = 'UTF-8';
-
+/**
+ * How the charset will be suffix to the language and region.
+ * E.g '.{charset}' will be formatted as en_US.UTF-8 where '.{charset}' translate to '.UTF-8'
+ * @global string
+ */
+$configuration['charset_format'] = '.{charset}';
+/**
+ * Default system language code as installed by your server (used for i18n gettext translation).
+ * @see http://www.iana.org/assignments/language-subtag-registry
+ * @global string
+ */
+$configuration['language'] = 'en';
+/**
+ * Default system region code as installed and wanted by your server (used for i18n gettext translation).
+ * @see http://www.iana.org/assignments/language-subtag-registry
+ * @global string
+ */
+$configuration['region'] = 'US';
+/**
+ * The full locale as will be passed through to the system config (some servers requires a different format).
+ * This is mostly used for i18n gettext translations.
+ * E.g '{lang}_{region}{charset}' will be formatted as en_US.UTF-8 depending on user selection or other options.
+ * @global string
+ */
+$configuration['locale_format'] = '{lang}_{region}{charset}';
 /**
  * This is the repository the plugin manager will use to check for updates or install new plugins.
- *
  * @global string
  */
 $configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
-
-/**
- * This is all the settings that will be available in $configuration['value'] loaded from database.
- * In general this would never be changed, however a developer
- * might need to add their own variables they would need on every page.
- *
- * @global array
- */
-$configuration['preloaded_settings'] = array(
-    'scripts_name_version',
-    'redirect_login',
-    'footer_notes',
-    'front_page_id',
-    'front_page_id_out',
-    'front_page_id_in',
-    'loginandout',
-    'custom_logo',
-    'custom_css',
-    'system_down',
-    'demo_mode',
-    'charset_format',
-    'locale_format',
-    'charset',
-    'language',
-    'debug_language',
-    'region',
-    'root_id',
-    'root_role',
-    'system_logging',
-    'crypt_key',
-    'date_format',
-    'date_format_short',
-    'default_theme_id',
-    'default_theme',
-    'split_results',
-    'guest_role',
-    'system_timezone',
-    'setting_admin_email',
-    'email_critical',
-    'sef_url',
-    'queries_count',
-    'allow_registration',
-    'registration_page',
-    'allow_remember',
-    'url_append',
-    'skin',
-    'meta_keywords',
-    'meta_description',
-    'node_behaviour',
-    'custom_css'
-);
-
 /**
  * Allows a developer to override/extend a core class with his own.
  * Add extending class inside includes/extend/ folder and register its name by defining a value (NOT KEY) below.
@@ -330,7 +270,6 @@ $configuration['extend'] = array(
     'user'         => 'PHPDS_user',
     'view'         => 'PHPDS_view'
 );
-
 /**
  * The engine will look in the order they are placed in for classes in possible listed folders.
  * For instance to look in folders that overrides main classes add 'includes/override' as
@@ -339,17 +278,27 @@ $configuration['extend'] = array(
  * @global array
  */
 $configuration['class_folders'] = array('includes', 'includes/extend');
-
+/**
+ * If you have a website tracking, analytics or affiliate script you may add it here, it will be added at the end of the body tag.
+ * @global string
+ */
+$configuration['footer_js'] = <<<JS
+	<!-- Ending Javascript -->
+JS;
 //////////////////////////////////////////////////////////////////////////////
 // Debugging /////////////////////////////////////////////////////////////////
-
+/**
+ * Shows some basic information onscreen.
+ * @global boolean
+ */
+$configuration['page_loadtimes'] = false;
 /**
  * When your system goes to production, set this to TRUE to avoid information leaks.
  * Will force compile on template engine.
  *
  * Overrides most 'debug' and 'error' settings
  *
- * @var boolean
+ * @global boolean
  */
 $configuration['production'] = true;
 
@@ -362,7 +311,7 @@ $configuration['debug']['enable'] = false;
 
 /**
  * Debug domains filter to include in debugging output, domains must be listed here for the messages to appear.
- * This will control what to monitor indepently on how the message will be delivered (see below).
+ * This will control what to monitor independently on how the message will be delivered (see below).
  * Example:
  * $configuration['debug']['domains'] = array('core', 'db', 'navigation', 'security', 'template', 'user', '!');
  * There is a special domain: exclamation mark ('!') which refers to the low-level skel

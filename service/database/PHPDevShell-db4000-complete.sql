@@ -160,38 +160,26 @@ CREATE TABLE `_db_core_settings` (
 -- Insert default settings to make system work.;
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_allow_remember', '1', 'Should users be allowed to login with remember.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_banned_role', '4', 'The banned role. No access allowed.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_charset', 'UTF-8', 'Site wide charset.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_charset_format', '.{charset}', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_cmod', '0777', 'Writable folder permissions');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format', 'F j, Y, g:i a O', 'Date format according to DateTime function of PHP.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_date_format_short', 'Y-m-d', 'Shorter date format.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_debug_language', '', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_theme', 'default', 'Default theme for all nodes.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_theme_id', 'default', 'Default theme id.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_default_upload_directory', 'write/upload/', 'Writable upload directory.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_front_page_id', 'readme', 'The page to show when site is access.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_guest_role', '3', 'The systems guest role.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_language', 'en', 'Default language.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_locale_format', '{lang}_{region}{charset}', 'Complete locale format.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_loginandout', 'login', 'The page to use to log-in and log-out.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_login_message', '', 'a Default message to welcome users loging in.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_meta_description', 'Administrative user interface based on PHPDS and other modern technologies.', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_meta_keywords', 'administrative, administrator, PHPDS, interface, ui, user', '');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_queries_count', '0', 'Should queries be counted and info show.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_redirect_login', 'readme', 'When a user logs in, where should he be redirected to?');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_region', 'US', 'Region settings.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_regions_available', 'US', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_root_id', '1', 'Root User.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_root_role', '1', 'Root Role.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_sef_url', '0', 'Should SEF urls be enabled, not rename to .htaccess in root.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_split_results', '15', 'When viewing paged results, how many results should be shown.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_down', '0', 'Is system currently down for development.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_down_message', '%s is currently down for maintenance. Some important features are being updated. Please return soon.', '');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_logging', '1', 'Should logs be written to database.');
 INSERT INTO `_db_core_settings` VALUES ('PHPDS_system_timezone', 'UTC', 'Timezone.');
-INSERT INTO `_db_core_settings` VALUES ('PHPDS_url_append', '', 'The url extension in the end.');
 
 -- Create tags table for tagging data.;
 CREATE TABLE `_db_core_tags` (
