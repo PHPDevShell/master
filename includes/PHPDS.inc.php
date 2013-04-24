@@ -740,7 +740,7 @@ class PHPDS
         if (is_file($filename)) {
             include_once ($filename);
             if (class_exists($classname, false)) {
-                $this->log("Autoloading $classname from $filename");
+                $this->log("Autoloading : $classname from $filename");
                 return true;
             }
         }

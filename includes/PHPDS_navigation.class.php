@@ -432,7 +432,7 @@ class PHPDS_navigation extends PHPDS_dependant
         if (empty($node_id)) $node_id = $this->configuration['m'];
         if (!empty($this->configuration['sef_url'])) {
             if (empty($this->navigation["$node_id"]['alias'])) {
-                $alias = $this->findNodeAlias($node_id);
+                $alias = $node_id;
             } else {
                 $alias = $this->navigation["$node_id"]['alias'];
             }
@@ -456,25 +456,8 @@ class PHPDS_navigation extends PHPDS_dependant
         if (!empty($url)) {
             return $this->configuration['absolute_url'] . "/$url";
         } else {
-            return false;
+            return null;
         }
-    }
-
-    /**
-     * Will return the nodes alias by providing its id.
-     *
-     * @param $node_id string
-     * @return string
-     */
-    public function findNodeAlias($node_id)
-    {
-        $sql = "
-            SELECT  t1.alias
-		    FROM    _db_core_node_items AS t1
-		    WHERE   t1.node_id = :node_id
-        ";
-
-        return $this->db->querySingle($sql, array('node_id' => $node_id));
     }
 
     /**

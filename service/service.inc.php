@@ -26,6 +26,11 @@ include '../includes/db/PHPDS_pdo.class.php';
 class PHPDS_dependant
 {
     public $configuration;
+
+    public function log($string=null)
+    {
+        return true;
+    }
 }
 
 class PHPDS_databaseException extends PDOException

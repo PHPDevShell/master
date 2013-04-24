@@ -711,7 +711,7 @@ class PHPDS_core extends PHPDS_dependant
             bind_textdomain_codeset($textdomain, $configuration['charset']);
             textdomain($textdomain);
         } else {
-            $this->debugInstance()->warning('MISSING Translation File : ' . $loc_dir);
+            $this->debugInstance()->warning('Add Translation File : ' . $loc_dir);
         }
     }
 

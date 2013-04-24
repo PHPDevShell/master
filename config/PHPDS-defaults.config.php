@@ -14,6 +14,7 @@
  * @global string
  */
 $configuration['driver']['db'] = 'PHPDS_pdo';
+
 /**
  * Main database connection parameters for default connector.
  * If you install a different database connector you might want to.
@@ -78,12 +79,14 @@ $configuration['database']['master'] = array(
  * @global string
  */
 $configuration['driver']['cache'] = 'PHPDS_filecache';
+
 /**
  * Views cache path (used by PHPDS_filecache)
  * (Needs to be writable)
  * @global string $configuration['cache_path']
  */
 $configuration['cache_path'] = 'write/cache/';
+
 /**
  * Cache refresh intervals in seconds.
  * Helps with overall performance of your system. The higher the value the less queries will be done,
@@ -91,6 +94,7 @@ $configuration['cache_path'] = 'write/cache/';
  * @global integer (seconds) (0 to turn off any cache)
  */
 $configuration['cache_refresh_intervals'] = 1440;
+
 /**
  * Memcached cache server details.
  * Only complete this when you are using the memcached driver, this is not needed for file based or apc caching.
@@ -116,22 +120,26 @@ $configuration['cache_refresh_intervals'] = 1440;
 
 //////////////////////////////////////////////////////////////////////////////
 // Session ///////////////////////////////////////////////////////////////////
+
 /**
  * The class that handles the session connection found inside includes/session/
  * Also supports : PHPDS_apcSession, PHPDS_memcachedSession
  * @global string
  */
 $configuration['driver']['session'] = 'PHPDS_fileSession';
+
 /**
  * The lifespan of the session created.
  * @global integer (seconds) (0 to turn off any sessions)
  */
 $configuration['session_life'] = 1440;
+
 /**
  * Will attempt to protect system against potential session hijacking.
  * @global bool
  */
 $configuration['session_protect'] = false;
+
 /**
  * Allows you to specify specific runtime configuration options for your servers sessions.
  * @see http://www.php.net/manual/en/session.configuration.php
@@ -143,12 +151,14 @@ $configuration['session_cfg'] = array(
     //'session.gc_divisor' => 100,
     //'session.gc_maxlifetime' => $configuration['session_life']
 );
+
 /**
  * Sets the temp session data save path, false to use default.
  * (Needs to be writable)
  * @global string $configuration['session_path']
  */
 $configuration['session_path'] = 'write/session/';
+
 /**
  * Memcached session server details.
  * Only complete this when you are using the memcached driver, this is not needed for file based or apc sessions.
@@ -172,8 +182,10 @@ $configuration['session_path'] = 'write/session/';
      */
     //'weight'         => 0
 //);
+
 //////////////////////////////////////////////////////////////////////////////
 // System ////////////////////////////////////////////////////////////////////
+
 /**
  * Should URLs be rewritten to use neat search engine friendly URLS?
  * Please note you must rename the rename.htaccess file to .htaccess
@@ -181,60 +193,70 @@ $configuration['session_path'] = 'write/session/';
  * @global boolean
  */
 $configuration['sef_url'] = false;
+
 /**
  * What suffix should be added to the end of a node name, e.g .html, .php, .asp etc. whatever you like.
  * Leave this blank to have a no suffix like e.g example.com/somenode
  * @global string
  */
 $configuration['url_append'] = '';
+
 /**
  * Views compile path.
  * (Needs to be writable)
  * @global string $configuration['compile_path']
  */
 $configuration['compile_path'] = 'write/compile/';
+
 /**
  * Temporary writable folder path.
  * (Needs to be writable)
  * @global string $configuration['tmp_path']
  */
 $configuration['tmp_path'] = 'write/tmp/';
+
 /**
  * Files uploading folder path.
  * (Needs to be writable)
  * @global string $configuration['upload_path']
  */
 $configuration['upload_path'] = 'write/upload/';
+
 /**
  * Select extra functions to load in engine. Functions in these files will always be available.
  * Example : utils.php
  * @global array
  */
 $configuration['function_files'] = array();
+
 /**
  * Default charset to use - note this is php html entities coding, not PDO's or mysql's
  * @see  http://www.php.net/manual/en/function.htmlentities.php
  * @global string
  */
 $configuration['charset'] = 'UTF-8';
+
 /**
  * How the charset will be suffix to the language and region.
  * E.g '.{charset}' will be formatted as en_US.UTF-8 where '.{charset}' translate to '.UTF-8'
  * @global string
  */
 $configuration['charset_format'] = '.{charset}';
+
 /**
  * Default system language code as installed by your server (used for i18n gettext translation).
  * @see http://www.iana.org/assignments/language-subtag-registry
  * @global string
  */
 $configuration['language'] = 'en';
+
 /**
  * Default system region code as installed and wanted by your server (used for i18n gettext translation).
  * @see http://www.iana.org/assignments/language-subtag-registry
  * @global string
  */
 $configuration['region'] = 'US';
+
 /**
  * The full locale as will be passed through to the system config (some servers requires a different format).
  * This is mostly used for i18n gettext translations.
@@ -242,11 +264,13 @@ $configuration['region'] = 'US';
  * @global string
  */
 $configuration['locale_format'] = '{lang}_{region}{charset}';
+
 /**
  * This is the repository the plugin manager will use to check for updates or install new plugins.
  * @global string
  */
 $configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
+
 /**
  * Allows a developer to override/extend a core class with his own.
  * Add extending class inside includes/extend/ folder and register its name by defining a value (NOT KEY) below.
@@ -270,6 +294,7 @@ $configuration['extend'] = array(
     'user'         => 'PHPDS_user',
     'view'         => 'PHPDS_view'
 );
+
 /**
  * The engine will look in the order they are placed in for classes in possible listed folders.
  * For instance to look in folders that overrides main classes add 'includes/override' as
@@ -278,6 +303,7 @@ $configuration['extend'] = array(
  * @global array
  */
 $configuration['class_folders'] = array('includes', 'includes/extend');
+
 /**
  * If you have a website tracking, analytics or affiliate script you may add it here, it will be added at the end of the body tag.
  * @global string
@@ -285,13 +311,16 @@ $configuration['class_folders'] = array('includes', 'includes/extend');
 $configuration['footer_js'] = <<<JS
 	<!-- Ending Javascript -->
 JS;
+
 //////////////////////////////////////////////////////////////////////////////
 // Debugging /////////////////////////////////////////////////////////////////
+
 /**
  * Shows some basic information onscreen.
  * @global boolean
  */
 $configuration['page_loadtimes'] = false;
+
 /**
  * When your system goes to production, set this to TRUE to avoid information leaks.
  * Will force compile on template engine.
