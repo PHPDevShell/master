@@ -71,7 +71,7 @@ class PHPDS
      *
      * @var object
      */
-    protected $debugInstance;
+    protected $debug;
     /**
      * Core navigation object.
      *
@@ -166,7 +166,7 @@ class PHPDS
             return false;
         }
         include_once $path;
-        $this->log("Loading config file $path");
+        $this->log("Loading config file $path", 'Loading');
         $configuration['config_files_used'][] = $path;
         return true;
     }
@@ -182,7 +182,7 @@ class PHPDS
     {
         if (empty($filename)) return false;
 
-        $this->log("Looking for general config file \"$filename\"");
+        $this->log("Looking for general config file \"$filename\"", 'Loading');
 
         return $this->includeConfigFile($this->basepath('config') . $filename . '.config.php', $configuration);
     }
@@ -197,7 +197,7 @@ class PHPDS
         $files = glob($this->basepath('plugins') . '*/config/plugin.config.php');
         if (! empty($files)) {
             foreach($files as $filename) {
-                $this->log("Looking for plugin config file \"$filename\"");
+                $this->log("Looking for plugin config file \"$filename\"", 'Loading');
                 $this->includeConfigFile($filename, $configuration);
             }
         }
@@ -528,7 +528,7 @@ class PHPDS
      * Allow access to the global debugging subsystem
      * One is created if necessary.
      *
-     * @return PHPDS_debug instance
+     * @return PHPDS_debug
      */
     public function PHPDS_debug()
     {
@@ -547,7 +547,7 @@ class PHPDS
     public function PHPDS_errorHandler()
     {
         if (empty($this->errorHandler)) {
-            $this->errorHandler = $this->_factory('PHPDS_errorHandler');
+            $this->errorHandler = $this->_factory($this->configuration['extend']['errorHandler']);
         }
         return $this->errorHandler;
     }
@@ -674,11 +674,12 @@ class PHPDS
      * The goal of this function is to be called all throughout the code to be able to track bugs.
      *
      * @param string $data
+     * @param string $label
      */
-    public function log($data)
+    public function log($data, $label=null)
     {
         if (!empty($this->debug)) {
-            $this->PHPDS_debug()->debug($data);
+            $this->debug->debug($data, $label);
         } else {
             if (!empty($GLOBALS['early_debug'])) error_log('EARLY INFO: ' . $data);
         }
@@ -740,7 +741,7 @@ class PHPDS
         if (is_file($filename)) {
             include_once ($filename);
             if (class_exists($classname, false)) {
-                $this->log("Autoloading : $classname from $filename");
+                $this->log("$classname from $filename", 'Loading');
                 return true;
             }
         }
@@ -803,6 +804,7 @@ class PHPDS
  * @property PHPDS_core             $core
  * @property PHPDS_config           $config
  * @property PHPDS_cacheInterface   $cache
+ * @property PHPDS_debug            $debug
  * @property PHPDS_sessionInterface $session
  * @property PHPDS_navigation       $navigation
  * @property PHPDS_router           $router
@@ -822,20 +824,10 @@ class PHPDS_dependant
      */
     protected $dependance;
     /**
-     * The private debug instance of this object (with domain selection)
-     * @var object
-     */
-    private $debugInstance;
-    /**
      * Holds a dependent extended object to appear as parent.
      * @var object or name of the field containing the object
      */
     protected $parent;
-    /**
-     * Allows you to make fields read only, will not be able to write.
-     * @var boolean true will make fields read only.
-     */
-    protected $privateFields = false;
 
     /**
      * magic constructor
@@ -909,9 +901,6 @@ class PHPDS_dependant
             } // try to find a field in the parent
             elseif (!empty($this->parent) && (isset($this->parent->{$name}) || property_exists($this->parent, $name))) {
                 return $this->parent->{$name};
-            } // special case, we want the debug instance
-            elseif ('debug' == $name) {
-                return $this->debugInstance();
             } else {
                 $top = $this->PHPDS_dependance();
                 if (method_exists($top, 'get')) {
@@ -994,34 +983,6 @@ class PHPDS_dependant
     }
 
     /**
-     * Create instance of PHPDS_debug.
-     *
-     * @param object
-     * @return PHPDS_debug
-     */
-    public function debugInstance($domain = null)
-    {
-        if (empty($this->debugInstance)) {
-            if (empty($domain))
-                $domain = preg_replace('/^PHPDS_/', '', get_class($this));
-            $this->debugInstance = $this->factory('PHPDS_debug', $domain);
-        }
-        return $this->debugInstance;
-    }
-
-    /**
-     * Send info data to the debug subsystem (console, firebug, ...)
-     * The goal of this function is to be called all throughout the code to be able to track bugs.
-     *
-     * @param string $data
-     */
-    public function log($data)
-    {
-        if (is_a($this, 'debug')) $this->debug($data);
-        else $this->debugInstance()->debug($data);
-    }
-
-    /**
      * Create a new instance of the given class and link it as dependant (variable number of argument)
      *
      * @date 20111219 (v1.2.1) (greg) rewrote signature description for phpDoc
@@ -1088,34 +1049,6 @@ class PHPDS_dependant
     public function singletonWith($classname, array $params)
     {
         return $this->factory(array('classname' => $classname, 'factor' => 'singleton'));
-    }
-}
-
-/**
- * Turn core arrays into objects.
- */
-class PHPDS_array extends ArrayObject
-{
-    /**
-     * Magic set array.
-     *
-     * @param string $name
-     * @param string $val
-     */
-    public function __set($name, $val)
-    {
-        $this[$name] = $val;
-    }
-
-    /**
-     * Magic get array.
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        return (isset($this[$name]) ? $this[$name] : null);
     }
 }
 
@@ -1258,6 +1191,34 @@ class PHPDS_classFactory extends PHPDS_dependant
     {
         $data = $this->classParams($class_name);
         return empty($data['plugin_folder']) ? false : 'plugins/' . $data['plugin_folder'];
+    }
+}
+
+/**
+ * Turn core arrays into objects.
+ */
+class PHPDS_array extends ArrayObject
+{
+    /**
+     * Magic set array.
+     *
+     * @param string $name
+     * @param string $val
+     */
+    public function __set($name, $val)
+    {
+        $this[$name] = $val;
+    }
+
+    /**
+     * Magic get array.
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return (isset($this[$name]) ? $this[$name] : null);
     }
 }
 

@@ -26,10 +26,21 @@ include '../includes/db/PHPDS_pdo.class.php';
 class PHPDS_dependant
 {
     public $configuration;
+    public $debug;
 
-    public function log($string=null)
+    public function __construct()
     {
-        return true;
+        $this->debug = new debugger();
+    }
+}
+
+class debugger
+{
+    public function debug($message, $label=null)
+    {
+        $path = BASEPATH . DIRECTORY_SEPARATOR . 'write' . DIRECTORY_SEPARATOR . 'private' . DIRECTORY_SEPARATOR .
+        'installer.' . date('YmdH') . '.log';
+        error_log($message, 3, $path);
     }
 }
 
@@ -473,7 +484,7 @@ function stuffMYSQL()
         foreach ($queries as $query) {
             if (!empty($query) && $doit) {
                 try {
-                    $pdo->queryAffects($query);
+                    $pdo->query($query);
                 } catch (PDOException $e) {
                     $em    = $e->getPrevious();
                     $ecode = $pdo->errorCode();

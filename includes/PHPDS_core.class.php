@@ -706,12 +706,12 @@ class PHPDS_core extends PHPDS_dependant
 
         (file_exists($loc_dir)) ? $mo_ok = true : $mo_ok = false;
         if ($mo_ok) {
-            $this->log('Found Translation File : ' . $loc_dir);
+            $this->debug->debug('Loading ' . $loc_dir, 'Translation');
             bindtextdomain($textdomain, $bindtextdomain);
             bind_textdomain_codeset($textdomain, $configuration['charset']);
             textdomain($textdomain);
         } else {
-            $this->debugInstance()->warning('Add Translation File : ' . $loc_dir);
+            $this->debug->debug('Seeking ' . $loc_dir, 'Translation');
         }
     }
 
@@ -810,10 +810,7 @@ class PHPDS_core extends PHPDS_dependant
 
         if ($relative) $path = $configuration['absolute_path'] . $path;
 
-        $this->log('Loading : ' . $path);
-
-        // switch the domain to "user" so the developer can filter to see only its own output
-        $this->debugInstance()->domain('user');
+        $this->debug->debug($path, 'Loading');
 
         $result = false;
 
@@ -826,9 +823,6 @@ class PHPDS_core extends PHPDS_dependant
         } else {
             if ($required) throw new PHPDS_exception('Trying to load a non-existant file: "' . $path . '"');
         }
-
-        // revert to the "core" domain since we're out of the developer's code
-        $this->debugInstance()->domain('core');
 
         return $result;
     }
@@ -852,6 +846,6 @@ class PHPDS_core extends PHPDS_dependant
      */
     public function logConfig()
     {
-        $this->log((array)$this->configuration);
+        $this->debug->debug((array)$this->configuration, 'Config');
     }
 }

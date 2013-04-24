@@ -339,18 +339,6 @@ $configuration['production'] = true;
 $configuration['debug']['enable'] = false;
 
 /**
- * Debug domains filter to include in debugging output, domains must be listed here for the messages to appear.
- * This will control what to monitor independently on how the message will be delivered (see below).
- * Example:
- * $configuration['debug']['domains'] = array('core', 'db', 'navigation', 'security', 'template', 'user', '!');
- * There is a special domain: exclamation mark ('!') which refers to the low-level skel
- * Note that you can use star ('*') as a wildcard
- *
- * @global array
- */
-$configuration['debug']['domains'] = array('core', 'db', 'navigation', 'security', 'template', 'user', '!');
-
-/**
  * Debug level.
  * DEBUG = 4;
  * INFO = 3;
@@ -360,7 +348,7 @@ $configuration['debug']['domains'] = array('core', 'db', 'navigation', 'security
  *
  * @global integer
  */
-$configuration['debug']['level'] = 0;
+$configuration['debug']['level'] = 3;
 
 // Error settings
 /**
@@ -397,7 +385,7 @@ $configuration['error']['email_critical'] = '';
 
 /**
  * Should messages be shown onscreen in the web browser?
- * Note that messages generated before the View is created will be outputed in a very raw manner.
+ * Note that messages generated before the View is created will be output in a very raw manner.
  * Override by 'production' = true.
  * Default: true
  *

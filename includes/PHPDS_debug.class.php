@@ -1,10 +1,5 @@
 <?php
 
-/**
- * Adds FirePHP support to PHPDevShell.
- *
- * @author Greg
- */
 class PHPDS_debug extends PHPDS_dependant
 {
     /* levels of verbosity: the higher, the more data will be sent */
@@ -46,37 +41,6 @@ class PHPDS_debug extends PHPDS_dependant
     }
 
     /**
-     * Accessor for the domain field: get (and possibily set) the domain
-     *
-     * The domain is the semantic field of the data sent to this instance ; it's used to filter which data will be actually sent
-     * Note: the object will enable/disabled itself based on the domain debug configuration: the domain MUST be in the array to be active.
-     *
-     * @param string $domain (optional) the semantic domain
-     * @return string the domain (maybe null)
-     */
-    public function domain($domain = null)
-    {
-        if (!is_null($domain)) {
-            if (isset($this->configuration['debug'])) {
-                $configuration = $this->configuration['debug'];
-                if (isset($configuration['domains'])) {
-                    if (is_array($configuration['domains'])) {
-                        foreach ($configuration['domains'] as $possible_domain) {
-                            if (fnmatch($possible_domain, $domain)) {
-                                $this->enabled = true;
-                                $this->domain  = $domain;
-                                return $domain;
-                            }
-                        }
-                        $this->enabled = false;
-                    }
-                }
-            }
-        }
-        return $domain;
-    }
-
-    /**
      * Enable or disable the debugger output ; get the current state
      * Note: at this time, the debugger has to be enabled at startup
      *
@@ -104,7 +68,7 @@ class PHPDS_debug extends PHPDS_dependant
      */
     public function __invoke($data, $label = null)
     {
-        $this->log($data);
+        $this->debug->log($data, $label);
     }
 
     /**
@@ -126,60 +90,66 @@ class PHPDS_debug extends PHPDS_dependant
      *
      * @param string $data
      * @param string $label
+     * @return void|null
      */
     public function log($data, $label = null)
     {
-        if (!$this->enabled || ($this->level < PHPDS_debug::LOG)) return;
+        if (!$this->enabled || ($this->level < PHPDS_debug::LOG)) return null;
 
-        if (empty($label)) $label = $this->domain;
-
-        $this->conduits->conductor($data, PHPDS_debug::LOG, $this->domain . ': ' . $label);
+        $this->conduits->conductor($data, PHPDS_debug::LOG, $label);
     }
 
     /**
      * Push Firebug Debug Info
      *
      * @param mixed $data
+     * @param string $label
+     * @return void|null
      */
-    public function debug($data)
+    public function debug($data, $label = null)
     {
-        if (!$this->enabled || ($this->level < PHPDS_debug::DEBUG)) return;
+        if (!$this->enabled || ($this->level < PHPDS_debug::DEBUG)) return null;
 
-        $this->conduits->conductor($data, PHPDS_debug::DEBUG, $this->domain);
+        $this->conduits->conductor($data, PHPDS_debug::DEBUG, $label);
     }
 
     /**
      * Push Firebug Info
      *
-     * @param mixed $data
+     * @param mixed
+     * @param string $label
+     * @return void|null
      */
-    public function info($data)
+    public function info($data, $label = null)
     {
-        if (!$this->enabled || ($this->level < PHPDS_debug::INFO)) return;
+        if (!$this->enabled || ($this->level < PHPDS_debug::INFO)) return null;
 
-        $this->conduits->conductor($data, PHPDS_debug::INFO, $this->domain);
+        $this->conduits->conductor($data, PHPDS_debug::INFO, $label);
     }
 
     /**
      * Push Firebug Warning
      *
      * @param mixed $data
+     * @param string $label
+     * @return void|null
      */
-    public function warn($data)
+    public function warn($data, $label = null)
     {
-        if (!$this->enabled || ($this->level < PHPDS_debug::WARN)) return;
+        if (!$this->enabled || ($this->level < PHPDS_debug::WARN)) return null;
 
-        $this->conduits->conductor($data, PHPDS_debug::WARN, $this->domain);
+        $this->conduits->conductor($data, PHPDS_debug::WARN, $label);
     }
 
     /**
      * Push Firebug Warning
      *
      * @param mixed $data
+     * @param string $label
      */
-    public function warning($data)
+    public function warning($data, $label = null)
     {
-        $this->warn($data);
+        $this->warn($data, $label);
     }
 
     /**
@@ -191,9 +161,9 @@ class PHPDS_debug extends PHPDS_dependant
      */
     public function error($data, $code = null)
     {
-        if (!$this->enabled || ($this->level < PHPDS_debug::ERROR)) return;
+        if (!$this->enabled || ($this->level < PHPDS_debug::ERROR)) return null;
 
-        $this->conduits->conductor($data, PHPDS_debug::ERROR, $this->domain, $code);
+        $this->conduits->conductor($data, PHPDS_debug::ERROR, null, $code);
 
         return $this;
     }
@@ -209,7 +179,7 @@ class PHPDS_debug extends PHPDS_dependant
         $content = $data['sql'];
         $key     = '[' . $data['counter'] . '] ' . $data['key'] . ' (' . $data['result'] . ')';
 
-        $this->log($content, $key);
+        $this->debug->log($content, $key);
     }
 
 }
