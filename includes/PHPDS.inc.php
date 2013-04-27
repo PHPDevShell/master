@@ -439,7 +439,7 @@ class PHPDS
     public function PHPDS_auth()
     {
         if (empty($this->auth)) {
-            $this->auth = $this->_factory($this->configuration['extend']['auth']);
+            $this->auth = $this->_factory($this->configuration['event']['auth']);
         }
         return $this->auth;
     }
@@ -470,7 +470,7 @@ class PHPDS
     public function PHPDS_config()
     {
         if (empty($this->config)) {
-            $this->config = $this->_factory($this->configuration['extend']['config']);
+            $this->config = $this->_factory($this->configuration['event']['config']);
         }
         return $this->config;
     }
@@ -502,7 +502,7 @@ class PHPDS
     public function PHPDS_core()
     {
         if (empty($this->core)) {
-            $this->core = $this->_factory($this->configuration['extend']['core']);
+            $this->core = $this->_factory($this->configuration['event']['core']);
         }
         return $this->core;
     }
@@ -533,7 +533,7 @@ class PHPDS
     public function PHPDS_debug()
     {
         if (empty($this->debug)) {
-            $this->debug = $this->_factory($this->configuration['extend']['debug']);
+            $this->debug = $this->_factory($this->configuration['event']['debug']);
         }
         return $this->debug;
     }
@@ -547,7 +547,7 @@ class PHPDS
     public function PHPDS_errorHandler()
     {
         if (empty($this->errorHandler)) {
-            $this->errorHandler = $this->_factory($this->configuration['extend']['errorHandler']);
+            $this->errorHandler = $this->_factory($this->configuration['event']['errorHandler']);
         }
         return $this->errorHandler;
     }
@@ -561,7 +561,7 @@ class PHPDS
     public function PHPDS_navigation()
     {
         if (empty($this->navigation)) {
-            $this->navigation = $this->_factory($this->configuration['extend']['navigation']);
+            $this->navigation = $this->_factory($this->configuration['event']['navigation']);
         }
         return $this->navigation;
     }
@@ -575,7 +575,7 @@ class PHPDS
     public function PHPDS_notif()
     {
         if (empty($this->notif)) {
-            $this->notif = $this->_factory(($this->configuration['extend']['notif']));
+            $this->notif = $this->_factory(($this->configuration['event']['notif']));
         }
         return $this->notif;
     }
@@ -589,7 +589,7 @@ class PHPDS
     public function PHPDS_router()
     {
         if (empty($this->router)) {
-            $this->router = $this->_factory($this->configuration['extend']['router']);
+            $this->router = $this->_factory($this->configuration['event']['router']);
         }
         return $this->router;
     }
@@ -622,7 +622,7 @@ class PHPDS
     public function PHPDS_template($lazy = true)
     {
         if (empty($this->template) && $lazy) {
-            $this->template = $this->_factory($this->configuration['extend']['template']);
+            $this->template = $this->_factory($this->configuration['event']['template']);
         }
         return $this->template;
     }
@@ -636,7 +636,7 @@ class PHPDS
     public function PHPDS_tagger()
     {
         if (empty($this->tagger)) {
-            $this->tagger = $this->_factory(($this->configuration['extend']['tagger']));
+            $this->tagger = $this->_factory(($this->configuration['event']['tagger']));
         }
         return $this->tagger;
     }
@@ -650,7 +650,7 @@ class PHPDS
     public function PHPDS_user()
     {
         if (empty($this->user)) {
-            $this->user = $this->_factory($this->configuration['extend']['user']);
+            $this->user = $this->_factory($this->configuration['event']['user']);
         }
         return $this->user;
     }
@@ -773,7 +773,7 @@ class PHPDS
         }
 
         // Engine classes default directories
-        $includes = $configuration['class_folders'];
+        $includes = $configuration['event_folders'];
         foreach ($includes as $path) {
             $engine_include_path = $absolute_path . $path . '/' . $class_name . '.class.php';
             if ($this->sneakClass($class_name, $engine_include_path)) return true;

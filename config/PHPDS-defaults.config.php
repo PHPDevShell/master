@@ -279,7 +279,7 @@ $configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/ma
  *
  * @global array
  */
-$configuration['extend'] = array(
+$configuration['event'] = array(
     'auth'         => 'PHPDS_auth',
     'config'       => 'PHPDS_config',
     'core'         => 'PHPDS_core',
@@ -302,7 +302,7 @@ $configuration['extend'] = array(
  * The system will now look in this folder for the engine class first.
  * @global array
  */
-$configuration['class_folders'] = array('includes', 'includes/extend');
+$configuration['event_folders'] = array('core' => 'includes', 'extend' => 'includes/extend');
 
 /**
  * If you have a website tracking, analytics or affiliate script you may add it here, it will be added at the end of the body tag.
