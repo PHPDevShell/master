@@ -1,4 +1,82 @@
 /**
+ * This serves a namespace for PHPDevShell javascript utilities
+ */
+PHPDS = {};
+PHPDS.remoteCallURL = document.URL;
+
+/**
+ * An exception-like class to handle RemoteCall situations
+ *
+ * @param deferred
+ * @param ajax
+ * @constructor
+ */
+PHPDS.RemoteCallException = function (deferred, ajax) {
+    this.deferred = deferred;
+    this.ajax = ajax;
+    this.handled = false;
+};
+
+/**
+ * a few URL-related utilities.
+ *
+ * @type {{}}
+ */
+PHPDS.url = {};
+
+/**
+ * Parse an URL to fetch the "search" (GET) parameters
+ *
+ * @param url
+ * @returns {{}}
+ */
+PHPDS.url.decodeParams = function (url) {
+    var args_enc, el, i, nameval, ret;
+    ret = {};
+    // use the DOM to parse the URL via an 'a' element
+    el = document.createElement("a");
+    el.href = url;
+    // strip off initial ? on search and split
+    args_enc = el.search.substring(1).split('&');
+    for (i = 0; i < args_enc.length; i++) {
+        // convert + into space, split on =, and then decode
+        args_enc[i].replace(/\+/g, ' ');
+        nameval = args_enc[i].split('=', 2);
+        if (nameval[0]) {
+            ret[decodeURIComponent(nameval[0])] = decodeURIComponent(nameval[1]);
+        }
+    }
+    return ret;
+};
+
+/**
+ * Inject (ie. add or overrides) "search" (GET) parameters into a URL
+ *
+ * @param params object of parameters
+ * @param url string (optional) if empty is current URL is used
+ * @returns string
+ */
+PHPDS.url.encodeParams = function (params, url) {
+    var args_enc, el, name;
+    if (!url) {
+        url = document.URL;
+    }
+    el = document.createElement("a");
+    el.href = url;
+    args_enc = PHPDS.url.decodeParams(url);
+    for (name in params) {
+        if (params.hasOwnProperty(name)) {
+            name = encodeURIComponent(name);
+            params[name] = encodeURIComponent(params[name]);
+            args_enc[name] = params[name];
+        }
+    }
+    el.search = '?' + $.param(args_enc);
+    return el.href;
+};
+
+
+/**
  * Call a PHP function
  *
  * The function must be handled by the current controller (method name is "ajax" + functionName)
@@ -10,48 +88,157 @@
  *
  * Note: only application parameters are sent through GET/POST, handling data such as function name sent though headers
  *
+ * From version 2.0 (PHPDevShell 3.5), the failure callback of the deferred is passed a PHPDS.RemoteCallException object ;
+ *      it can set this object's field to "true" to prevent the top-level exception handler to kick in
+ *
+ * The resolve callback of the deferred is passed:
+ *      - the result *data* returned by the ajax call
+ *      - the textual state
+ *      - the ajax object
+ *
  * Caution: prior to PHP 5 the parameters fed to the PHP function are given IN ORDER, NOT BY NAME
  *
  * @param functionName string, the name of the function to call (ie. method "ajax"+functionName of the controller)
  * @param params array, data to be serialized and sent via POST
  * @param extParams array (optional), data to be serialized and sent via GET
+ *
+ * @return deferred
+ *
+ * TODO: possibility of calling a method from another controller
+ *
  */
-function PHPDS_remoteCall(functionName, params, extParams) {
-    var url = document.URL;
+PHPDS.remoteCall = function (functionName, params, extParams) {
+    var url = PHPDS.remoteCallURL;
     if (extParams) {
-        url = URI(url).addQuery(extParams).href();
+        url = PHPDS.url.encodeParams(extParams, url);
     }
-    return jQuery.when(jQuery.ajax({
-            url: url,
-            dataType: 'json',
-            data: params,
-            type: 'POST',
-            headers: {'X-Requested-Type': 'json', 'X-Remote-Call': functionName},
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('X-Requested-Type', 'json');
-                xhr.setRequestHeader('X-Remote-Call', functionName);
-            }
-        })).done(function (data_received, status, deferred) {
-            if (deferred.status !== 200) {
-                /*deferred.reject();
-                 alert('Error ' + deferred.status);*/
-            }
-        }).fail(function (deferred, status) {
-            if (deferred.status !== 200) {
-                //deferred.reject();
-                alert('Error! ' + deferred.statusText);
-            }
+    return jQuery.Deferred(function () {
+        var self_deferred = this;
+        $.when(
+            $.ajax({
+                url: url,
+                dataType: 'json',
+                data: params,
+                type: 'POST',
+                headers: {'X-Requested-Type': 'json', 'X-Remote-Call': functionName},
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('X-Requested-Type', 'json');
+                    xhr.setRequestHeader('X-Remote-Call', functionName);
+                }
+            }).done(function (result, state, self_ajax) {
+                    self_deferred.resolve(result, state, self_ajax);
+                }).fail(function (self_ajax) {
+                    PHPDS.errorHandler(new PHPDS.RemoteCallException(self_deferred, self_ajax));
+                })
+        );
+    });
+};
+
+/**
+ * This is the top-level exception handler, it can be called in several ways
+ *
+ * First, with no parameter, it installs itself - you MUST do that
+ * Second, with a single function, it install this function as an user exception handler
+ * Third, with single custom exception (currently only RemoteCall), it deals with it
+ *
+ * Else it's the actual error handler, called when an error occurs
+ *
+ * @param message
+ * @param url
+ * @param line
+ * @param object
+ * @returns true
+ */
+PHPDS.errorHandler = function (message, url, line, object) {
+    // first case, no parameter, initial setup
+    if (!message) {
+        window.onerror = function (message, url, line) {
+            return PHPDS.errorHandler(message, url, line);
+        };
+        return true;
+    }
+    // second case, a user error handling function
+    else if (typeof message == 'function') {
+        this.userErrorHandler = message;
+        return true;
+    }
+    // third case, a an exception from RemoteCall
+    else if (message instanceof PHPDS.RemoteCallException) {
+        /* @var PHPDS.RemoteCallException message */
+        r = message.deferred.reject(message);
+        if (message.handled) {
+            return true;
+        } else {
+            object = message;
+            message = 'Unhandled RemoteCall exception: ';
         }
-    );
-}
+    }
+
+    if (this.userErrorHandler) {
+        return this.userErrorHandler(message, url, line, object);
+    } else {
+        if (console && console.log) {
+            console.log('PHPDS.errorHandler ', message, ' / ', url, ' / ', line, ' / ', object);
+        }
+    }
+    return true;
+};
+
 
 /**
  * Apply default formatting to the objects inside the given root element (root element is optional, defaults to BODY)
  * @param root DOM object to assign.
  */
-function PHPDS_documentReady(root) {
-    if (!root) root = jQuery(document);
-    root.ajaxError(function (e, jqXHR, settings, exception) {
+PHPDS.documentReady = function (root) {
+    if (!root) PHPDS.root = jQuery(document);
+    PHPDS.errorHandler();
+    PHPDS.ajaxErrorHandler();
+    PHPDS.root.ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
+        PHPDS.ajaxMessage(XMLHttpRequest);
+        PHPDS.ajaxInputError(XMLHttpRequest);
+    });
+    PHPDS.root.ready(function () {
+        jQuery.pronto();
+        jQuery(window)
+            .on("pronto.render", PHPDS.initPage)
+            .on("pronto.request", PHPDS.requestPage)
+            .on("pronto.load", PHPDS.destroyPage);
+        PHPDS.initPage();
+    });
+};
+
+/**
+ * Could be used in cases to do something as soon as page starts.
+ */
+PHPDS.initPage = function () {
+
+};
+
+/**
+ * Loader when page is requested via Ajax.
+ */
+PHPDS.requestPage = function () {
+    PHPDS.ajaxRequestBusy = true;
+    jQuery("#bg").stop().fadeTo('slow', 0.2, function () {
+        jQuery("#ajax-loader-art").fadeIn('slow');
+    });
+};
+
+/**
+ * Destruct when page requested via Ajax ends.
+ */
+PHPDS.destroyPage = function () {
+    jQuery("#ajax-loader-art").hide();
+    var bg = jQuery("#bg");
+    bg.stop().fadeTo('slow', 1);
+    PHPDS.ajaxRequestBusy = false;
+};
+
+/**
+ * How certain controller events are handled incase of Ajax request and page returns none code 200.
+ */
+PHPDS.ajaxErrorHandler = function () {
+    PHPDS.root.ajaxError(function (e, jqXHR, settings, exception) {
         var url = jQuery(location).attr('href');
         if (jqXHR.status == 401) {
             location.href = url;
@@ -69,40 +256,97 @@ function PHPDS_documentReady(root) {
             throw new Error('Spam detected');
         }
     });
-    root.ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
-        ajaxMessage(XMLHttpRequest);
-        ajaxInputError(XMLHttpRequest);
-    });
-    root.ready(function () {
-        jQuery.pronto();
-        jQuery(window)
-            .on("pronto.render", initPage)
-            .on("pronto.request", requestPage)
-            .on("pronto.load", destroyPage);
-        initPage();
-    });
-}
+};
 
-var ajaxRequestBusy;
+/**
+ * Generic error handler for form fields view side, will check header for error messages and assignments and apply
+ *
+ * @param request
+ * @returns {boolean}
+ */
+PHPDS.ajaxInputError = function (request) {
+    var json = request.getResponseHeader('ajaxInputErrorMessage');
+    if (json) {
+        var mobj = jQuery.parseJSON(json);
+        jQuery.each(mobj, function () {
+            var field = this.field;
+            var label_tag = field + '_ajaxlabel';
+            jQuery('span.' + label_tag).remove();
+            if (this.type) {
+                var notify_type;
+                switch (this.type) {
+                    case "error":
+                        notify_type = 'error';
+                        break;
+                    default:
+                        notify_type = 'error';
+                }
+                jQuery('[name="' + field + '"]').addClass(notify_type);
+                if (this.message != '' && !jQuery('.' + label_tag).hasClass(label_tag)) {
+                    jQuery('[for="' + field + '"]').append('<span class="' + label_tag + ' text-error"> &#10077;' + this.message + '&#10078;</span>');
+                }
+            }
+        });
+        return true;
+    }
+    return false;
+};
 
-function initPage() {
+/**
+ * Handles most common messages send from the controller and reflects them on the view side.
+ * Will also handle standard PHPDS template messages e.g template->ok();
+ *
+ * @param request
+ * @param delaytime
+ * @param fadeout
+ */
+PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
+    delaytime = typeof delaytime !== 'undefined' ? delaytime : 1600;
+    fadeout = typeof fadeout !== 'undefined' ? fadeout : 1000;
+    var json = request.getResponseHeader('ajaxResponseMessage');
+    if (json) {
+        var mobj = jQuery.parseJSON(json);
+        var notifyjq = jQuery('#notify');
+        for (var i = 0; i < mobj.length; i++) {
+            if (mobj[i].type) {
+                var notify_type;
+                switch (mobj[i].type) {
+                    case "ok":
+                        notify_type = 'alert-success';
+                        break;
 
-}
+                    case "info":
+                        notify_type = 'alert-info';
+                        break;
 
-function requestPage() {
-    ajaxRequestBusy = true;
-    jQuery("#bg").stop().fadeTo('slow', 0.2, function () {
-        jQuery("#ajax-loader-art").fadeIn('slow');
-    });
-}
+                    case "warning":
+                        notify_type = 'alert-notice';
+                        delaytime = 3800;
+                        break;
 
-function destroyPage() {
-    jQuery("#ajax-loader-art").hide();
-    var bg = jQuery("#bg");
-    bg.stop().fadeTo('slow', 1);
-    ajaxRequestBusy = false;
-}
+                    case "error":
+                        notify_type = 'alert-error';
+                        break;
 
+                    case "critical":
+                        notify_type = 'alert-error';
+                        break;
+
+                    default:
+                        notify_type = 'alert-notice';
+                }
+                notifyjq.append('<div class="alert ' + notify_type + ' fade in"><button type="button" class="close" data-dismiss="alert">&times;</button>' + mobj[i].message + '</div>');
+                if (notify_type !== 'alert-error') {
+                    $('.' + notify_type, notifyjq).delay(delaytime).fadeOut(fadeout);
+                }
+            }
+        }
+    }
+};
+
+/**
+ * Serialize an object.
+ */
 (function (jQuery) {
     jQuery.fn.serializeObject = function (extendArray) {
         var o = {};
@@ -125,6 +369,9 @@ function destroyPage() {
     };
 })(jQuery);
 
+/**
+ * Handles generic form submissions while getting all fields values and serializing it.
+ */
 (function (jQuery) {
     jQuery.fn.viaAjaxSubmit = function (id) {
         var $this = this;
@@ -160,6 +407,9 @@ function destroyPage() {
     }
 })(jQuery);
 
+/**
+ * Generic plugin to execute delete clicks.
+ */
 (function (jQuery) {
     jQuery.fn.confirmDeleteURL = function () {
         var $this = this;
@@ -180,6 +430,9 @@ function destroyPage() {
     }
 })(jQuery);
 
+/**
+ * Handles the generic pagination search of PHPDS via ajax.
+ */
 (function (jQuery) {
     jQuery.fn.viaAjaxSearch = function (searchfield, searchbutton) {
 
@@ -235,83 +488,9 @@ function destroyPage() {
     }
 })(jQuery);
 
-function ajaxInputError(request) {
-    var json = request.getResponseHeader('ajaxInputErrorMessage');
-    if (json) {
-        var mobj = jQuery.parseJSON(json);
-        jQuery.each(mobj, function () {
-            var field = this.field;
-            var label_tag = field + '_ajaxlabel';
-            jQuery('span.' + label_tag).remove();
-            if (this.type) {
-                var notify_type;
-                switch (this.type) {
-                    case "error":
-                        notify_type = 'error';
-                        break;
-                    default:
-                        notify_type = 'error';
-                }
-                jQuery('[name="' + field + '"]').addClass(notify_type);
-                if (this.message != '' && !jQuery('.' + label_tag).hasClass(label_tag)) {
-                    jQuery('[for="' + field + '"]').append('<span class="' + label_tag + ' text-error"> &#10077;' + this.message + '&#10078;</span>');
-                }
-            }
-        });
-        return true;
-    }
-    return false;
-}
-
-function ajaxMessage(request, delaytime, fadeout) {
-    delaytime = typeof delaytime !== 'undefined' ? delaytime : 1600;
-    fadeout = typeof fadeout !== 'undefined' ? fadeout : 1000;
-    var json = request.getResponseHeader('ajaxResponseMessage');
-    if (json) {
-        var mobj = jQuery.parseJSON(json);
-        var notifyjq = jQuery('#notify');
-        for (var i = 0; i < mobj.length; i++) {
-            if (mobj[i].type) {
-                var notify_type;
-                switch (mobj[i].type) {
-                    case "ok":
-                        notify_type = 'alert-success';
-                        break;
-
-                    case "info":
-                        notify_type = 'alert-info';
-                        break;
-
-                    case "warning":
-                        notify_type = 'alert-notice';
-                        delaytime = 3800;
-                        break;
-
-                    case "error":
-                        notify_type = 'alert-error';
-                        break;
-
-                    case "critical":
-                        notify_type = 'alert-error';
-                        break;
-
-                    default:
-                        notify_type = 'alert-notice';
-                }
-                notifyjq.append('<div class="alert ' + notify_type + ' fade in"><button type="button" class="close" data-dismiss="alert">&times;</button>' + mobj[i].message + '</div>');
-                if (notify_type !== 'alert-error') {
-                    $('.' + notify_type, notifyjq).delay(delaytime).fadeOut(fadeout);
-                }
-            }
-        }
-    }
-}
-
-function errorMessage()
-{
-
-}
-
+/**
+ * Generic ajax deletion of a row.
+ */
 (function (jQuery) {
     jQuery.fn.viaAjaxDeleteRow = function (size) {
         size = typeof size !== 'undefined' ? size : 15;
@@ -375,6 +554,9 @@ function errorMessage()
     }
 })(jQuery);
 
+/**
+ * Validates a single form field via ajax via live typewatch.
+ */
 (function (jQuery) {
     jQuery.fn.singleValidate = function (activeid) {
         var root = this;
@@ -717,11 +899,11 @@ function spinner(size,color) {
     return '<img class="ajax-spinner-image" src="themes/default/images/' + color + '.gif" width="' + size + '" height="' + size + '" />';
 }
 
-/*
- jQuery Autosize v1.16.5
- (c) 2013 Jack Moore - jacklmoore.com
- updated: 2013-02-11
- license: http://www.opensource.org/licenses/mit-license.php
+/**
+ * jQuery Autosize v1.16.5
+ * (c) 2013 Jack Moore - jacklmoore.com
+ * updated: 2013-02-11
+ * license: http://www.opensource.org/licenses/mit-license.php
  */
 (function ($) {
     var

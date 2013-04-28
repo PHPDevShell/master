@@ -160,7 +160,7 @@
 
         // Repository update.
         $("#repo-refresh").on("click", function() {
-            if (ajaxRequestBusy) return false;
+            if (PHPDS.ajaxRequestBusy) return false;
             requestPage();
             var url = $(this).attr("href");
             $.get(url, function (data, textStatus, request) {
@@ -182,7 +182,7 @@
         });
         // Menu refresh after fresh plugin install.
         $("#menu-refresh").on("click", function () {
-            if (ajaxRequestBusy) return false;
+            if (PHPDS.ajaxRequestBusy) return false;
             var url = $(this).attr("href");
             $.get(url, {"via-ajax": "light+mods"}, function (data, textStatus, request) {
                 var mainnav = $("#main-nav");
@@ -194,7 +194,7 @@
         });
         // Plugin get info.
         $root.on("click", ".plugin-get-info", function() {
-            if (ajaxRequestBusy) return false;
+            if (PHPDS.ajaxRequestBusy) return false;
             requestPage();
             var plugin        = $(this).data("plugin");
             $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
@@ -211,7 +211,7 @@
             return false;
         });
         $root.on("click", ".confirm-uninstall-ready", function () {
-            if (ajaxRequestBusy) return false;
+            if (PHPDS.ajaxRequestBusy) return false;
             requestPage();
             var plugin = $(this).data("plugin");
             // Phase 0: Check dependencies, if any installed plugin depends on this plugin we cant uninstall.
@@ -225,7 +225,7 @@
 
         // Plugin download+install.
         $root.on("click", ".plugin-get-install", function () {
-            if (ajaxRequestBusy) return false;
+            if (PHPDS.ajaxRequestBusy) return false;
             requestPage();
             var plugin = $(this).data("plugin");
             // Phase 0: Does plugin need downloading?

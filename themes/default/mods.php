@@ -8,7 +8,7 @@ class themeMods extends PHPDS_dependant
         return <<<HTML
 
         <script type="text/javascript">
-            PHPDS_documentReady();
+            PHPDS.documentReady();
         </script>
 
 HTML;
