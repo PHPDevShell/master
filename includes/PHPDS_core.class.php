@@ -577,7 +577,7 @@ class PHPDS_core extends PHPDS_dependant
                     $model = $this->factory($model_);
                     $model->extends = true;
                 } else {
-                    $model = $this->factory($this->configuration['extend']['model']);
+                    $model = $this->factory($this->configuration['event']['model']);
                 }
             }
 
@@ -592,7 +592,7 @@ class PHPDS_core extends PHPDS_dependant
                     $view = $this->factory($view_);
                     $view->extends = true;
                 } else {
-                    $view = $this->factory($this->configuration['extend']['view']);
+                    $view = $this->factory($this->configuration['event']['view']);
                 }
             }
 
