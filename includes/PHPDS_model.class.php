@@ -14,10 +14,10 @@ class PHPDS_model extends PHPDS_dependant
      */
     public $extends = false;
 
-    public $fields = array();
-    public $defaults = array();
-    public $table_name = "";
-    public $primary_key = "";
+    public $fields           = array();
+    public $defaults         = array();
+    public $table_name       = '';
+    public $primary_key      = '';
 
     const SQL_SELECT         = 'SELECT %1$s FROM %2$s WHERE %3$s';
     const SQL_UPDATE         = 'UPDATE %1$s SET %2$s WHERE %3$s';
@@ -38,7 +38,7 @@ class PHPDS_model extends PHPDS_dependant
      */
     public function select($table_name, $fields, $params)
     {
-        $where = "";
+        $where = '';
         foreach (array_keys($params) as $key) {
             if (empty($where)) {
                 $where = sprintf('%1$s = :%1$s', $key);
