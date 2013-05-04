@@ -23,7 +23,7 @@ class pluginFactory extends PHPDS_dependant
      * @param string $plugin_folder Folder and unique name where plugin is copied.
      * @throws PHPDS_exception
      */
-    private function preConstruct($plugin_folder)
+    protected function preConstruct($plugin_folder)
     {
         // Include global variables.
         $configuration = $this->configuration;
@@ -153,7 +153,7 @@ class pluginFactory extends PHPDS_dependant
      * @param string $plugin_folder Folder and unique name where plugin was copied.
      * @param bool   $update
      */
-    private function installNodes($plugin_folder, $update = false)
+    protected function installNodes($plugin_folder, $update = false)
     {
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
@@ -238,7 +238,7 @@ class pluginFactory extends PHPDS_dependant
                     }
 
                     // Create custom node name.
-                    $node_name = trim(PU_CleanString($node['name']));
+                    $node_name = PU_safeName($node['name']);
 
                     // Create node type.
                     if (!empty($node['type'])) {
@@ -283,21 +283,7 @@ class pluginFactory extends PHPDS_dependant
                     }
 
                     // How should items be ranked.
-                    if (!empty($node['rank'])) {
-                        if ($node['rank'] == 'last') {
-                            $last_rank = $db->invokeQuery('PHPDS_readMaxNodesRankQuery');
-
-                            $rank = $last_rank + 1;
-                        } else if ($node['rank'] == 'first') {
-                            $last_rank = $db->invokeQuery('PHPDS_readMinNodesRankQuery');
-
-                            $rank = $last_rank - 1;
-                        } else {
-                            $rank = (int)$node['rank'];
-                        }
-                    } else {
-                        $rank = $ranking;
-                    }
+                    $rank = $this->rank($node, $ranking);
 
                     // How should item be hide.
                     if (!empty($node['hide'])) {
@@ -381,12 +367,46 @@ class pluginFactory extends PHPDS_dependant
         }
     }
 
+    protected function rank($node, $ranking)
+    {
+        $db = $this->db;
+
+        $sql_maxrank = "
+            SELECT  MAX(t1.rank)
+            FROM    _db_core_node_items AS t1
+        ";
+
+        $sql_minrank = "
+            SELECT  MIN(t1.rank)
+            FROM    _db_core_node_items AS t1
+        ";
+
+        // How should items be ranked.
+        if (!empty($node['rank'])) {
+            if ($node['rank'] == 'last') {
+                $last_rank = $db->querySingle($sql_maxrank);
+
+                $rank = $last_rank + 1;
+            } else if ($node['rank'] == 'first') {
+                $last_rank = $db->querySingle($sql_minrank);
+
+                $rank = $last_rank - 1;
+            } else {
+                $rank = (int)$node['rank'];
+            }
+        } else {
+            $rank = $ranking;
+        }
+
+        return $rank;
+    }
+
     /*
      * This class support installNodes providing a way of digging deeper into the node structure to locate child node items.
      *
      * @param $child Object containing XML node tree.
      */
-    private function nodesDigger($child)
+    protected function nodesDigger($child)
     {
         // Looping through all XML node items while compiling values.
         foreach ($child->children() as $children) {
@@ -441,7 +461,7 @@ class pluginFactory extends PHPDS_dependant
      *
      * @param string $plugin_folder
      */
-    private function installSettings($plugin_folder)
+    protected function installSettings($plugin_folder)
     {
         $config = $this->config;
         $notes  = array();
@@ -477,7 +497,7 @@ class pluginFactory extends PHPDS_dependant
      *
      * @param string $plugin_folder
      */
-    private function installClasses($plugin_folder)
+    protected function installClasses($plugin_folder)
     {
         $db = $this->db;
         // Assign settings q to install.
@@ -494,7 +514,7 @@ class pluginFactory extends PHPDS_dependant
      *
      * @param string $plugin_folder Folder and unique name where plugin is installed.
      */
-    private function installQueries($plugin_folder)
+    protected function installQueries($plugin_folder)
     {
         $db = $this->db;
         // Assign queries q.
@@ -523,7 +543,7 @@ class pluginFactory extends PHPDS_dependant
      * @param string $plugin_folder Folder and unique name where plugin was copied.
      * @param string $status        Last status required from plugin manager.
      */
-    private function installVersion($plugin_folder, $status)
+    protected function installVersion($plugin_folder, $status)
     {
         $db = $this->db;
         // Set version.
@@ -545,7 +565,7 @@ class pluginFactory extends PHPDS_dependant
      * @param string $plugin_folder Folder and unique name where plugin was copied.
      * @param bool   $delete_critical_only
      */
-    private function uninstallNodes($plugin_folder, $delete_critical_only = false)
+    protected function uninstallNodes($plugin_folder, $delete_critical_only = false)
     {
         if (!empty($plugin_folder)) {
             if ($this->nodeHelper->deleteNode(false, $plugin_folder, $delete_critical_only)) // Show execution.
@@ -586,7 +606,7 @@ class pluginFactory extends PHPDS_dependant
      *
      * @param string $plugin_folder Folder and unique name where plugin was copied.
      */
-    private function uninstallQueries($plugin_folder = null)
+    protected function uninstallQueries($plugin_folder = null)
     {
         $db = $this->db;
         // Check if Uninstall query exists.
@@ -618,7 +638,7 @@ class pluginFactory extends PHPDS_dependant
      *
      * @param string $plugin_folder Folder and unique name where plugin was copied.
      */
-    private function uninstallVersion($plugin_folder)
+    protected function uninstallVersion($plugin_folder)
     {
         $db = $this->db;
         // Delete database activation.
@@ -634,7 +654,7 @@ class pluginFactory extends PHPDS_dependant
      * @param string $plugin_folder     Folder and unique name where plugin was copied.
      * @param int    $installed_version Upgrade database against this version.
      */
-    private function upgradeQueries($plugin_folder, $installed_version)
+    protected function upgradeQueries($plugin_folder, $installed_version)
     {
         $db     = $this->db;
         $config = $this->config;
@@ -726,7 +746,7 @@ class pluginFactory extends PHPDS_dependant
      * @param string $plugin_folder Folder and unique name where plugin was copied.
      * @param string $status        Last status required from plugin manager.
      */
-    private function upgradeDatabase($plugin_folder, $status)
+    protected function upgradeDatabase($plugin_folder, $status)
     {
         $db = $this->db;
         // Check if we have a database value.
