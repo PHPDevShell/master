@@ -151,7 +151,7 @@ interface PHPDS_dbInterface
      *
      * @param string $sql    The SQL statement to be executed
      * @param array  $params The parameters
-     * @return string
+     * @return mixed
      */
     public function querySingle($sql, $params = null);
     /**

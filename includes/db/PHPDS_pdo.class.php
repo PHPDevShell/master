@@ -315,7 +315,7 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      *
      * @param string $sql    The SQL statement to be executed
      * @param array  $params The parameters
-     * @return string
+     * @return mixed
      */
     public function querySingle($sql, $params = null)
     {

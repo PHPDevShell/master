@@ -14,8 +14,8 @@ class pluginFactory extends PHPDS_dependant
     protected $nodeHelper;
     protected $node;
     protected $pluginUpgraded;
-    public    $log;
-    public    $console;
+    public $log;
+    public $console;
 
     /**
      * Assign properties to be used by plugin manager.
@@ -66,7 +66,7 @@ class pluginFactory extends PHPDS_dependant
         // Write the node structure.
         $this->nodeHelper->writeNodeStructure();
         // Clear old cache.
-        $this->cache->cacheClear();
+        $this->cache->flush();
 
         return true;
     }
@@ -86,7 +86,7 @@ class pluginFactory extends PHPDS_dependant
         // Write the node structure.
         $this->nodeHelper->writeNodeStructure();
         // Clear old Cache.
-        $this->cache->cacheClear();
+        $this->cache->flush();
 
         return true;
     }
@@ -115,7 +115,7 @@ class pluginFactory extends PHPDS_dependant
         // Write the node structure.
         $this->nodeHelper->writeNodeStructure();
         // Clear old Cache.
-        $this->cache->cacheClear();
+        $this->cache->flush();
 
         return true;
     }
@@ -142,7 +142,7 @@ class pluginFactory extends PHPDS_dependant
         // Write the node structure.
         $this->nodeHelper->writeNodeStructure();
         // Clear old cache.
-        $this->cache->cacheClear();
+        $this->cache->flush();
 
         return true;
     }
@@ -157,7 +157,6 @@ class pluginFactory extends PHPDS_dependant
     {
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
-        $db            = $this->db;
         $config        = $this->config;
 
         // Get default and empty theme id's.
@@ -192,11 +191,12 @@ class pluginFactory extends PHPDS_dependant
 
                     // Check if node is not just an update, we don't want to override custom settings.
                     if ($update == true) {
-                        if ($db->invokeQuery('PHPDS_doesNodeExist', $node_id)) {
+                        if ($this->nodeExists($node_id)) {
                             // Before we continue, update the link in-case it changed.
-                            $db->invokeQuery('PHPDS_updateNodeLink', $node_link, $node_id);
-                            $this->log[] = sprintf(__("Checked/Updated node for %s with id (%s) and linked to %s.",
-                                'PluginManager'), $plugin_folder, $node_id, $node_link);
+                            if ($this->updateNodeLink($node_link, $node_id)) {
+                                $this->log[] = sprintf(__("Checked/Updated node for %s with id (%s) and linked to %s.",
+                                    'PluginManager'), $plugin_folder, $node_id, $node_link);
+                            }
                             continue;
                         }
                     }
@@ -221,11 +221,11 @@ class pluginFactory extends PHPDS_dependant
                         } else if (!empty($node['parentnodeid'])) {
                             $parent_id = $node['parentnodeid'];
                         } else {
-                            $parent_id = '0';
+                            $parent_id = null;
                         }
                     } else {
                         // This must be a root item then.
-                        $parent_id = '0';
+                        $parent_id = null;
                     }
 
                     // Link to original plugin item or parent plugin item script.
@@ -268,7 +268,7 @@ class pluginFactory extends PHPDS_dependant
                             $extend = $extend_to;
                             break;
                         case 7:
-                            $extend = (string) $node['height'];
+                            $extend = (string)$node['height'];
                             break;
                         default:
                             $extend = false;
@@ -301,12 +301,12 @@ class pluginFactory extends PHPDS_dependant
                         // Check if item needs to be created.
                         if ($last_node_theme_insert != $node_theme_insert) {
                             // Create a new node item...
-                            if ($db->invokeQuery('PHPDS_createThemeQuery', $node_theme_insert, $node['theme'])) {
+                            if ($this->createTheme($node_theme_insert, $node['theme'])) {
                                 // Show execution.
                                 $this->log[] = sprintf(__("Installed new theme for %s.", 'PluginManager'),
                                     $node['theme']);
                             }
-                            // Assign so we dont create it twice.
+                            // Assign so we don't create it twice.
                             $last_node_theme_insert = $node_theme_insert;
                         }
                     }
@@ -329,33 +329,34 @@ class pluginFactory extends PHPDS_dependant
                     // Role Permissions.
                     // Now we need to delete old values, if any, to prevent duplicates.
                     // Delete Node Permissions.
-                    $db->invokeQuery('PHPDS_deleteRolePermissionsPluginQuery', $node_id, $configuration['user_role']);
+                    $this->cleanupRolePermissions($node_id, $configuration['user_role']);
 
                     // Check if we should add_permission.
                     if (empty($node['noautopermission'])) {
                         // INSERT Node Permissions.
-                        $db->invokeQuery('PHPDS_writeRolePermissionsPluginQuery', $configuration['user_role'], $node_id);
+                        $this->updateRolePersmissions($configuration['user_role'], $node_id);
                     }
 
                     ////////////////////////////////
                     // Save new item to database.
                     // Although it is not my style doing queries inside a loop,
                     // this situation is very unique and I think the only way getting the parent nodes id.
-                    if ($db->invokeQuery('PHPDS_writeNodePluginQuery',
-                        $node_id,
-                        $parent_id,
-                        $node_name,
-                        $node_link,
-                        $plugin_folder,
-                        $node_type,
-                        $extend,
-                        $new_window,
-                        $rank,
-                        $hide,
-                        $node_theme_insert,
-                        $alias,
-                        $layout,
-                        $params)) {
+                    if ($this->writeNode(array(
+                        'node_id'        => $node_id,
+                        'parent_node_id' => $parent_id,
+                        'node_name'      => $node_name,
+                        'node_link'      => $node_link,
+                        'plugin'         => $plugin_folder,
+                        'node_type'      => $node_type,
+                        'extend'         => $extend,
+                        'new_window'     => $new_window,
+                        'rank'           => $rank,
+                        'hide'           => $hide,
+                        'theme_id'       => $node_theme_insert,
+                        'alias'          => $alias,
+                        'layout'         => $layout,
+                        'params'         => $params))
+                    ) {
                         // Show execution.
                         $this->log[] = sprintf(__("Installed node for %s with id (%s) and linked to %s.",
                             'PluginManager'), $plugin_folder, $node_id, $node_link);
@@ -365,6 +366,73 @@ class pluginFactory extends PHPDS_dependant
                 unset($node);
             }
         }
+    }
+
+    protected function writeNode($node_array)
+    {
+        $sql = "
+          REPLACE INTO  _db_core_node_items
+                        (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window,
+                        rank, hide, theme_id, alias, layout, params)
+          VALUES
+                        (:node_id, :parent_node_id, :node_name, :node_link, :plugin, :node_type, :extend, :new_window,
+                        :rank, :hide, :theme_id, :alias, :layout, :params)
+        ";
+
+        return $this->db->queryAffects($sql, $node_array);
+    }
+
+    protected function updateRolePersmissions($user_role_id, $node_id)
+    {
+        $sql = "
+          REPLACE INTO  _db_core_user_role_permissions (user_role_id, node_id)
+		  VALUES        (:user_role_id, :node_id)
+        ";
+
+        return $this->db->affectedRows($sql, array('user_role_id' => $user_role_id, 'node_id' => $node_id));
+    }
+
+    protected function cleanupRolePermissions($node_id, $user_role_id)
+    {
+        $sql = "
+          DELETE FROM _db_core_user_role_permissions
+		  WHERE       node_id       = :node_id
+          AND         user_role_id  = :user_role_id
+        ";
+
+        return $this->db->queryAffects($sql, array('node_id' => $node_id, 'user_role_id' => $user_role_id));
+    }
+
+    protected function createTheme($theme_id, $theme_folder)
+    {
+        $sql = "
+          REPLACE INTO  _db_core_themes (theme_id, theme_folder)
+		  VALUES        (:theme_id, :theme_folder)
+        ";
+
+        return $this->db->queryAffects($sql, array('theme_id' => $theme_id, 'theme_folder' => $theme_folder));
+    }
+
+    protected function updateNodeLink($node_link, $node_id)
+    {
+        $sql = "
+          UPDATE  _db_core_node_items
+		  SET     node_link = :node_link
+		  WHERE   node_id   = :node_id
+        ";
+
+        return $this->db->queryAffects($sql, array('node_link' => $node_link, 'node_id' => $node_id));
+    }
+
+    protected function nodeExists($node_id)
+    {
+        $sql = "
+            SELECT  t1.node_id
+            FROM    _db_core_node_items AS t1
+            WHERE   t1.node_id = :node_id
+        ";
+
+        return $this->db->querySingle($sql, array('node_id' => $node_id));
     }
 
     protected function rank($node, $ranking)
@@ -397,7 +465,6 @@ class pluginFactory extends PHPDS_dependant
         } else {
             $rank = $ranking;
         }
-
         return $rank;
     }
 
@@ -469,6 +536,7 @@ class pluginFactory extends PHPDS_dependant
         $settings_array = $this->plugin->install->settings->setting;
         // Check if settings exists.
         if ($settings_array) {
+
             // Loop through all settings.
             foreach ($settings_array as $setting_array) {
                 // Assign setting as string.
@@ -483,6 +551,7 @@ class pluginFactory extends PHPDS_dependant
                 $param_write[$param] = $setting;
                 $notes[$param]       = $note;
             }
+
             // Make sure setting is not empty.
             if (isset($param_write)) {
                 // Finally write setting.
@@ -499,11 +568,52 @@ class pluginFactory extends PHPDS_dependant
      */
     protected function installClasses($plugin_folder)
     {
-        $db = $this->db;
+        $db  = $this->db;
+
+        $sql = "
+          REPLACE INTO  _db_core_plugin_classes (class_id, class_name, alias, plugin_folder, enable, rank)
+          VALUES       (:class_id, :class_name, :alias, :plugin_folder, :enable, :rank)
+        ";
+
+        $db->prepare($sql);
+
         // Assign settings q to install.
         $classes_array = $this->plugin->install->classes->class;
+
+        // Loop through all settings.
+        if (empty($classes_array)) $classes_array = array();
+        foreach ($classes_array as $class_array) {
+            // Assign setting as string.
+            if (!empty($class_array['name']))
+                $name = (string)$class_array['name'];
+            if (!empty($class_array['alias']))
+                $alias = (string)$class_array['alias'];
+            if (!empty($class_array['plugin']))
+                $plugin = (string)$class_array['plugin'];
+            if (!empty($class_array['rank']))
+                $rank = $class_array['rank'];
+
+            if (empty($name)) $name = $plugin_folder;
+            if (empty($plugin)) $plugin = $plugin_folder;
+            if (empty($alias)) $alias = '';
+            if (empty($rank) || $rank == 'last') {
+                $max_rank = $db->querySingle('
+                    SELECT MAX(rank) FROM _db_core_plugin_classes WHERE class_name = :class_name
+                ', array('class_name' => $name));
+                (empty($max_rank)) ? $rank = 1 : $rank = $max_rank + 1;
+            }
+            // Assign settings array.
+            $this->db->execute(array(
+                'class_id'      => null,
+                'class_name'    => $name,
+                'alias'         => $alias,
+                'plugin_folder' => $plugin,
+                'enable'        => 1,
+                'rank'          => $rank
+            ));
+        }
+
         if ($classes_array) {
-            $db->invokeQuery('PHPDS_writeClassesQuery', $classes_array, $plugin_folder);
             // Show execution.
             $this->log[] = sprintf(__("Installed classes for %s.", 'PluginManager'), $plugin_folder);
         }
@@ -523,14 +633,16 @@ class pluginFactory extends PHPDS_dependant
         if (!empty($queries_array)) {
             // Run all queries in database.
             foreach ($queries_array as $query_array) {
+
                 // Assign query as string.
                 $query_array = (string)trim($query_array);
+
                 // Make sure query is not empty.
                 if (!empty($query_array)) {
                     // Execute query.
-                    $db->invokeQuery('PHPDS_doQuery', $query_array);
+                    $db->query($query_array);
                     // Show execution.
-                    $this->log[] = sprintf(__("Executed query for %s : %s.", 'PluginManager'),
+                    $this->log[] = sprintf(__("Executed install query for %s : %s.", 'PluginManager'),
                         $plugin_folder, $query_array);
                 }
             }
@@ -545,14 +657,27 @@ class pluginFactory extends PHPDS_dependant
      */
     protected function installVersion($plugin_folder, $status)
     {
+        $sql = "
+          INSERT INTO _db_core_plugin_activation (plugin_folder, status, version, persistent)
+		  VALUES      (:plugin_folder, :status, :version, :persistent)
+        ";
+
         $db = $this->db;
+
         // Set version.
         $version = (int)$this->plugin->install['version'];
         // $version_human = (string)$this->plugin->version;
         // Do we have a version?
         if (!empty($version)) {
             // Replace in database.
-            if ($db->invokeQuery('PHPDS_writePluginVersionQuery', $plugin_folder, $status, $version)) {
+            if ($db->queryAffects($sql,
+                array(
+                    'plugin_folder' => $plugin_folder,
+                    'status'        => $status,
+                    'version'       => $version,
+                    'persistent'    => null
+                )
+            )) {
                 // Show execution.
                 $this->log[] = sprintf(__("Installed plugin %s.", 'PluginManager'), $plugin_folder);
             }
@@ -580,9 +705,15 @@ class pluginFactory extends PHPDS_dependant
      */
     public function uninstallClasses($plugin_folder)
     {
+        $sql = "
+          DELETE FROM _db_core_plugin_classes
+		  WHERE       plugin_folder = :plugin_folder
+        ";
+
         $db = $this->db;
+
         // Delete all hooks for this plugin.
-        if ($db->invokeQuery('PHPDS_deleteClassesQuery', $plugin_folder)) {
+        if ($db->queryAffects($sql, array('plugin_folder' => $plugin_folder))) {
             // Show execution.
             $this->log[] = sprintf(__("Uninstalled classes for %s.", 'PluginManager'), $plugin_folder);
         }
@@ -621,12 +752,12 @@ class pluginFactory extends PHPDS_dependant
                     // Make sure query is not empty.
                     if (!empty($query_array)) {
                         // Execute query.
-                        if ($db->newQuery($query_array)) {
-                            // Show execution.
-                            if ($this->action != 'install') $this->log[] =
-                                sprintf(__("Uninstalled query for %s : %s", 'PluginManager'),
-                                    $plugin_folder, $query_array);
-                        }
+                        $db->query($query_array);
+                        // Show execution.
+                        if ($this->action != 'install') $this->log[] =
+                            sprintf(__("Executed uninstalled query for %s : %s", 'PluginManager'),
+                                $plugin_folder, $query_array);
+
                     }
                 }
             }
@@ -640,9 +771,15 @@ class pluginFactory extends PHPDS_dependant
      */
     protected function uninstallVersion($plugin_folder)
     {
+        $sql = "
+          DELETE FROM _db_core_plugin_activation
+		  WHERE       plugin_folder = :plugin_folder
+        ";
+
         $db = $this->db;
+
         // Delete database activation.
-        if ($db->invokeQuery('PHPDS_deleteVersionQuery', $plugin_folder)) {
+        if ($db->queryAffects($sql, array('plugin_folder' => $plugin_folder))) {
             // Show execution.
             $this->log[] = sprintf(__("Uninstalled plugin %s.", 'PluginManager'), $plugin_folder);
         }
@@ -658,6 +795,7 @@ class pluginFactory extends PHPDS_dependant
     {
         $db     = $this->db;
         $config = $this->config;
+
         // Assign queries q.
         $upgrade_array  = $this->plugin->upgrade;
         $latest_version = $this->plugin->install['version'];
@@ -676,9 +814,9 @@ class pluginFactory extends PHPDS_dependant
                         // Make sure query is not empty.
                         if (!empty($upgrade_query_)) {
                             // Execute upgrade query.
-                            if ($db->invokeQuery('PHPDS_doQuery', $upgrade_query_)) // Show execution.
-                                $this->log[] = sprintf(__("Query upgraded for %s : %s", 'PluginManager'),
-                                        $plugin_folder, $upgrade_query_);
+                            $db->query($upgrade_query_);
+                            $this->log[] = sprintf(__("Executed upgrade query for %s : %s", 'PluginManager'),
+                                $plugin_folder, $upgrade_query_);
                         }
                     }
                 }
@@ -748,11 +886,20 @@ class pluginFactory extends PHPDS_dependant
      */
     protected function upgradeDatabase($plugin_folder, $status)
     {
+        $sql = '
+          UPDATE  _db_core_plugin_activation
+		  SET     status = :status, version = :version
+		  WHERE   plugin_folder = :plugin_folder
+        ';
+
         $db = $this->db;
+
         // Check if we have a database value.
         if (!empty($this->pluginUpgraded)) {
             // Update database.
-            if ($db->invokeQuery('PHPDS_upgradeVersionQuery', $status, $this->pluginUpgraded, $plugin_folder)) {
+            if ($db->queryAffects($sql,
+                array('status' => $status, 'version' => $this->pluginUpgraded, 'plugin_folder' => $plugin_folder)
+            )) {
                 // Show execution.
                 $this->log[] = sprintf(__("Upgraded plugin %s database to version %s.", 'PluginManager'),
                     $plugin_folder, $this->pluginUpgraded);
