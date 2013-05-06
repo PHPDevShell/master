@@ -18,11 +18,17 @@ class nodeHelper extends PHPDS_dependant
      */
     private function nodeArray()
     {
+        $sql = "
+          SELECT    t1.node_id, t1.parent_node_id
+          FROM      _db_core_node_items as t1
+          ORDER BY  t1.rank
+          ASC
+        ";
 
         $db = $this->db;
 
         // Run main query for all node items and save results in array.
-        $main_query = $db->invokeQuery('PHPDS_readStructureQuery');
+        $main_query = $db->queryFAR($sql);
 
         foreach ($main_query as $main_query_array) {
             $parent_node_id = (string)$main_query_array['parent_node_id'];
@@ -98,7 +104,13 @@ class nodeHelper extends PHPDS_dependant
      */
     public function writeNodeStructure()
     {
+        $sql = "
+          INSERT INTO _db_core_node_structure (id, node_id, is_parent, type)
+		  VALUES                              (:id, :node_id, :is_parent, :type)
+        ";
+
         $db = $this->db;
+        $db->prepare($sql);
 
         // Initiate starting point with node array.
         $this->nodeArray();
@@ -106,16 +118,16 @@ class nodeHelper extends PHPDS_dependant
         // Submit results to database.
         if (!empty($this->databaseInsert)) {
             // Clear previous results.
-            $db->invokeQuery('PHPDS_deleteStructureQuery');
+            $db->query("DELETE FROM _db_core_node_structure");
 
             // Reset auto increment counter.
-            $db->invokeQuery('PHPDS_resetStructureQuery');
+            $db->query("ALTER TABLE _db_core_node_structure AUTO_INCREMENT = 0;");
 
             // Insert new results.
             $db->invokeQuery('PHPDS_writeStructureQuery', $this->databaseInsert);
         }
         // Clear old cache.
-        $this->cache->cacheClear('navigation');
+        $this->cache->flush();
     }
 
     /**

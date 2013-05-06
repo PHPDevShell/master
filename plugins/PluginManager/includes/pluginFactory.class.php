@@ -368,6 +368,12 @@ class pluginFactory extends PHPDS_dependant
         }
     }
 
+    /**
+     * Helper: Writes a new node into database.
+     *
+     * @param $node_array
+     * @return bool|int
+     */
     protected function writeNode($node_array)
     {
         $sql = "
@@ -382,6 +388,13 @@ class pluginFactory extends PHPDS_dependant
         return $this->db->queryAffects($sql, $node_array);
     }
 
+    /**
+     * Helper: Update role permissions.
+     *
+     * @param $user_role_id
+     * @param $node_id
+     * @return int
+     */
     protected function updateRolePersmissions($user_role_id, $node_id)
     {
         $sql = "
@@ -392,6 +405,13 @@ class pluginFactory extends PHPDS_dependant
         return $this->db->affectedRows($sql, array('user_role_id' => $user_role_id, 'node_id' => $node_id));
     }
 
+    /**
+     * Helper: Cleanup existing permissions that might conflict on install.
+     *
+     * @param $node_id
+     * @param $user_role_id
+     * @return bool|int
+     */
     protected function cleanupRolePermissions($node_id, $user_role_id)
     {
         $sql = "
@@ -403,6 +423,13 @@ class pluginFactory extends PHPDS_dependant
         return $this->db->queryAffects($sql, array('node_id' => $node_id, 'user_role_id' => $user_role_id));
     }
 
+    /**
+     * Helper: Create new theme database entry.
+     *
+     * @param $theme_id
+     * @param $theme_folder
+     * @return bool|int
+     */
     protected function createTheme($theme_id, $theme_folder)
     {
         $sql = "
@@ -413,6 +440,13 @@ class pluginFactory extends PHPDS_dependant
         return $this->db->queryAffects($sql, array('theme_id' => $theme_id, 'theme_folder' => $theme_folder));
     }
 
+    /**
+     * Helper: Update node link.
+     *
+     * @param $node_link
+     * @param $node_id
+     * @return bool|int
+     */
     protected function updateNodeLink($node_link, $node_id)
     {
         $sql = "
@@ -424,6 +458,12 @@ class pluginFactory extends PHPDS_dependant
         return $this->db->queryAffects($sql, array('node_link' => $node_link, 'node_id' => $node_id));
     }
 
+    /**
+     * Helper: Check if node exists.
+     *
+     * @param $node_id
+     * @return mixed
+     */
     protected function nodeExists($node_id)
     {
         $sql = "
@@ -435,6 +475,13 @@ class pluginFactory extends PHPDS_dependant
         return $this->db->querySingle($sql, array('node_id' => $node_id));
     }
 
+    /**
+     * Helper: Determine rank of node item.
+     *
+     * @param $node
+     * @param $ranking
+     * @return int|mixed
+     */
     protected function rank($node, $ranking)
     {
         $db = $this->db;
@@ -544,7 +591,7 @@ class pluginFactory extends PHPDS_dependant
                 if (!empty($setting_array['note'])) {
                     $note = (string)$setting_array['note'];
                 } else {
-                    $note = '';
+                    $note = null;
                 }
                 $setting = (string)$setting_array;
                 // Assign settings array.
@@ -886,11 +933,11 @@ class pluginFactory extends PHPDS_dependant
      */
     protected function upgradeDatabase($plugin_folder, $status)
     {
-        $sql = '
+        $sql = "
           UPDATE  _db_core_plugin_activation
 		  SET     status = :status, version = :version
 		  WHERE   plugin_folder = :plugin_folder
-        ';
+        ";
 
         $db = $this->db;
 

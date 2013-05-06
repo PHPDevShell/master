@@ -1,35 +1,5 @@
 <?php
 
-class PHPDS_readStructureQuery extends PHPDS_query
-{
-	protected $sql = "
-		SELECT
-			t1.node_id, t1.parent_node_id
-		FROM
-			_db_core_node_items as t1
-		ORDER BY
-			t1.rank
-		ASC
-    ";
-}
-
-class PHPDS_deleteStructureQuery extends PHPDS_query
-{
-	protected $sql = "
-		DELETE FROM
-			_db_core_node_structure
-    ";
-}
-
-class PHPDS_resetStructureQuery extends PHPDS_query
-{
-	protected $sql = "
-		ALTER TABLE
-			_db_core_node_structure
-		AUTO_INCREMENT = 0;
-    ";
-}
-
 class PHPDS_writeStructureQuery extends PHPDS_query
 {
 	protected $sql = "
