@@ -59,11 +59,13 @@ class nodeHelper extends PHPDS_dependant
             // Divide root parents and root children from root group.
             // Root Parent -> continue loading children.
             if (in_array($root_group_node_id, $this->parentNodeFamily)) {
-                $this->databaseInsert .= "('', '$root_group_node_id', '1', '1'),";
+                $this->databaseInsert[] =
+                    array('id' => null, 'node_id' => $root_group_node_id, 'is_parent' => 1, 'type' => 1);
                 $this->nodeGroupExtract($root_group_node_id);
             } // Root Child -> stop.
             else {
-                $this->databaseInsert .= "('', '$root_group_node_id', '0', '2'),";
+                $this->databaseInsert[] =
+                    array('id' => null, 'node_id' => $root_group_node_id, 'is_parent' => 0, 'type' => 2);
             }
         }
     }
@@ -90,12 +92,14 @@ class nodeHelper extends PHPDS_dependant
     {
         // Divide parents and children from requested group per node item.
         // Sub Parent -> write parent and continue loading children through next loop.
-        if (in_array("$node_id", $this->parentNodeFamily)) {
-            $this->databaseInsert .= "('', '$node_id', '1', '3'),";
+        if (in_array($node_id, $this->parentNodeFamily)) {
+            $this->databaseInsert[] =
+                array('id' => null, 'node_id' => $node_id, 'is_parent' => 1, 'type' => 3);
             $this->nodeGroupExtract($node_id);
         } // Sub Child -> stop.
         else {
-            $this->databaseInsert .= "('', '$node_id', '0', '4'),";
+            $this->databaseInsert[] =
+                array('id' => null, 'node_id' => $node_id, 'is_parent' => 1, 'type' => 4);
         }
     }
 
@@ -110,11 +114,12 @@ class nodeHelper extends PHPDS_dependant
         ";
 
         $db = $this->db;
+
         $db->prepare($sql);
 
         // Initiate starting point with node array.
         $this->nodeArray();
-        $this->databaseInsert = rtrim($this->databaseInsert, ',');
+
         // Submit results to database.
         if (!empty($this->databaseInsert)) {
             // Clear previous results.
@@ -124,7 +129,11 @@ class nodeHelper extends PHPDS_dependant
             $db->query("ALTER TABLE _db_core_node_structure AUTO_INCREMENT = 0;");
 
             // Insert new results.
-            $db->invokeQuery('PHPDS_writeStructureQuery', $this->databaseInsert);
+            if (!empty($this->databaseInsert) && is_array($this->databaseInsert)) {
+                foreach ($this->databaseInsert as $params) {
+                    $db->execute($params);
+                }
+            }
         }
         // Clear old cache.
         $this->cache->flush();
@@ -143,7 +152,72 @@ class nodeHelper extends PHPDS_dependant
      */
     public function deleteNode($node_id = null, $plugin = null, $delete_critical_only = false)
     {
-        return $this->db->invokeQuery('PHPDS_deleteNodeQuery', $node_id, $plugin, $delete_critical_only);
+        $sql = "
+          SELECT  node_id
+		  FROM    _db_core_node_items
+		  WHERE   plugin = :plugin
+        ";
+
+        $db = $this->db;
+
+        // Define.
+        $db_condition = '';
+
+        // Check if plugin item should be deleted.
+        if ($plugin != false && $node_id == false) {
+            $node_id_db = $db->queryFAR($sql, array('plugin' => $plugin));
+
+            if (!empty($node_id_db)) {
+                foreach ($node_id_db as $node_id_array) {
+                    $db_condition .= "'{$node_id_array['node_id']}',";
+                }
+            }
+            // Check if there is any condition.
+            if (!empty($db_condition)) {
+                // Correct for database condition.
+                $db_condition = rtrim($db_condition, ",");
+                // Complete condition.
+                $condition = " IN ($db_condition)";
+            }
+        } // The user may want to give an array of items to be deleted.
+        else if (is_array($node_id)) {
+            foreach ($node_id as $item_to_delete) {
+                // Check if item needs to be converted to node item.
+                $db_condition .= "'$item_to_delete',";
+            }
+            // Check if there is any condition.
+            if (!empty($db_condition)) {
+                // Correct for database condition.
+                $db_condition = rtrim($db_condition, ",");
+                // Complete condition.
+                $condition = " IN ($db_condition)";
+            }
+        } else {
+            // Complete condition.
+            $condition = " = '$node_id'";
+        }
+        // Only execute when not empty.
+        if (!empty($condition)) {
+            // Delete Node Items.
+            $db->query('DELETE FROM _db_core_node_items WHERE node_id' . PHP_EOL . $condition);
+
+            // Delete Node Structure.
+            $db->query('DELETE FROM _db_core_node_structure WHERE node_id' . PHP_EOL . $condition);
+
+            // Continue deleting?
+            if ($delete_critical_only == false) {
+                // Delete Node Permissions.
+                $db->query('DELETE FROM _db_core_user_role_permissions WHERE node_id' . PHP_EOL . $condition);
+
+                // Delete all filters that belongs to this node item.
+                $db->query('DELETE FROM _db_core_filter WHERE node_id' . PHP_EOL . $condition);
+
+                // Delete all cron items connected to this node.
+                $db->query('DELETE FROM _db_core_cron WHERE node_id' . PHP_EOL . $condition);
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -151,61 +225,68 @@ class nodeHelper extends PHPDS_dependant
      *
      */
     public function insertNode(
-        $node_id = null,
-        $parent_node_id,
-        $node_name,
-        $node_link,
-        $plugin,
-        $node_type,
-        $extend = false,
-        $new_window = false,
-        $rank = 0,
-        $hide = false,
-        $theme_id = null,
-        $alias = null,
-        $layout = null,
-        $params = null)
+        $node_id = null, $parent_node_id, $node_name, $node_link, $plugin, $node_type, $extend = false,
+        $new_window = false, $rank = 0, $hide = false, $theme_id = null, $alias = null, $layout = null, $params = null)
     {
+        $sql = "
+          REPLACE INTO  _db_core_node_items (
+            node_id, parent_node_id, node_name, node_link, plugin, node_type,
+            extend, new_window, rank, hide, theme_id, alias, layout, params
+          ) VALUES (
+            :node_id, :parent_node_id, :node_name, :node_link, :plugin, :node_type,
+            :extend, :new_window, :rank, :hide, :theme_id, :alias, :layout, :params
+          )
+        ";
+
+        $parameters = array(
+            'node_id'        => $node_id,
+            'parent_node_id' => $parent_node_id,
+            'node_name'      => $node_name,
+            'node_link'      => $node_link,
+            'plugin'         => $plugin,
+            'node_type'      => $node_type,
+            'extend'         => $extend,
+            'new_window'     => $new_window,
+            'rank'           => $rank,
+            'hide'           => $hide,
+            'theme_id'       => $theme_id,
+            'alias'          => $alias,
+            'layout'         => $layout,
+            'params'         => $params
+        );
+
         $db = $this->db;
+
         // Check and make sure we have a node id.
         if (!empty($node_id)) {
             ////////////////////////////////
             // Save new item to database. //
             ////////////////////////////////
-            $db->invokeQuery('PHPDS_writeNodeQuery',
-                $node_id,
-                $parent_node_id,
-                $node_name,
-                $node_link,
-                $plugin,
-                $node_type,
-                $extend,
-                $new_window,
-                $rank,
-                $hide,
-                $theme_id,
-                $alias,
-                $layout,
-                $params
-            );
-
-            // Write the node structure.
-            $this->writeNodeStructure();
+            if ($db->queryAffects($sql, $parameters)) {
+                // Write the node structure.
+                $this->writeNodeStructure();
+            }
         }
     }
 
     /**
-     * Deletes a node item.
+     * Deletes a node item while returning node plugin name.
      *
      * @param string $node_id
      * @return boolean
      */
     public function getDelete($node_id)
     {
+        $sql = "
+          SELECT  plugin
+          FROM    _db_core_node_items
+          WHERE   node_id = :node_id
+        ";
+
         $db = $this->db;
 
         // Call plugin name from database.
-        $get_plugin = $db->invokeQuery('PHPDS_readPluginFromNodeIdQuery', $node_id);
+        $get_plugin = $db->querySingle($sql, array('node_id' => $node_id));
 
         // Now we can see if a delete is possible.
         if (!empty($node_id) && !empty($get_plugin)) {
@@ -230,8 +311,15 @@ class nodeHelper extends PHPDS_dependant
      */
     public function createNodeId($plugin_folder, $link)
     {
+        $sql = "
+          SELECT  node_id
+		  FROM    _db_core_node_items
+		  WHERE   node_link = :node_link
+		  AND     plugin    = :plugin
+        ";
+
         $db         = $this->db;
-        $node_id_db = $db->invokeQuery('PHPDS_readNodeIdFromNodeLinkQuery', $link, $plugin_folder);
+        $node_id_db = $db->querySingle($sql, array('node_link' => $link, 'plugin' => $plugin_folder));
 
         if (!empty($node_id_db)) {
             return $node_id_db;
@@ -253,6 +341,8 @@ class nodeHelper extends PHPDS_dependant
      */
     public function updateNodeId($new_id, $old_id, $skip_check = false)
     {
+        $db = $this->db;
+
         // Check if we the node item exists.
         if (!$skip_check) {
             $exisiting_id = $this->nodeIdExist($old_id);
@@ -261,11 +351,46 @@ class nodeHelper extends PHPDS_dependant
         }
 
         if (!empty($exisiting_id)) {
-            if ($this->db->invokeQuery('PHPDS_updateNodeIdQuery', $new_id, $old_id)) return $new_id;
+            $db->query("UPDATE _db_core_node_items SET
+                node_id = :node_id WHERE node_id = :old_node_id",
+                array('node_id' => $new_id, 'old_node_id' => $old_id));
+
+            $db->query("UPDATE _db_core_node_items SET
+                parent_node_id = :parent_node_id WHERE parent_node_id = :old_parent_node_id",
+                array('parent_node_id' => $new_id, 'old_parent_node_id' => $old_id));
+
+            $db->query("UPDATE _db_core_node_items SET
+                extend = :extend WHERE extend = :old_extend",
+                array('extend' => $new_id, 'old_extend' => $old_id));
+
+            $db->query("UPDATE _db_core_cron SET
+                node_id = :node_id WHERE node_id = :old_node_id",
+                array('node_id' => $new_id, 'old_node_id' => $old_id));
+
+            $db->query("UPDATE _db_core_filter SET
+                node_id = :node_id WHERE node_id = :old_node_id",
+                array('node_id' => $new_id, 'old_node_id' => $old_id));
+
+            $db->query("UPDATE _db_core_node_structure SET
+                node_id = :node_id WHERE node_id = :old_node_id",
+                array('node_id' => $new_id, 'old_node_id' => $old_id));
+
+            $db->query("UPDATE _db_core_user_role_permissions SET
+                node_id = :node_id WHERE node_id = :old_node_id",
+                array('node_id' => $new_id, 'old_node_id' => $old_id));
+
+            $db->query("UPDATE _db_core_settings SET
+                setting_value = :setting_value WHERE setting_value = :old_setting_value",
+                array('setting_value' => $new_id, 'old_setting_value' => $old_id));
+
+            $db->query("UPDATE _db_core_tags SET
+                tag_target = :tag_target WHERE tag_target = :old_tag_target",
+                array('tag_target' => $new_id, 'old_tag_target' => $old_id));
+
+            return $new_id;
         } else {
             return false;
         }
-        return false;
     }
 
     /**
@@ -276,6 +401,12 @@ class nodeHelper extends PHPDS_dependant
      */
     public function nodeIdExist($node_id)
     {
-        return $this->db->invokeQuery('PHPDS_doesNodeIdExistQuery', $node_id);
+        $sql = "
+          SELECT  node_id
+		  FROM    _db_core_node_items
+		  WHERE   node_id = :node_id;
+        ";
+
+        return $this->db->querySingle($sql, array('node_id' => $node_id));
     }
 }
