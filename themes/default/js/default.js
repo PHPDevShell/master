@@ -178,7 +178,7 @@ PHPDS.errorHandler = function (message, url, line, object) {
         return this.userErrorHandler(message, url, line, object);
     } else {
         if (console && console.log) {
-            console.log('PHPDS.errorHandler ', message, ' / ', url, ' / ', line, ' / ', object);
+            console.log('PHPDS.errorHandler: ', message, ' | url: ', url, ' | line: ', line, ' | object: ', object);
         }
     }
     return true;
@@ -191,7 +191,6 @@ PHPDS.errorHandler = function (message, url, line, object) {
  */
 PHPDS.documentReady = function (root) {
     if (!root) PHPDS.root = jQuery(document);
-    PHPDS.errorHandler();
     PHPDS.ajaxErrorHandler();
     PHPDS.root.ajaxComplete(function (event, XMLHttpRequest, ajaxOptions) {
         PHPDS.ajaxMessage(XMLHttpRequest);

@@ -1,0 +1,100 @@
+{{#RESULTS}}
+<div data-plugin="{{name}}" class="row hidden-button-bind">
+    <div class="column span1">
+        {{#installed}}
+        <span class="label label-success">{{#i}}ready{{/i}}</span>
+        {{/installed}}
+
+        {{^installed}}
+        {{#repo}}
+        <span class="label label-info">{{#i}}repo{{/i}}</span>
+        {{/repo}}
+        {{/installed}}
+
+        {{^installed}}
+        {{#local}}
+        <span class="label label-inverse">{{#i}}local{{/i}}</span>
+        {{/local}}
+        {{/installed}}
+
+        {{#broken}}
+        <span class="label label-important">{{#i}}broken{{/i}}</span>
+        {{/broken}}
+    </div>
+    <div class="column span5">
+        {{#installed}}
+        <div class="plugin-name text-success">{{name}}</div>
+        {{/installed}}
+
+        {{^installed}}
+        {{^local}}
+        {{#repo}}
+        <div class="plugin-name text-info">{{name}}</div>
+        {{/repo}}
+        {{/local}}
+        {{/installed}}
+
+        {{^installed}}
+        {{#local}}
+        {{^broken}}
+        <div class="plugin-name">{{name}}</div>
+        {{/broken}}
+        {{#broken}}
+        <div class="plugin-name text-error">{{name}}</div>
+        {{/broken}}
+        {{/local}}
+        {{/installed}}
+
+        <div class="plugin-short-description muted">{{desc}}</div>
+    </div>
+    <div class="column span3 action-buttons">
+        <div class="hide">
+            {{#installed}}
+            <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"
+                    title="{{#i}}Info{{/i}}">
+                <i class="icon-info-sign icon-white"></i>
+            </button>
+            <button data-plugin="{{name}}" class="plugin-get-install btn btn-inverse"
+                    title="{{#i}}Re-install{{/i}}">
+                <i class="icon-repeat icon-white"></i>
+            </button>
+            <button data-plugin="{{name}}" class="plugin-get-uninstall btn btn-warning"
+                    title="{{#i}}Uninstall{{/i}}">
+                <i class="icon-remove icon-white"></i>
+            </button>
+            {{/installed}}
+
+            {{^installed}}
+            {{^broken}}
+            <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"
+                    title="{{#i}}Info{{/i}}">
+                <i class="icon-info-sign icon-white"></i>
+            </button>
+            <button data-plugin="{{name}}" class="plugin-get-install btn btn-inverse"
+                    title="{{#i}}Install{{/i}}">
+                <i class="icon-download-alt icon-white"></i>
+            </button>
+            {{#local}}
+            <button class="btn btn-warning" title="{{#i}}Delete{{/i}}">
+                <i class="icon-trash icon-white"></i>
+            </button>
+            {{/local}}
+            {{/broken}}
+            {{/installed}}
+
+            {{#broken}}
+            <button class="btn btn-warning" title="{{#i}}Delete{{/i}}">
+                <i class="icon-trash icon-white"></i>
+            </button>
+            {{/broken}}
+        </div>
+    </div>
+    <div class="column span3">
+        {{#cfgerror}}
+        <div class="alert alert-error" style="word-wrap:break-word;">
+            {{#i}}<strong>can't find:</strong> <small>{{/i}}{{cfgerror}}</small>
+        </div>
+        {{/cfgerror}}
+    </div>
+</div>
+{{/RESULTS}}

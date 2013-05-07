@@ -27,19 +27,26 @@ class PluginActivation extends PHPDS_controller
         /////////////////////////////////////////////////
         // Call current plugins status from database. ///
         /////////////////////////////////////////////////
-        // Read plugin directory.
-        $RESULTS = $this->repo->initiateRepository();
 
-        // Set Array.
-        $this->view->set('RESULTS', $RESULTS);
+        $this->view->set('reporows', $this->repoRows());
         $this->view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
         $this->view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
         $this->view->set('updatemenus', $this->navigation->selfUrl('update=menus'));
         $this->view->set('updatelocal', $this->navigation->selfUrl());
-        // $view->set('log', $log);
 
         // Output Template.
         $this->view->show();
+    }
+
+    public function repoRows($plugin=null)
+    {
+        // Read plugin directory.
+        $RESULTS = $this->repo->initiateRepository($plugin);
+
+        // Set Array.
+        $this->view->set('RESULTS', $RESULTS);
+
+        return $this->view->getView('repo-rows.html');
     }
 
     public function viaAjax()

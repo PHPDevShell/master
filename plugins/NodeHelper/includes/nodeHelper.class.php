@@ -25,9 +25,7 @@ class nodeHelper extends PHPDS_dependant
           ASC
         ";
 
-        $db = $this->db;
-
-        // Run main query for all node items and save results in array.
+        $db         = $this->db;
         $main_query = $db->queryFAR($sql);
 
         foreach ($main_query as $main_query_array) {

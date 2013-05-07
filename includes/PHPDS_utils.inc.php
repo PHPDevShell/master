@@ -58,6 +58,37 @@ function PU_copyArray($source, &$target, $indexes = array(), $type = null)
 }
 
 /**
+ * The following will recursively do an array_diff_assoc, which will calculate differences on a multi-dimensional level.
+ * This not display any notices if a key don't exist and if error_reporting is set to E_ALL
+ *
+ * @see http://www.php.net/manual/en/function.array-diff-assoc.php#73972
+ *
+ * @param $array1
+ * @param $array2
+ * @return int|array
+ */
+function PU_array_diff_assoc_recursive($array1, $array2)
+{
+    foreach ($array1 as $key => $value) {
+        if (is_array($value)) {
+            if (!isset($array2[$key])) {
+                $difference[$key] = $value;
+            } elseif (!is_array($array2[$key])) {
+                $difference[$key] = $value;
+            } else {
+                $new_diff = PU_array_diff_assoc_recursive($value, $array2[$key]);
+                if ($new_diff != false) {
+                    $difference[$key] = $new_diff;
+                }
+            }
+        } elseif (!isset($array2[$key]) || $array2[$key] != $value) {
+            $difference[$key] = $value;
+        }
+    }
+    return !isset($difference) ? 0 : $difference;
+}
+
+/**
  * Search for array values inside array and returns key.
  *
  * @param array $needle

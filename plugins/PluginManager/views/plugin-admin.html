@@ -3,13 +3,16 @@
         <div class="row">
             <div class="span1">
                 <div id="plugin-tools" class="btn-group">
-                    <button class="btn btn-inverse"><i class="icon-wrench icon-white"></i></button>
+                    <button class="repo-refresh btn btn-inverse" data-update-url="{{updaterepo}}">
+                        <i class="icon-retweet icon-white"></i>
+                    </button>
                     <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a id="repo-refresh" href="{{updaterepo}}">
+                            <a id="repo-refresh" class="repo-refresh" data-update-url="{{updaterepo}}"
+                               href="{{updaterepo}}">
                                 <i class="icon-retweet icon-white"></i> {{#i}}Update Repository{{/i}}
                             </a>
                         </li>
@@ -45,88 +48,10 @@
         </div>
     </div>
     <div class="plugin-repo">
-        {{#RESULTS}}
-        <div class="row old-bind">
-            <div class="column span1">
-                {{#installed}}
-                <span class="label label-success">{{#i}}ready{{/i}}</span>
-                {{/installed}}
-
-                {{^installed}}
-                    {{#repo}}
-                <span class="label label-info">{{#i}}repo{{/i}}</span>
-                    {{/repo}}
-                {{/installed}}
-
-                {{^installed}}
-                    {{#local}}
-                <span class="label label-inverse">{{#i}}local{{/i}}</span>
-                    {{/local}}
-                {{/installed}}
-
-                {{#broken}}
-                <span class="label label-important">{{#i}}broken{{/i}}</span>
-                {{/broken}}
-            </div>
-            <div class="column span5">
-                {{#installed}}
-                <div class="plugin-name text-success">{{name}}</div>
-                {{/installed}}
-
-                {{^installed}}
-                    {{^local}}
-                        {{#repo}}
-                <div class="plugin-name text-info">{{name}}</div>
-                        {{/repo}}
-                    {{/local}}
-                {{/installed}}
-
-                {{^installed}}
-                    {{#local}}
-                        {{^broken}}
-                <div class="plugin-name">{{name}}</div>
-                        {{/broken}}
-                        {{#broken}}
-                <div class="plugin-name text-error">{{name}}</div>
-                        {{/broken}}
-                    {{/local}}
-                {{/installed}}
-
-                <div class="plugin-short-description muted">{{desc}}</div>
-            </div>
-            <div class="column span3 action-buttons">
-                <div class="hide">
-                    {{#installed}}
-                    <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
-                    <button data-plugin="{{name}}" class="plugin-get-install btn btn-inverse"><i class="icon-repeat icon-white"></i></button>
-                    <button data-plugin="{{name}}" class="plugin-get-uninstall btn btn-warning"><i class="icon-remove icon-white"></i></button>
-                    {{/installed}}
-
-                    {{^installed}}
-                        {{^broken}}
-                    <button data-plugin="{{name}}" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
-                    <button data-plugin="{{name}}" class="plugin-get-install btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
-                            {{#local}}
-                    <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
-                            {{/local}}
-                        {{/broken}}
-                    {{/installed}}
-
-                    {{#broken}}
-                    <button class="btn btn-warning"><i class="icon-trash icon-white"></i></button>
-                    {{/broken}}
-                </div>
-            </div>
-            <div class="column span3">
-                {{#cfgerror}}
-                <div class="alert alert-error">{{#i}}<strong>add xml config here:</strong> {{/i}}{{cfgerror}}</div>
-                {{/cfgerror}}
-            </div>
-        </div>
-        {{/RESULTS}}
+        {{{reporows}}}
     </div>
     <div id="new-plugin-template" class="hide">
-        <div class="row new-bind">
+        <div data-plugin="" class="row hidden-button-bind">
             <div class="column span1">
                 <span class="label label-info">{{#i}}repo{{/i}}</span>
                 <span class="label label-warning">{{#i}}new{{/i}}</span>
@@ -135,10 +60,14 @@
                 <div class="plugin-name text-warning"></div>
                 <div class="plugin-short-description muted"></div>
             </div>
-            <div class="column span3">
+            <div class="column span6">
                 <div class="hide">
-                    <button data-plugin="" class="plugin-get-info btn btn-info"><i class="icon-info-sign icon-white"></i></button>
-                    <button data-plugin="" class="plugin-get-install btn btn-inverse"><i class="icon-download-alt icon-white"></i></button>
+                    <button data-plugin="" class="plugin-get-info btn btn-info" title="{{#i}}Info{{/i}}">
+                        <i class="icon-info-sign icon-white"></i>
+                    </button>
+                    <button data-plugin="" class="plugin-get-install btn btn-inverse" title="{{#i}}Install{{/i}}">
+                        <i class="icon-download-alt icon-white"></i>
+                    </button>
                 </div>
             </div>
             <div class="column span3"></div>
@@ -152,34 +81,35 @@
 
         $("#plugin-search").searchFilter("div.plugin-repo div.row");
 
-        $(this).on('pluginsUpdated', function (event) {
-            bindNewPluginButtons(".new-bind");
-            $("#plugin-tools").removeClass("open");
+        $root.on('mouseenter', ".hidden-button-bind", function (event) {
+            $(".hide", this).show();
         });
-        bindNewPluginButtons(".old-bind");
+        $root.on('mouseleave', ".hidden-button-bind", function (event) {
+            $(".hide", this).hide();
+        });
 
         // Repository update.
-        $("#repo-refresh").on("click", function() {
+        $(".repo-refresh").on("click", function() {
             if (PHPDS.ajaxRequestBusy) return false;
-            requestPage();
-            var url = $(this).attr("href");
+            PHPDS.requestPage();
+            var url = $(this).attr("data-update-url");
             $.get(url, function (data, textStatus, request) {
                 if (data !== 'false') {
                     var results  = $.parseJSON(data);
                     var template = $("#new-plugin-template");
                     $.each(results, function(i, item) {
-                        $("button", template).attr("data-plugin", i);
+                        $(template).attr("data-plugin", i);
                         $(".plugin-name", template).text(i);
                         $(".plugin-short-description", template).text(item.desc);
                         var newplugin = template.html();
                         $(".plugin-repo").prepend(newplugin);
                     });
-                    $(this).triggerHandler('pluginsUpdated');
                 }
-                destroyPage();
+                PHPDS.destroyPage();
             });
             return false;
         });
+
         // Menu refresh after fresh plugin install.
         $("#menu-refresh").on("click", function () {
             if (PHPDS.ajaxRequestBusy) return false;
@@ -192,33 +122,36 @@
             });
             return false;
         });
+
         // Plugin get info.
         $root.on("click", ".plugin-get-info", function() {
             if (PHPDS.ajaxRequestBusy) return false;
-            requestPage();
+            PHPDS.requestPage();
             var plugin        = $(this).data("plugin");
             $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
                 if (data !== false) {
                     $(data).modal();
                 }
-                destroyPage();
+                PHPDS.destroyPage();
             });
             return false;
         });
+
         // Plugin uninstall.
         $root.one("click", ".plugin-get-uninstall", function () {
             $(this).removeClass("btn-warning").addClass("btn-danger confirm-uninstall-ready");
             return false;
         });
+
         $root.on("click", ".confirm-uninstall-ready", function () {
             if (PHPDS.ajaxRequestBusy) return false;
-            requestPage();
+            PHPDS.requestPage();
             var plugin = $(this).data("plugin");
             // Phase 0: Check dependencies, if any installed plugin depends on this plugin we cant uninstall.
             // This can be a process and memory intensive process.
             $.post(null, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
                 $(this).removeClass("confirm-uninstall-ready");
-                destroyPage();
+                PHPDS.destroyPage();
             });
             return false;
         });
@@ -226,7 +159,7 @@
         // Plugin download+install.
         $root.on("click", ".plugin-get-install", function () {
             if (PHPDS.ajaxRequestBusy) return false;
-            requestPage();
+            PHPDS.requestPage();
             var plugin = $(this).data("plugin");
             // Phase 0: Does plugin need downloading?
             $.get(null, {"action": "prepare", "plugin": plugin}, function (data, textStatus, request) {
@@ -248,41 +181,37 @@
                                             $("#progress-bar").text(phase3.message);
                                             if (phase3.status == 'install' || phase3.status == 'reinstall') {
                                                 $.post(null, {"action": phase3.status, "plugin": plugin}, function (data, textStatus, request) {
-                                                    destroyPage();
+                                                    PHPDS.destroyPage();
                                                 });
                                             }
                                         } else {
-                                            destroyPage();
+                                            PHPDS.destroyPage();
                                         }
                                     });
                                 }
                             } else {
-                                destroyPage();
+                                PHPDS.destroyPage();
                             }
                         });
                         // Phase 3 : Installing.
                     } else if (phase1.status == 'install' || phase1.status == 'reinstall') {
                         $.post(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
-                            destroyPage();
+                            PHPDS.destroyPage();
                         });
                     }
                 } else {
-                    destroyPage();
+                    PHPDS.destroyPage();
                 }
             });
             return false;
         });
     });
 
-    function bindNewPluginButtons (bind)
+    // Change a plugins styling by status
+    function changePluginStatus(plugin)
     {
-        $(bind).hover(
-            function() {
-                $("div.hide", this).show();
-            },
-            function () {
-                $("div.hide", this).hide();
-            }
-        );
+        var $plugin = $('[data-plugin=' + plugin + ']');
+
+        $("", $plugin).addClass();
     }
 </script>

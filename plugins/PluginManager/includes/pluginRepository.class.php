@@ -125,7 +125,8 @@ class pluginRepository extends PHPDS_dependant
         }
         // get local plugins with config files, ignore the rest.f
         $xmlconfig = $directory . $plugin . '/config/plugin.config.xml';
-        $localxml  = @simplexml_load_file($xmlconfig);
+        if (file_exists($xmlconfig))
+            $localxml  = @simplexml_load_file($xmlconfig);
         if (!empty($localxml) && !empty($localxml->name)) {
             $local = array(
                 'name'      => (string)$localxml->name,
@@ -209,7 +210,7 @@ class pluginRepository extends PHPDS_dependant
             if ($size == $sizecurl) {
                 return false;
             } else {
-                $newplugins = array_diff_assoc($newrepo, $oldrepo);
+                $newplugins = PU_array_diff_assoc_recursive($newrepo, $oldrepo);
                 if (!empty($newplugins))
                     return json_encode($newplugins);
                 else
