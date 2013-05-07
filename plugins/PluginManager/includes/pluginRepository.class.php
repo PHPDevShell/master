@@ -1,7 +1,8 @@
 <?php
 /**
  * Manages plugin relations read action.
- *
+ * @property PHPDS_template $template
+ * @property PHPDS_config   $config
  */
 class pluginRepository extends PHPDS_dependant
 {
@@ -30,9 +31,19 @@ class pluginRepository extends PHPDS_dependant
         }
     }
 
-    public function initiateRepository()
+    public function initiateRepository($plugin = null)
     {
-        return $this->repositoryList($this->readOriginalJsonRepo());
+        $repo_array = $this->repositoryList($this->readOriginalJsonRepo());
+
+        if (isset($plugin) && is_array($repo_array)) {
+            foreach ($repo_array as $plugin_) {
+                if ($plugin_['name'] == $plugin)
+                    return array($plugin_);
+            }
+            return array();
+        } else {
+            return $this->repositoryList($this->readOriginalJsonRepo());
+        }
     }
 
     private function readOriginalJsonRepo()
