@@ -92,19 +92,29 @@ class PluginActivation extends PHPDS_controller
                     return $this->repo->pluginExtraction($this->P('plugin'), $this->P('zip'));
                     break;
                 case 'install':
-                    return $this->factory->install($this->P('plugin'));
+                    $result = $this->factory->install($this->P('plugin'));
+                    if ($result == true) $this->template->ok(sprintf("Plugin %s installed", $this->P('plugin')));
+                    return $result;
                     break;
                 case 'upgrade':
-                    return $this->factory->upgrade($this->P('plugin'));
+                    $result = $this->factory->upgrade($this->P('plugin'));
+                    if ($result == true) $this->template->ok(sprintf("Plugin %s upgraded", $this->P('plugin')));
+                    return $result;
                     break;
                 case 'reinstall':
-                    return $this->factory->reinstall($this->P('plugin'));
+                    $result = $this->factory->reinstall($this->P('plugin'));
+                    if ($result == true) $this->template->ok(sprintf("Plugin %s reinstalled", $this->P('plugin')));
+                    return $result;
                     break;
                 case 'uninstall':
-                    return $this->factory->uninstall($this->P('plugin'));
+                    $result = $this->factory->uninstall($this->P('plugin'));
+                    if ($result == true) $this->template->ok(sprintf("Plugin %s uninstalled", $this->P('plugin')));
+                    return $result;
                     break;
                 case 'delete':
-                    return $this->repo->pluginDelete($this->G('plugin'));
+                    $result = $this->repo->pluginDelete($this->P('plugin'));
+                    if ($result == true) $this->template->ok(sprintf("Plugin %s removed", $this->P('plugin')));
+                    return $result;
                     break;
             }
         }

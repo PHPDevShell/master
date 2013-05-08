@@ -388,7 +388,12 @@ class pluginRepository extends PHPDS_dependant
 
     public function pluginDelete($plugin)
     {
+        if (empty($plugin)) throw new PHPDS_exception('No plugin name provided');
         $dir = $this->configuration['absolute_path'] . 'plugins/' . $plugin . DIRECTORY_SEPARATOR;
+        if (!is_dir($dir) || !is_writable($dir)) {
+            $this->template->critical(sprintf("Permission denied to deleting: %s", $dir));
+            return false;
+        }
         return $this->recursiveFolderDelete($dir);
     }
 
