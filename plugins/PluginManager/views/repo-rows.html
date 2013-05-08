@@ -75,7 +75,7 @@
                 <i class="icon-download-alt icon-white"></i>
             </button>
             {{#local}}
-            <button class="btn btn-warning" title="{{#i}}Delete{{/i}}">
+            <button data-plugin="{{name}}" title="{{#i}}Delete{{/i}}" class="plugin-get-delete btn btn-warning">
                 <i class="icon-trash icon-white"></i>
             </button>
             {{/local}}
@@ -83,7 +83,7 @@
             {{/installed}}
 
             {{#broken}}
-            <button class="btn btn-warning" title="{{#i}}Delete{{/i}}">
+            <button data-plugin="{{name}}" title="{{#i}}Delete{{/i}}" class="plugin-get-delete btn btn-warning">
                 <i class="icon-trash icon-white"></i>
             </button>
             {{/broken}}

@@ -388,7 +388,21 @@ class pluginRepository extends PHPDS_dependant
 
     public function pluginDelete($plugin)
     {
+        $dir = $this->configuration['absolute_path'] . 'plugins/' . $plugin . DIRECTORY_SEPARATOR;
+        return $this->recursiveFolderDelete($dir);
+    }
 
+    private function recursiveFolderDelete($dir)
+    {
+        if (!is_dir($dir) || is_link($dir)) return unlink($dir);
+        foreach (scandir($dir) as $file) {
+            if ($file == '.' || $file == '..') continue;
+            if (!$this->recursiveFolderDelete($dir . DIRECTORY_SEPARATOR . $file)) {
+                chmod($dir . DIRECTORY_SEPARATOR . $file, 0777);
+                if (!$this->recursiveFolderDelete($dir . DIRECTORY_SEPARATOR . $file)) return false;
+            };
+        }
+        return rmdir($dir);
     }
 
     public function pluginPrepare($plugin)

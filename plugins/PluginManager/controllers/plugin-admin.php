@@ -79,9 +79,6 @@ class PluginActivation extends PHPDS_controller
                 case 'download':
                     return $this->repo->pluginPrepareDownload($this->G('plugin'));
                     break;
-                case 'delete':
-                    return $this->repo->pluginDelete($this->G('plugin'));
-                    break;
                 case 'refresh':
                     return $this->repoRows($this->G('plugin'));
                     break;
@@ -105,6 +102,9 @@ class PluginActivation extends PHPDS_controller
                     break;
                 case 'uninstall':
                     return $this->factory->uninstall($this->P('plugin'));
+                    break;
+                case 'delete':
+                    return $this->repo->pluginDelete($this->G('plugin'));
                     break;
             }
         }

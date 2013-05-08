@@ -29,7 +29,7 @@
         </div>
     </div>
 </div>
-<div id="ajax-loader-art">
+<div id="ajax-loader-art" class="fade">
     <div class="progress progress-striped active">
         <div id="progress-bar" class="bar"></div>
     </div>

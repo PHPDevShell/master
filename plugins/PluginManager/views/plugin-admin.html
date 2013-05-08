@@ -1,4 +1,4 @@
-<div id="repository">
+<div id="repository" data-url="{{updatelocal}}">
     <div class="plugin-manager">
         <div class="row">
             <div class="span1">
@@ -51,7 +51,7 @@
         {{{reporows}}}
     </div>
     <div id="new-plugin-template" class="hide">
-        <div data-plugin="" class="row hidden-button-bind">
+        <div id="" class="row hidden-button-bind">
             <div class="column span1">
                 <span class="label label-info">{{#i}}repo{{/i}}</span>
                 <span class="label label-warning">{{#i}}new{{/i}}</span>
@@ -62,10 +62,10 @@
             </div>
             <div class="column span6">
                 <div class="hide">
-                    <button data-plugin="" class="plugin-get-info btn btn-info" title="{{#i}}Info{{/i}}">
+                    <button data-plugin="" title="{{#i}}Info{{/i}}" class="plugin-get-info btn btn-info">
                         <i class="icon-info-sign icon-white"></i>
                     </button>
-                    <button data-plugin="" class="plugin-get-install btn btn-inverse" title="{{#i}}Install{{/i}}">
+                    <button data-plugin="" title="{{#i}}Install{{/i}}" class="plugin-get-install btn btn-inverse">
                         <i class="icon-download-alt icon-white"></i>
                     </button>
                 </div>
@@ -78,6 +78,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         var $root = $("#repository");
+        var $url  = $root.attr("data-url");
 
         $("#plugin-search").searchFilter("div.plugin-repo div.row");
 
@@ -99,12 +100,14 @@
                     var template = $("#new-plugin-template");
                     $.each(results, function(i, item) {
                         $(template).attr("data-plugin", i);
+                        $(".hidden-button-bind", template).attr("id", i);
                         $(".plugin-name", template).text(i);
                         $(".plugin-short-description", template).text(item.desc);
                         var newplugin = template.html();
                         $(".plugin-repo").prepend(newplugin);
                     });
                 }
+                $("#plugin-tools").removeClass("open");
                 PHPDS.destroyPage();
             });
             return false;
@@ -116,9 +119,7 @@
             var url = $(this).attr("href");
             $.get(url, {"via-ajax": "light+mods"}, function (data, textStatus, request) {
                 var mainnav = $("#main-nav");
-                mainnav.slideUp('slow');
-                mainnav.html(data);
-                mainnav.slideDown('slow');
+                mainnav.replaceWith(data);
             });
             return false;
         });
@@ -128,7 +129,7 @@
             if (PHPDS.ajaxRequestBusy) return false;
             PHPDS.requestPage();
             var plugin        = $(this).data("plugin");
-            $.get(null, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
+            $.get($url, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
                 if (data !== false) {
                     $(data).modal();
                 }
@@ -143,15 +144,33 @@
             return false;
         });
 
+        // Plugin delete.
+        $root.one("click", ".plugin-get-delete", function () {
+            $(this).removeClass("btn-warning").addClass("btn-danger confirm-delete-ready");
+            return false;
+        });
+
+        $root.on("click", ".confirm-delete-ready", function () {
+            if (PHPDS.ajaxRequestBusy) return false;
+            PHPDS.requestPage();
+            var plugin = $(this).data("plugin");
+            $.post($url, {"action": "delete", "plugin": plugin}, function (data, textStatus, request) {
+                $(this).removeClass("confirm-delete-ready");
+                changePluginStatus(plugin, $url);
+                PHPDS.destroyPage();
+            });
+            return false;
+        });
+
         $root.on("click", ".confirm-uninstall-ready", function () {
             if (PHPDS.ajaxRequestBusy) return false;
             PHPDS.requestPage();
             var plugin = $(this).data("plugin");
             // Phase 0: Check dependencies, if any installed plugin depends on this plugin we cant uninstall.
             // This can be a process and memory intensive process.
-            $.post(null, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
+            $.post($url, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
                 $(this).removeClass("confirm-uninstall-ready");
-                changePluginStatus(plugin);
+                changePluginStatus(plugin, $url);
                 PHPDS.destroyPage();
             });
             return false;
@@ -163,29 +182,31 @@
             PHPDS.requestPage();
             var plugin = $(this).data("plugin");
             // Phase 0: Does plugin need downloading?
-            $.get(null, {"action": "prepare", "plugin": plugin}, function (data, textStatus, request) {
+            $.get($url, {"action": "prepare", "plugin": plugin}, function (data, textStatus, request) {
                 if (data != false) {
                     var phase1 = $.parseJSON(data);
                     $("#progress-bar").text(phase1.message);
                     // Phase 1 : Plugins needs downloading.
                     if (phase1.status == 'download') {
-                        $.get(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
+                        $.get($url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
                             if (data != false) {
                                 // Phase 2 : Plugin needs extraction.
                                 var phase2 = $.parseJSON(data);
                                 $("#progress-bar").text(phase2.message);
                                 if (phase2.status == 'extract') {
-                                    $.post(null, {"action": phase2.status, "plugin": plugin, "zip": phase2.zip}, function (data, textStatus, request) {
+                                    $.post($url, {"action": phase2.status, "plugin": plugin, "zip": phase2.zip}, function (data, textStatus, request) {
                                         if (data != false) {
                                             // Phase 3 : Installing.
                                             var phase3 = $.parseJSON(data);
                                             $("#progress-bar").text(phase3.message);
                                             if (phase3.status == 'install' || phase3.status == 'reinstall') {
-                                                $.post(null, {"action": phase3.status, "plugin": plugin}, function (data, textStatus, request) {
+                                                $.post($url, {"action": phase3.status, "plugin": plugin}, function (data, textStatus, request) {
+                                                    changePluginStatus(plugin, $url);
                                                     PHPDS.destroyPage();
                                                 });
                                             }
                                         } else {
+                                            changePluginStatus(plugin, $url);
                                             PHPDS.destroyPage();
                                         }
                                     });
@@ -196,8 +217,8 @@
                         });
                         // Phase 3 : Installing.
                     } else if (phase1.status == 'install' || phase1.status == 'reinstall') {
-                        $.post(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
-                            changePluginStatus(plugin);
+                        $.post($url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
+                            changePluginStatus(plugin, $url);
                             PHPDS.destroyPage();
                         });
                     }
@@ -210,10 +231,10 @@
     });
 
     // Change a plugins styling by status
-    function changePluginStatus(plugin)
+    function changePluginStatus(plugin, url)
     {
         var $plugin = $("#" + plugin);
-        $.get(null, {"action": "refresh", "plugin": plugin}, function (data, textStatus, request) {
+        $.get(url, {"action": "refresh", "plugin": plugin}, function (data, textStatus, request) {
             $plugin.replaceWith(data);
         });
     }
