@@ -219,7 +219,7 @@ PHPDS.requestPage = function () {
     PHPDS.ajaxRequestBusy = true;
     PHPDS.queuedTimeout = setTimeout(function() {
         $('#ajax-loader-art').modal();
-    }, 1000);
+    }, 500);
 };
 
 /**

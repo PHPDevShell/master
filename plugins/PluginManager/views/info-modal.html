@@ -25,33 +25,56 @@
         </dl>
         <hr>
         <h5 class="muted">{{#i}}Plugin Dependency{{/i}}</h5>
-        {{^p.dependency}}
-        <div class="text-success"><strong>{{#i}}NONE{{/i}}</strong></div>
-        {{/p.dependency}}
         <div>
-            <dl class="dl-horizontal">
+            <table class="table table-condensed table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            {{#i}}Plugin Name{{/i}}
+                        </th>
+                        <th>
+                            {{#i}}Class Name{{/i}}
+                        </th>
+                        <th>
+                            {{#i}}Ready{{/i}}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
                 {{#p.dependency}}
+                    <tr>
                     {{#ready}}
-                    <dt>
-                        <span class="badge badge-success">{{plugin}}</span>&nbsp;
-                        <i class="icon-arrow-right"></i><i class="icon-ok"></i>
-                    </dt>
-                    <dd>
-                        <span class="badge badge-info">{{class}}</span>
-                    </dd>
+                        <td>
+                            <span class="text-success">{{plugin}}</span>
+                        </td>
+                        <td>
+                            <span class="text-info">{{class}}</span>
+                        </td>
+                        <td>
+                            <i class="icon-ok"></i>
+                        </td>
                     {{/ready}}
 
                     {{^ready}}
-                    <dt>
-                        <span class="badge badge-important">{{plugin}}</span>&nbsp;
-                        <i class="icon-arrow-right"></i><i class="icon-remove"></i>
-                    </dt>
-                    <dd>
-                        <span class="badge badge-info">{{class}}</span>
-                    </dd>
+                        <td>
+                            <span class="text-warning">{{plugin}}</span>
+                        </td>
+                        <td>
+                            <span class="text-error">{{class}}</span>
+                        </td>
+                        <td>
+                            <i class="icon-remove"></i>
+                        </td>
                     {{/ready}}
+                    </tr>
                 {{/p.dependency}}
-            </dl>
+                {{^p.dependency}}
+                    <tr>
+                        <td colspan="3">{{#i}}No dependencies{{/i}}</td>
+                    </tr>
+                {{/p.dependency}}
+                </tbody>
+            </table>
         </div>
         <hr>
     </div>
