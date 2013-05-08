@@ -184,7 +184,6 @@ PHPDS.errorHandler = function (message, url, line, object) {
     return true;
 };
 
-
 /**
  * Apply default formatting to the objects inside the given root element (root element is optional, defaults to BODY)
  * @param root DOM object to assign.
@@ -344,6 +343,15 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
 };
 
 /**
+ * Simple function to add a generic micro spinner to elements where required.
+ */
+PHPDS.spinner = function (size, color) {
+    size = typeof size !== 'undefined' ? size : 15;
+    color = typeof color !== 'undefined' ? 'white-loader' : 'loader';
+    return '<img class="ajax-spinner-image" src="themes/default/images/' + color + '.gif" width="' + size + '" height="' + size + '" />';
+};
+
+/**
  * Serialize an object.
  */
 (function (jQuery) {
@@ -384,7 +392,7 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
                 var item = this;
                 if (jQuery(item).hasClass('disabled')) return false;
                 jQuery(item).removeClass("btn-primary").addClass("btn-warning disabled");
-                jQuery("i", item).removeClass("icon-ok").append(spinner());
+                jQuery("i", item).removeClass("icon-ok").append(PHPDS.spinner());
                 jQuery.post($url, $this.serializeObject(item), function (data, textStatus, request) {
                     jQuery(item).stop().queue(function (refresh) {
                         jQuery(this).removeClass("disabled btn-warning").addClass("btn-primary");
@@ -508,7 +516,7 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
                 var url = jQuery(item).attr('href');
                 if (jQuery(item).hasClass('disabled')) return false;
                 jQuery(item).addClass("disabled");
-                jQuery("i", item).removeClass("icon-trash").append(spinner(size));
+                jQuery("i", item).removeClass("icon-trash").append(PHPDS.spinner(size));
                 jQuery.get(url, function (data, textStatus, request) {
                     if (data === 'true') {
                         jQuery(item).parents("tr").fadeOut('slow');
@@ -637,6 +645,7 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
                     no_results.fadeOut("slow");
                 }
             }
+
             jQuery(typeofselector).addClass('visible');
             jQuery(filterelement).keyup(function (event) {
                 //if esc is pressed or nothing is entered
@@ -754,21 +763,23 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
  * Pronto Plugin
  * @author Ben Plum
  * @modified Jason Schoeman - Modified for use in PHPDevShell.
- * @version 0.5.3
+ * @version 0.6.3
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
  */
 (function (jQuery) {
 
-    var supported = window.history && window.history.pushState && window.history.replaceState;
-    var $window = jQuery(window);
-    var currentURL = '';
+    var $window = jQuery(window),
+        supported = window.history && window.history.pushState && window.history.replaceState,
+        currentURL = '',
+        totalStates = 0;
 
     // Default Options
     var options = {
-        container: "#bg",
-        selector: '[data-via-ajax="page"]'
+        selector: '[data-via-ajax="page"]',
+        requestDelay: 0,
+        container: "#bg"
     };
 
     // Public Methods
@@ -791,45 +802,58 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
             return;
         }
 
-        history.replaceState({
-            url: window.location.href,
-            data: {
-                "title": jQuery("head").find("title").text(),
-                "content": jQuery(options.container).html()
-            }
-        }, "state-" + window.location.href, window.location.href);
-
+        // Capture current url & state
         currentURL = window.location.href;
+
+        // Set initial state
+        _saveState();
 
         // Bind state events
         $window.on("popstate", _onPop);
+
         options.$body.on("click.pronto", options.selector, _click);
     }
 
     // Handle link clicks
     function _click(e) {
         var link = e.currentTarget;
+
         // Ignore everything but normal click
-        if ((e.which > 1 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+        if (  (e.which > 1 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
             || (window.location.protocol !== link.protocol || window.location.host !== link.host)
-            || (link.hash && link.href.replace(link.hash, '') === window.location.href.replace(location.hash, '') || link.href === window.location.href + '#')
             ) {
             return;
         }
+
+        // Update state on hash change
+        if (link.hash && link.href.replace(link.hash, '') === window.location.href.replace(location.hash, '')
+            || link.href === window.location.href + '#') {
+            _saveState();
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 
-        _request(link.href);
+        if (currentURL == link.href) {
+            _saveState();
+        } else {
+            _request(link.href);
+        }
     }
 
     // Request new url
     function _request(url) {
+
+        // Fire request event
         $window.trigger("pronto.request");
+
         // Call new content
         jQuery.ajax({
             url: url + ((url.indexOf("?") > -1) ? "&via-ajax=page" : "?via-ajax=page"),
             success: function (response) {
                 _render(url, response, true);
+                totalStates++;
             },
             error: function (response) {
                 window.location.href = url;
@@ -850,34 +874,64 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
     // Handle back button
     function _onPop(e) {
         var data = e.originalEvent.state;
+
         // Check if data exists
-        if (data !== null && (data.url !== currentURL)) {
+        if (data !== null && data.url !== currentURL) {
+            // Fire request event
+            $window.trigger("pronto.request");
             _render(data.url, data.data, false);
         }
     }
 
     // Render HTML
     function _render(url, response, doPush) {
-        // Reset scrollbar
-        $window.trigger("pronto.load").scrollTop(0);
+        // Fire load event
+        $window.trigger("pronto.load");
+
         // Trigger analytics page view
         _gaCaptureView(url);
+
+        // Update current state
+        _saveState();
+
         // Update DOM
         options.$container.html(response);
-        // Push new states to the stack
+
+        // Update current url
+        currentURL = url;
+
+        // Push new states to the stack on new url
         if (doPush) {
             history.pushState({
-                url: url,
-                data: response
-            }, "state-" + url, url);
+                url: currentURL,
+                data: response,
+                scroll: 0
+            }, "state-"+currentURL, currentURL);
+        } else {
+            // Set state if moving back/forward
+            _saveState();
         }
-        currentURL = url;
+
+        // Fire render event
         $window.trigger("pronto.render");
+    }
+
+    // Save current state
+    function _saveState() {
+
+        // Update state
+        history.replaceState({
+            url: currentURL,
+            data: {
+                "title": jQuery("head").find("title").text(),
+                "content": jQuery(options.container).html()
+            }
+        }, "state-" + currentURL, currentURL);
     }
 
     // Google Analytics support
     function _gaCaptureView(url) {
-        if (typeof _gaq === "undefined") _gaq = [];
+        var _gaq = _gaq || [];
         _gaq.push(['_trackPageview'], url);
     }
 
@@ -892,14 +946,8 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
     };
 })(jQuery);
 
-function spinner(size,color) {
-    size = typeof size !== 'undefined' ? size : 15;
-    color = typeof color !== 'undefined' ? 'white-loader' : 'loader';
-    return '<img class="ajax-spinner-image" src="themes/default/images/' + color + '.gif" width="' + size + '" height="' + size + '" />';
-}
-
 /**
- * jQuery Autosize v1.16.5
+ * jQuery Autosize v1.16.7
  * (c) 2013 Jack Moore - jacklmoore.com
  * updated: 2013-02-11
  * license: http://www.opensource.org/licenses/mit-license.php
@@ -914,11 +962,12 @@ function spinner(size,color) {
         hidden = 'hidden',
         borderBox = 'border-box',
         lineHeight = 'lineHeight',
+        supportsScrollHeight,
 
-    // border:0 is unnecessary, but avoids a bug in FireFox on OSX (http://www.jacklmoore.com/autosize#comment-851)
-        copy = '<textarea tabindex="-1" style="position:absolute; top:-999px; left:0; right:auto; bottom:auto; border:0; -moz-box-sizing:content-box; -webkit-box-sizing:content-box; box-sizing:content-box; word-wrap:break-word; height:0 !important; min-height:0 !important; overflow:hidden;"/>',
+        // border:0 is unnecessary, but avoids a bug in FireFox on OSX (http://www.jacklmoore.com/autosize#comment-851)
+        copy = '<textarea tabindex="-1" style="position:absolute; top:-999px; left:0; right:auto; bottom:auto; border:0; -moz-box-sizing:content-box; -webkit-box-sizing:content-box; box-sizing:content-box; word-wrap:break-word; height:0 !important; min-height:0 !important; width: 0; overflow:hidden;"/>',
 
-    // line-height is conditionally included because IE7/IE8/old Opera do not return the correct value.
+        // line-height is conditionally included because IE7/IE8/old Opera do not return the correct value.
         copyStyle = [
             'fontFamily',
             'fontSize',
@@ -932,10 +981,10 @@ function spinner(size,color) {
         oninput = 'oninput',
         onpropertychange = 'onpropertychange',
 
-    // to keep track which textarea is being mirrored when adjust() is called.
+        // to keep track which textarea is being mirrored when adjust() is called.
         mirrored,
 
-    // the mirror element, which is used to calculate what size the mirrored element should be.
+        // the mirror element, which is used to calculate what size the mirrored element should be.
         mirror = $(copy).data('autosize', true)[0];
 
     // test that line-height can be accurately copied.
@@ -950,6 +999,10 @@ function spinner(size,color) {
 
         if (mirror.parentNode !== document.body) {
             $(document.body).append(mirror);
+
+            mirror.value = "\n\n\n";
+            mirror.scrollTop = 9e4;
+            supportsScrollHeight = mirror.scrollHeight === mirror.scrollTop + mirror.clientHeight;
         }
 
         return this.each(function () {
@@ -967,7 +1020,7 @@ function spinner(size,color) {
                 return;
             }
 
-            if ($ta.css('box-sizing') === borderBox || $ta.css('-moz-box-sizing') === borderBox || $ta.css('-webkit-box-sizing') === borderBox) {
+            if ($ta.css('box-sizing') === borderBox || $ta.css('-moz-box-sizing') === borderBox || $ta.css('-webkit-box-sizing') === borderBox){
                 boxOffset = $ta.outerHeight() - $ta.height();
             }
 
@@ -991,7 +1044,7 @@ function spinner(size,color) {
                 // original textarea.  mirror always has a height of 0.
                 // This gives a cross-browser supported way getting the actual
                 // height of the text, through the scrollTop property.
-                $.each(copyStyle, function (i, val) {
+                $.each(copyStyle, function(i, val) {
                     mirror.style[val] = $ta.css(val);
                 });
             }
@@ -1011,16 +1064,19 @@ function spinner(size,color) {
                     active = true;
                     mirror.value = ta.value + options.append;
                     mirror.style.overflowY = ta.style.overflowY;
-                    original = parseInt(ta.style.height, 10);
+                    original = parseInt(ta.style.height,10);
 
                     // Update the width in case the original textarea width has changed
                     // A floor of 0 is needed because IE8 returns a negative value for hidden textareas, raising an error.
                     mirror.style.width = Math.max($ta.width(), 0) + 'px';
 
-                    // The following three lines can be replaced with `height = mirror.scrollHeight` when dropping IE7 support.
-                    mirror.scrollTop = 0;
-                    mirror.scrollTop = 9e4;
-                    height = mirror.scrollTop;
+                    if (supportsScrollHeight) {
+                        height = mirror.scrollHeight;
+                    } else { // IE6 & IE7
+                        mirror.scrollTop = 0;
+                        mirror.scrollTop = 9e4;
+                        height = mirror.scrollTop;
+                    }
 
                     var maxHeight = parseInt($ta.css('maxHeight'), 10);
                     // Opera returns '-1px' when max-height is set to 'none'.
@@ -1037,7 +1093,7 @@ function spinner(size,color) {
                     if (original !== height) {
                         ta.style.height = height + 'px';
                         if (callback) {
-                            options.callback.call(ta);
+                            options.callback.call(ta,ta);
                         }
                     }
 
@@ -1064,13 +1120,13 @@ function spinner(size,color) {
                 ta[oninput] = adjust;
             }
 
-            $(window).resize(function () {
+            $(window).on('resize', function(){
                 active = false;
                 adjust();
             });
 
             // Allow for manual triggering if needed.
-            $ta.bind('autosize', function () {
+            $ta.on('autosize', function() {
                 active = false;
                 adjust();
             });
@@ -1080,3 +1136,598 @@ function spinner(size,color) {
         });
     };
 }(window.jQuery || window.Zepto));
+
+/*!
+ * jQuery blockUI plugin
+ * Version 2.59.0-2013.04.05
+ * @requires jQuery v1.7 or later
+ *
+ * Examples at: http://malsup.com/jquery/block/
+ * Copyright (c) 2007-2013 M. Alsup
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Thanks to Amir-Hossein Sobhi for some excellent contributions!
+ */
+(function () {
+    /*jshint eqeqeq:false curly:false latedef:false */
+    "use strict";
+
+    function setup($) {
+        $.fn._fadeIn = $.fn.fadeIn;
+
+        var noOp = $.noop || function () {
+        };
+
+        // this bit is to ensure we don't call setExpression when we shouldn't (with extra muscle to handle
+        // retarded userAgent strings on Vista)
+        var msie = /MSIE/.test(navigator.userAgent);
+        var ie6 = /MSIE 6.0/.test(navigator.userAgent) && !/MSIE 8.0/.test(navigator.userAgent);
+        var mode = document.documentMode || 0;
+        var setExpr = $.isFunction(document.createElement('div').style.setExpression);
+
+        // global $ methods for blocking/unblocking the entire page
+        $.blockUI = function (opts) {
+            install(window, opts);
+        };
+        $.unblockUI = function (opts) {
+            remove(window, opts);
+        };
+
+        // convenience method for quick growl-like notifications  (http://www.google.com/search?q=growl)
+        $.growlUI = function (title, message, timeout, onClose) {
+            var $m = $('<div class="growlUI"></div>');
+            if (title) $m.append('<h1>' + title + '</h1>');
+            if (message) $m.append('<h2>' + message + '</h2>');
+            if (timeout === undefined) timeout = 3000;
+            $.blockUI({
+                message: $m, fadeIn: 700, fadeOut: 1000, centerY: false,
+                timeout: timeout, showOverlay: false,
+                onUnblock: onClose,
+                css: $.blockUI.defaults.growlCSS
+            });
+        };
+
+        // plugin method for blocking element content
+        $.fn.block = function (opts) {
+            if (this[0] === window) {
+                $.blockUI(opts);
+                return this;
+            }
+            var fullOpts = $.extend({}, $.blockUI.defaults, opts || {});
+            this.each(function () {
+                var $el = $(this);
+                if (fullOpts.ignoreIfBlocked && $el.data('blockUI.isBlocked'))
+                    return;
+                $el.unblock({ fadeOut: 0 });
+            });
+
+            return this.each(function () {
+                if ($.css(this, 'position') == 'static') {
+                    this.style.position = 'relative';
+                    $(this).data('blockUI.static', true);
+                }
+                this.style.zoom = 1; // force 'hasLayout' in ie
+                install(this, opts);
+            });
+        };
+
+        // plugin method for unblocking element content
+        $.fn.unblock = function (opts) {
+            if (this[0] === window) {
+                $.unblockUI(opts);
+                return this;
+            }
+            return this.each(function () {
+                remove(this, opts);
+            });
+        };
+
+        $.blockUI.version = 2.59; // 2nd generation blocking at no extra cost!
+
+        // override these in your code to change the default behavior and style
+        $.blockUI.defaults = {
+            // message displayed when blocking (use null for no message)
+            message: '<h1>Please wait...</h1>',
+
+            title: null,		// title string; only used when theme == true
+            draggable: true,	// only used when theme == true (requires jquery-ui.js to be loaded)
+
+            theme: false, // set to true to use with jQuery UI themes
+
+            // styles for the message when blocking; if you wish to disable
+            // these and use an external stylesheet then do this in your code:
+            // $.blockUI.defaults.css = {};
+            css: {
+                padding: 0,
+                margin: 0,
+                width: '30%',
+                top: '40%',
+                left: '35%',
+                textAlign: 'center',
+                color: '#000',
+                border: '3px solid #aaa',
+                backgroundColor: '#fff',
+                cursor: 'wait'
+            },
+
+            // minimal style set used when themes are used
+            themedCSS: {
+                width: '30%',
+                top: '40%',
+                left: '35%'
+            },
+
+            // styles for the overlay
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.6,
+                cursor: 'wait'
+            },
+
+            // style to replace wait cursor before unblocking to correct issue
+            // of lingering wait cursor
+            cursorReset: 'default',
+
+            // styles applied when using $.growlUI
+            growlCSS: {
+                width: '350px',
+                top: '10px',
+                left: '',
+                right: '10px',
+                border: 'none',
+                padding: '5px',
+                opacity: 0.6,
+                cursor: 'default',
+                color: '#fff',
+                backgroundColor: '#000',
+                '-webkit-border-radius': '10px',
+                '-moz-border-radius': '10px',
+                'border-radius': '10px'
+            },
+
+            // IE issues: 'about:blank' fails on HTTPS and javascript:false is s-l-o-w
+            // (hat tip to Jorge H. N. de Vasconcelos)
+            /*jshint scripturl:true */
+            iframeSrc: /^https/i.test(window.location.href || '') ? 'javascript:false' : 'about:blank',
+
+            // force usage of iframe in non-IE browsers (handy for blocking applets)
+            forceIframe: false,
+
+            // z-index for the blocking overlay
+            baseZ: 1000,
+
+            // set these to true to have the message automatically centered
+            centerX: true, // <-- only effects element blocking (page block controlled via css above)
+            centerY: true,
+
+            // allow body element to be stetched in ie6; this makes blocking look better
+            // on "short" pages.  disable if you wish to prevent changes to the body height
+            allowBodyStretch: true,
+
+            // enable if you want key and mouse events to be disabled for content that is blocked
+            bindEvents: true,
+
+            // be default blockUI will supress tab navigation from leaving blocking content
+            // (if bindEvents is true)
+            constrainTabKey: true,
+
+            // fadeIn time in millis; set to 0 to disable fadeIn on block
+            fadeIn: 200,
+
+            // fadeOut time in millis; set to 0 to disable fadeOut on unblock
+            fadeOut: 400,
+
+            // time in millis to wait before auto-unblocking; set to 0 to disable auto-unblock
+            timeout: 0,
+
+            // disable if you don't want to show the overlay
+            showOverlay: true,
+
+            // if true, focus will be placed in the first available input field when
+            // page blocking
+            focusInput: true,
+
+            // suppresses the use of overlay styles on FF/Linux (due to performance issues with opacity)
+            // no longer needed in 2012
+            // applyPlatformOpacityRules: true,
+
+            // callback method invoked when fadeIn has completed and blocking message is visible
+            onBlock: null,
+
+            // callback method invoked when unblocking has completed; the callback is
+            // passed the element that has been unblocked (which is the window object for page
+            // blocks) and the options that were passed to the unblock call:
+            //	onUnblock(element, options)
+            onUnblock: null,
+
+            // callback method invoked when the overlay area is clicked.
+            // setting this will turn the cursor to a pointer, otherwise cursor defined in overlayCss will be used.
+            onOverlayClick: null,
+
+            // don't ask; if you really must know: http://groups.google.com/group/jquery-en/browse_thread/thread/36640a8730503595/2f6a79a77a78e493#2f6a79a77a78e493
+            quirksmodeOffsetHack: 4,
+
+            // class name of the message block
+            blockMsgClass: 'blockMsg',
+
+            // if it is already blocked, then ignore it (don't unblock and reblock)
+            ignoreIfBlocked: false
+        };
+
+        // private data and functions follow...
+
+        var pageBlock = null;
+        var pageBlockEls = [];
+
+        function install(el, opts) {
+            var css, themedCSS;
+            var full = (el == window);
+            var msg = (opts && opts.message !== undefined ? opts.message : undefined);
+            opts = $.extend({}, $.blockUI.defaults, opts || {});
+
+            if (opts.ignoreIfBlocked && $(el).data('blockUI.isBlocked'))
+                return;
+
+            opts.overlayCSS = $.extend({}, $.blockUI.defaults.overlayCSS, opts.overlayCSS || {});
+            css = $.extend({}, $.blockUI.defaults.css, opts.css || {});
+            if (opts.onOverlayClick)
+                opts.overlayCSS.cursor = 'pointer';
+
+            themedCSS = $.extend({}, $.blockUI.defaults.themedCSS, opts.themedCSS || {});
+            msg = msg === undefined ? opts.message : msg;
+
+            // remove the current block (if there is one)
+            if (full && pageBlock)
+                remove(window, {fadeOut: 0});
+
+            // if an existing element is being used as the blocking content then we capture
+            // its current place in the DOM (and current display style) so we can restore
+            // it when we unblock
+            if (msg && typeof msg != 'string' && (msg.parentNode || msg.jquery)) {
+                var node = msg.jquery ? msg[0] : msg;
+                var data = {};
+                $(el).data('blockUI.history', data);
+                data.el = node;
+                data.parent = node.parentNode;
+                data.display = node.style.display;
+                data.position = node.style.position;
+                if (data.parent)
+                    data.parent.removeChild(node);
+            }
+
+            $(el).data('blockUI.onUnblock', opts.onUnblock);
+            var z = opts.baseZ;
+
+            // blockUI uses 3 layers for blocking, for simplicity they are all used on every platform;
+            // layer1 is the iframe layer which is used to supress bleed through of underlying content
+            // layer2 is the overlay layer which has opacity and a wait cursor (by default)
+            // layer3 is the message content that is displayed while blocking
+            var lyr1, lyr2, lyr3, s;
+            if (msie || opts.forceIframe)
+                lyr1 = $('<iframe class="blockUI" style="z-index:' + (z++) + ';display:none;border:none;margin:0;padding:0;position:absolute;width:100%;height:100%;top:0;left:0" src="' + opts.iframeSrc + '"></iframe>');
+            else
+                lyr1 = $('<div class="blockUI" style="display:none"></div>');
+
+            if (opts.theme)
+                lyr2 = $('<div class="blockUI blockOverlay ui-widget-overlay" style="z-index:' + (z++) + ';display:none"></div>');
+            else
+                lyr2 = $('<div class="blockUI blockOverlay" style="z-index:' + (z++) + ';display:none;border:none;margin:0;padding:0;width:100%;height:100%;top:0;left:0"></div>');
+
+            if (opts.theme && full) {
+                s = '<div class="blockUI ' + opts.blockMsgClass + ' blockPage ui-dialog ui-widget ui-corner-all" style="z-index:' + (z + 10) + ';display:none;position:fixed">';
+                if (opts.title) {
+                    s += '<div class="ui-widget-header ui-dialog-titlebar ui-corner-all blockTitle">' + (opts.title || '&nbsp;') + '</div>';
+                }
+                s += '<div class="ui-widget-content ui-dialog-content"></div>';
+                s += '</div>';
+            }
+            else if (opts.theme) {
+                s = '<div class="blockUI ' + opts.blockMsgClass + ' blockElement ui-dialog ui-widget ui-corner-all" style="z-index:' + (z + 10) + ';display:none;position:absolute">';
+                if (opts.title) {
+                    s += '<div class="ui-widget-header ui-dialog-titlebar ui-corner-all blockTitle">' + (opts.title || '&nbsp;') + '</div>';
+                }
+                s += '<div class="ui-widget-content ui-dialog-content"></div>';
+                s += '</div>';
+            }
+            else if (full) {
+                s = '<div class="blockUI ' + opts.blockMsgClass + ' blockPage" style="z-index:' + (z + 10) + ';display:none;position:fixed"></div>';
+            }
+            else {
+                s = '<div class="blockUI ' + opts.blockMsgClass + ' blockElement" style="z-index:' + (z + 10) + ';display:none;position:absolute"></div>';
+            }
+            lyr3 = $(s);
+
+            // if we have a message, style it
+            if (msg) {
+                if (opts.theme) {
+                    lyr3.css(themedCSS);
+                    lyr3.addClass('ui-widget-content');
+                }
+                else
+                    lyr3.css(css);
+            }
+
+            // style the overlay
+            if (!opts.theme /*&& (!opts.applyPlatformOpacityRules)*/)
+                lyr2.css(opts.overlayCSS);
+            lyr2.css('position', full ? 'fixed' : 'absolute');
+
+            // make iframe layer transparent in IE
+            if (msie || opts.forceIframe)
+                lyr1.css('opacity', 0.0);
+
+            //$([lyr1[0],lyr2[0],lyr3[0]]).appendTo(full ? 'body' : el);
+            var layers = [lyr1, lyr2, lyr3], $par = full ? $('body') : $(el);
+            $.each(layers, function () {
+                this.appendTo($par);
+            });
+
+            if (opts.theme && opts.draggable && $.fn.draggable) {
+                lyr3.draggable({
+                    handle: '.ui-dialog-titlebar',
+                    cancel: 'li'
+                });
+            }
+
+            // ie7 must use absolute positioning in quirks mode and to account for activex issues (when scrolling)
+            var expr = setExpr && (!$.support.boxModel || $('object,embed', full ? null : el).length > 0);
+            if (ie6 || expr) {
+                // give body 100% height
+                if (full && opts.allowBodyStretch && $.support.boxModel)
+                    $('html,body').css('height', '100%');
+
+                // fix ie6 issue when blocked element has a border width
+                if ((ie6 || !$.support.boxModel) && !full) {
+                    var t = sz(el, 'borderTopWidth'), l = sz(el, 'borderLeftWidth');
+                    var fixT = t ? '(0 - ' + t + ')' : 0;
+                    var fixL = l ? '(0 - ' + l + ')' : 0;
+                }
+
+                // simulate fixed position
+                $.each(layers, function (i, o) {
+                    var s = o[0].style;
+                    s.position = 'absolute';
+                    if (i < 2) {
+                        if (full)
+                            s.setExpression('height', 'Math.max(document.body.scrollHeight, document.body.offsetHeight) - (jQuery.support.boxModel?0:' + opts.quirksmodeOffsetHack + ') + "px"');
+                        else
+                            s.setExpression('height', 'this.parentNode.offsetHeight + "px"');
+                        if (full)
+                            s.setExpression('width', 'jQuery.support.boxModel && document.documentElement.clientWidth || document.body.clientWidth + "px"');
+                        else
+                            s.setExpression('width', 'this.parentNode.offsetWidth + "px"');
+                        if (fixL) s.setExpression('left', fixL);
+                        if (fixT) s.setExpression('top', fixT);
+                    }
+                    else if (opts.centerY) {
+                        if (full) s.setExpression('top', '(document.documentElement.clientHeight || document.body.clientHeight) / 2 - (this.offsetHeight / 2) + (blah = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop) + "px"');
+                        s.marginTop = 0;
+                    }
+                    else if (!opts.centerY && full) {
+                        var top = (opts.css && opts.css.top) ? parseInt(opts.css.top, 10) : 0;
+                        var expression = '((document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop) + ' + top + ') + "px"';
+                        s.setExpression('top', expression);
+                    }
+                });
+            }
+
+            // show the message
+            if (msg) {
+                if (opts.theme)
+                    lyr3.find('.ui-widget-content').append(msg);
+                else
+                    lyr3.append(msg);
+                if (msg.jquery || msg.nodeType)
+                    $(msg).show();
+            }
+
+            if ((msie || opts.forceIframe) && opts.showOverlay)
+                lyr1.show(); // opacity is zero
+            if (opts.fadeIn) {
+                var cb = opts.onBlock ? opts.onBlock : noOp;
+                var cb1 = (opts.showOverlay && !msg) ? cb : noOp;
+                var cb2 = msg ? cb : noOp;
+                if (opts.showOverlay)
+                    lyr2._fadeIn(opts.fadeIn, cb1);
+                if (msg)
+                    lyr3._fadeIn(opts.fadeIn, cb2);
+            }
+            else {
+                if (opts.showOverlay)
+                    lyr2.show();
+                if (msg)
+                    lyr3.show();
+                if (opts.onBlock)
+                    opts.onBlock();
+            }
+
+            // bind key and mouse events
+            bind(1, el, opts);
+
+            if (full) {
+                pageBlock = lyr3[0];
+                pageBlockEls = $(':input:enabled:visible', pageBlock);
+                if (opts.focusInput)
+                    setTimeout(focus, 20);
+            }
+            else
+                center(lyr3[0], opts.centerX, opts.centerY);
+
+            if (opts.timeout) {
+                // auto-unblock
+                var to = setTimeout(function () {
+                    if (full)
+                        $.unblockUI(opts);
+                    else
+                        $(el).unblock(opts);
+                }, opts.timeout);
+                $(el).data('blockUI.timeout', to);
+            }
+        }
+
+        // remove the block
+        function remove(el, opts) {
+            var count;
+            var full = (el == window);
+            var $el = $(el);
+            var data = $el.data('blockUI.history');
+            var to = $el.data('blockUI.timeout');
+            if (to) {
+                clearTimeout(to);
+                $el.removeData('blockUI.timeout');
+            }
+            opts = $.extend({}, $.blockUI.defaults, opts || {});
+            bind(0, el, opts); // unbind events
+
+            if (opts.onUnblock === null) {
+                opts.onUnblock = $el.data('blockUI.onUnblock');
+                $el.removeData('blockUI.onUnblock');
+            }
+
+            var els;
+            if (full) // crazy selector to handle odd field errors in ie6/7
+                els = $('body').children().filter('.blockUI').add('body > .blockUI');
+            else
+                els = $el.find('>.blockUI');
+
+            // fix cursor issue
+            if (opts.cursorReset) {
+                if (els.length > 1)
+                    els[1].style.cursor = opts.cursorReset;
+                if (els.length > 2)
+                    els[2].style.cursor = opts.cursorReset;
+            }
+
+            if (full)
+                pageBlock = pageBlockEls = null;
+
+            if (opts.fadeOut) {
+                count = els.length;
+                els.fadeOut(opts.fadeOut, function () {
+                    if (--count === 0)
+                        reset(els, data, opts, el);
+                });
+            }
+            else
+                reset(els, data, opts, el);
+        }
+
+        // move blocking element back into the DOM where it started
+        function reset(els, data, opts, el) {
+            var $el = $(el);
+            els.each(function (i, o) {
+                // remove via DOM calls so we don't lose event handlers
+                if (this.parentNode)
+                    this.parentNode.removeChild(this);
+            });
+
+            if (data && data.el) {
+                data.el.style.display = data.display;
+                data.el.style.position = data.position;
+                if (data.parent)
+                    data.parent.appendChild(data.el);
+                $el.removeData('blockUI.history');
+            }
+
+            if ($el.data('blockUI.static')) {
+                $el.css('position', 'static'); // #22
+            }
+
+            if (typeof opts.onUnblock == 'function')
+                opts.onUnblock(el, opts);
+
+            // fix issue in Safari 6 where block artifacts remain until reflow
+            var body = $(document.body), w = body.width(), cssW = body[0].style.width;
+            body.width(w - 1).width(w);
+            body[0].style.width = cssW;
+        }
+
+        // bind/unbind the handler
+        function bind(b, el, opts) {
+            var full = el == window, $el = $(el);
+
+            // don't bother unbinding if there is nothing to unbind
+            if (!b && (full && !pageBlock || !full && !$el.data('blockUI.isBlocked')))
+                return;
+
+            $el.data('blockUI.isBlocked', b);
+
+            // don't bind events when overlay is not in use or if bindEvents is false
+            if (!full || !opts.bindEvents || (b && !opts.showOverlay))
+                return;
+
+            // bind anchors and inputs for mouse and key events
+            var events = 'mousedown mouseup keydown keypress keyup touchstart touchend touchmove';
+            if (b)
+                $(document).bind(events, opts, handler);
+            else
+                $(document).unbind(events, handler);
+
+            // former impl...
+            //		var $e = $('a,:input');
+            //		b ? $e.bind(events, opts, handler) : $e.unbind(events, handler);
+        }
+
+        // event handler to suppress keyboard/mouse events when blocking
+        function handler(e) {
+            // allow tab navigation (conditionally)
+            if (e.keyCode && e.keyCode == 9) {
+                if (pageBlock && e.data.constrainTabKey) {
+                    var els = pageBlockEls;
+                    var fwd = !e.shiftKey && e.target === els[els.length - 1];
+                    var back = e.shiftKey && e.target === els[0];
+                    if (fwd || back) {
+                        setTimeout(function () {
+                            focus(back);
+                        }, 10);
+                        return false;
+                    }
+                }
+            }
+            var opts = e.data;
+            var target = $(e.target);
+            if (target.hasClass('blockOverlay') && opts.onOverlayClick)
+                opts.onOverlayClick();
+
+            // allow events within the message content
+            if (target.parents('div.' + opts.blockMsgClass).length > 0)
+                return true;
+
+            // allow events for content that is not being blocked
+            return target.parents().children().filter('div.blockUI').length === 0;
+        }
+
+        function focus(back) {
+            if (!pageBlockEls)
+                return;
+            var e = pageBlockEls[back === true ? pageBlockEls.length - 1 : 0];
+            if (e)
+                e.focus();
+        }
+
+        function center(el, x, y) {
+            var p = el.parentNode, s = el.style;
+            var l = ((p.offsetWidth - el.offsetWidth) / 2) - sz(p, 'borderLeftWidth');
+            var t = ((p.offsetHeight - el.offsetHeight) / 2) - sz(p, 'borderTopWidth');
+            if (x) s.left = l > 0 ? (l + 'px') : '0';
+            if (y) s.top = t > 0 ? (t + 'px') : '0';
+        }
+
+        function sz(el, p) {
+            return parseInt($.css(el, p), 10) || 0;
+        }
+
+    }
+
+
+    /*global define:true */
+    if (typeof define === 'function' && define.amd && define.amd.jQuery) {
+        define(['jquery'], setup);
+    } else {
+        setup(jQuery);
+    }
+
+})();
+
