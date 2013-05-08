@@ -151,6 +151,7 @@
             // This can be a process and memory intensive process.
             $.post(null, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
                 $(this).removeClass("confirm-uninstall-ready");
+                changePluginStatus(plugin);
                 PHPDS.destroyPage();
             });
             return false;
@@ -196,6 +197,7 @@
                         // Phase 3 : Installing.
                     } else if (phase1.status == 'install' || phase1.status == 'reinstall') {
                         $.post(null, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
+                            changePluginStatus(plugin);
                             PHPDS.destroyPage();
                         });
                     }
@@ -210,8 +212,9 @@
     // Change a plugins styling by status
     function changePluginStatus(plugin)
     {
-        var $plugin = $('[data-plugin=' + plugin + ']');
-
-        $("", $plugin).addClass();
+        var $plugin = $("#" + plugin);
+        $.get(null, {"action": "refresh", "plugin": plugin}, function (data, textStatus, request) {
+            $plugin.replaceWith(data);
+        });
     }
 </script>

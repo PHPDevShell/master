@@ -27,7 +27,6 @@ class PluginActivation extends PHPDS_controller
         /////////////////////////////////////////////////
         // Call current plugins status from database. ///
         /////////////////////////////////////////////////
-
         $this->view->set('reporows', $this->repoRows());
         $this->view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
         $this->view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
@@ -82,6 +81,9 @@ class PluginActivation extends PHPDS_controller
                     break;
                 case 'delete':
                     return $this->repo->pluginDelete($this->G('plugin'));
+                    break;
+                case 'refresh':
+                    return $this->repoRows($this->G('plugin'));
                     break;
             }
         }
