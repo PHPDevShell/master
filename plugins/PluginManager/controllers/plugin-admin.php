@@ -12,13 +12,18 @@ class PluginActivation extends PHPDS_controller
      */
     public $repo;
 
-
+    /**
+     *
+     */
     public function onLoad()
     {
         $this->factory = $this->factory('pluginFactory');
         $this->repo    = $this->factory('pluginRepository');
     }
 
+    /**
+     * @return mixed|void
+     */
     public function execute()
     {
         // Pre-checks.
@@ -37,6 +42,10 @@ class PluginActivation extends PHPDS_controller
         $this->view->show();
     }
 
+    /**
+     * @param null $plugin
+     * @return mixed
+     */
     public function repoRows($plugin=null)
     {
         // Read plugin directory.
@@ -48,6 +57,9 @@ class PluginActivation extends PHPDS_controller
         return $this->view->getView('repo-rows.html');
     }
 
+    /**
+     * @return bool|mixed|string
+     */
     public function viaAjax()
     {
         // Repo update.
@@ -85,46 +97,46 @@ class PluginActivation extends PHPDS_controller
             }
         }
 
-        // Perform a plugin action related to database changes.
+        // Perform a plugin action related to database and file changes.
         if ($this->P('action')) {
             switch ($this->P('action')) {
                 case 'extract':
-                    return $this->repo->pluginExtraction($this->P('plugin'), $this->P('zip'));
+                    $result = $this->repo->pluginExtraction($this->P('plugin'), $this->P('zip'));
                     break;
                 case 'install':
                     $result = $this->factory->install($this->P('plugin'));
                     if ($result == true) $this->template->ok(sprintf("Plugin %s installed", $this->P('plugin')));
-                    return $result;
                     break;
                 case 'upgrade':
                     $result = $this->factory->upgrade($this->P('plugin'));
                     if ($result == true) $this->template->ok(sprintf("Plugin %s upgraded", $this->P('plugin')));
-                    return $result;
                     break;
                 case 'reinstall':
                     $result = $this->factory->reinstall($this->P('plugin'));
                     if ($result == true) $this->template->ok(sprintf("Plugin %s reinstalled", $this->P('plugin')));
-                    return $result;
                     break;
                 case 'uninstall':
                     $result = $this->factory->uninstall($this->P('plugin'));
                     if ($result == true) $this->template->ok(sprintf("Plugin %s uninstalled", $this->P('plugin')));
-                    return $result;
                     break;
                 case 'delete':
                     $result = $this->repo->pluginDelete($this->P('plugin'));
                     if ($result == true) $this->template->ok(sprintf("Plugin %s removed", $this->P('plugin')));
-                    return $result;
+                    break;
+                default:
+                    $result = null;
                     break;
             }
+            if (!empty($this->factory->log)) {
+                PU_silentHeader("ajaxPluginManagerLog: " . json_encode($this->factory->log));
+            }
+            return $result;
         }
 
         // Check for updates online for installed plugins.
         if ($this->P('update') == 'check') {
             //return $this->repo->checkOnlineUpdates();
         }
-
-        return false;
     }
 }
 

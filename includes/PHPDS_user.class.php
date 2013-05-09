@@ -364,8 +364,9 @@ class PHPDS_user extends PHPDS_dependant
 
         // Check if we need to log.
         if (!empty($log_array) && $this->configuration['system_logging'] == true) {
+            $affects = 0;
             // Set.
-            $navigation          = $this->navigation->navigation;
+            $navigation = $this->navigation->navigation;
             // Log types are :
             // 1 = OK
             // 2 = Warning
@@ -406,9 +407,14 @@ class PHPDS_user extends PHPDS_dependant
                         'node_name'         => $logged_data['node_name'],
                         'user_ip'           => $logged_data['user_ip']
                     ));
+                    $affects = $affects + $this->db->affectedRows();
                 }
             }
-            return $this->db->affectedRows();
+            if ($affects) {
+                return $affects;
+            } else {
+                return false;
+            }
         }
         return false;
     }

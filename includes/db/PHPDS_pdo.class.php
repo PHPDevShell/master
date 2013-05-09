@@ -147,7 +147,9 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
                     foreach ($params as $key => $value) {
                         if (gettype($value) == 'string') {
                             $sql = str_replace(":" . $key, "'" . $this->escape($value) . "'", $sql);
-                        } else if (gettype($value) == 'NULL') {
+                        } else if ($value === NULL) {
+                            $sql = str_replace(":" . $key, 'NULL', $sql);
+                        } else if (empty($value)) {
                             $sql = str_replace(":" . $key, '\'\'', $sql);
                         } else {
                             $sql = str_replace(":" . $key, $this->escape($value), $sql);

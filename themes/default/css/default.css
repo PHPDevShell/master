@@ -27,6 +27,10 @@ h3 code {
     padding-right: 5px;
 }
 
+#bg {
+    margin-top: 45px;
+}
+
 .error-field {
     border: 1px solid #E9322D !important;
 }
@@ -244,4 +248,12 @@ div.config-info.hero-unit {
     font-weight: normal !important;
     font-size: inherit !important;
     line-height: normal !important;
+}
+
+#repo-counter {
+    font-size: 28px;
+}
+
+#repo-counter #r-c-available, #repo-counter #r-c-installed {
+    font-size: 38px;
 }

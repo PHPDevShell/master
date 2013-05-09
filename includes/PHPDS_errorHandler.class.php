@@ -516,8 +516,14 @@ class PHPDS_errorHandler extends PHPDS_dependant
         $theme['aurl'] = $protocol . $_SERVER['SERVER_NAME'] . str_replace('/index.php', '', $_SERVER['PHP_SELF']);
 
         if (PU_isAJAX()) {
+            // Have this here otherwise you wont know what query caused an ajax error for instance.
+            if (! empty($theme['extendedMessage'])) {
+                $message_extended  = strip_tags($theme['extendedMessage']);
+            } else {
+                $message_extended  = '';
+            }
             // If the error occurred during an AJAX request, we'll send back a lightweight ouput
-            $message = $this->display ? "$message - file $filepath line $lineno" : 'Error Concealed - Disabled in config';
+            $message = $this->display ? "$message - file $filepath line $lineno || " . $message_extended : 'Error Concealed - Disabled in config';
             PU_silentHeader('Status: 500 ' . $message);
             PU_silentHeader('HTTP/1.1 500 ' . $message);
             print $message;

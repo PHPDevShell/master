@@ -2,18 +2,18 @@
 <div id="{{name}}" class="row hidden-button-bind">
     <div class="column span1">
         {{#installed}}
-        <span class="label label-success">{{#i}}ready{{/i}}</span>
+        <span class="label label-success plugin-ready">{{#i}}ready{{/i}}</span>
         {{/installed}}
 
         {{^installed}}
         {{#repo}}
-        <span class="label label-info">{{#i}}repo{{/i}}</span>
+        <span class="label label-info plugin-repo">{{#i}}repo{{/i}}</span>
         {{/repo}}
         {{/installed}}
 
         {{^installed}}
         {{#local}}
-        <span class="label label-inverse">{{#i}}local{{/i}}</span>
+        <span class="label label-inverse plugin-repo">{{#i}}local{{/i}}</span>
         {{/local}}
         {{/installed}}
 

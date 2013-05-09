@@ -215,6 +215,7 @@ class PHPDS_tagger extends PHPDS_dependant
         $this->db->prepare($sql);
         if (!empty($taggernames) && is_array($taggernames)) {
             if (!empty($target) && !empty($object)) {
+                $affects = 0;
                 foreach ($taggernames as $key => $name) {
                     if (!empty($name)) {
                         $id    = (!empty($taggerids[$key])) ? $taggerids[$key] : '';
@@ -224,9 +225,14 @@ class PHPDS_tagger extends PHPDS_dependant
                                   'tag_target' => $target, 'tag_value' => $value
                             )
                         );
+                        $affects = $affects + $this->db->affectedRows();
                     }
                 }
-                return $this->db->affectedRows();
+                if ($affects) {
+                    return $affects;
+                } else {
+                    return false;
+                }
             }
         } else {
             return false;

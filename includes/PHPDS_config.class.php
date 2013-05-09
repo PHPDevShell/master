@@ -215,8 +215,6 @@ class PHPDS_config extends PHPDS_dependant
                 VALUES  (:setting_id, :setting_value, :note)
         ";
 
-        $this->db->prepare($sql);
-
         if ($custom_prefix == '*') {
             $prefix = '%';
         } else {
@@ -224,7 +222,8 @@ class PHPDS_config extends PHPDS_dependant
         }
 
         if (is_array($write_settings)) {
-
+            $affects = 0;
+            $this->db->prepare($sql);
             foreach ($write_settings as $settings_id => $settings_value) {
 
                 if (!empty($notes[$settings_id])) {
@@ -237,10 +236,10 @@ class PHPDS_config extends PHPDS_dependant
                 $this->db->execute(array(
                     'setting_id' => $settings_id, 'setting_value' => $settings_value, 'note' => $note
                 ));
+                $affects = $affects + $this->db->affectedRows();
             }
-            $insert_settings = $this->db->affectedRows();
 
-            if ($insert_settings) {
+            if ($affects) {
                 return true;
             } else {
                 return false;

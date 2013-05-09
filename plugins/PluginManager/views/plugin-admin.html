@@ -42,9 +42,17 @@
                     </div>
                 </form>
             </div>
-            <div class="span3">
+            <div class="span2">
+                <button class="btn btn-info">
+                    <i class="icon-info-sign icon-white"></i> View last log
+                </button>
             </div>
-            <div class="span3"></div>
+            <div id="repo-counter" class="span4">
+                <span id="r-c-available" class="text-info">0</span>
+                <span class="muted">{{#i}}Plugins{{/i}}</span>,
+                <span id="r-c-installed" class="text-success">0</span>
+                <span class="muted">{{#i}}Installed{{/i}}</span>
+            </div>
         </div>
     </div>
     <div class="plugin-repo">
@@ -53,8 +61,8 @@
     <div id="new-plugin-template" class="hide">
         <div id="" class="row hidden-button-bind">
             <div class="column span1">
-                <span class="label label-info">{{#i}}repo{{/i}}</span>
-                <span class="label label-warning">{{#i}}new{{/i}}</span>
+                <span class="label label-info plugin-repo">{{#i}}repo{{/i}}</span>
+                <span class="label label-warning plugin-ready">{{#i}}new{{/i}}</span>
             </div>
             <div class="column span5">
                 <div class="plugin-name text-warning"></div>
@@ -73,12 +81,15 @@
             <div class="column span3"></div>
         </div>
     </div>
+    <div id="last-plugin-log" class="hide"></div>
 </div>
 
 <script type="text/javascript">
     $(document).ready(function () {
         var $root = $("#repository");
         var $url  = $root.attr("data-url");
+
+        countRepositoryOnce();
 
         $("#plugin-search").searchFilter("div.plugin-repo div.row");
 
@@ -110,17 +121,14 @@
                 $("#plugin-tools").removeClass("open");
                 PHPDS.destroyPage();
             });
+            refreshMenus();
             return false;
         });
 
         // Menu refresh after fresh plugin install.
         $("#menu-refresh").on("click", function () {
             if (PHPDS.ajaxRequestBusy) return false;
-            var url = $(this).attr("href");
-            $.get(url, {"via-ajax": "light+mods"}, function (data, textStatus, request) {
-                var mainnav = $("#main-nav");
-                mainnav.replaceWith(data);
-            });
+            refreshMenus();
             return false;
         });
 
@@ -138,30 +146,32 @@
             return false;
         });
 
-        // Plugin uninstall.
-        $root.one("click", ".plugin-get-uninstall", function () {
-            $(this).removeClass("btn-warning").addClass("btn-danger confirm-uninstall-ready");
-            return false;
-        });
-
-        // Plugin delete.
+        // Plugin delete warn.
         $root.one("click", ".plugin-get-delete", function () {
             $(this).removeClass("btn-warning").addClass("btn-danger confirm-delete-ready");
             return false;
         });
 
+        // Delete a plugin.
         $root.on("click", ".confirm-delete-ready", function () {
             if (PHPDS.ajaxRequestBusy) return false;
             PHPDS.requestPage();
             var plugin = $(this).data("plugin");
             $.post($url, {"action": "delete", "plugin": plugin}, function (data, textStatus, request) {
                 $(this).removeClass("confirm-delete-ready");
-                changePluginStatus(plugin, $url);
+                refreshPluginStatus(plugin, $url);
                 PHPDS.destroyPage();
             });
             return false;
         });
 
+        // Plugin uninstall warn.
+        $root.one("click", ".plugin-get-uninstall", function () {
+            $(this).removeClass("btn-warning").addClass("btn-danger confirm-uninstall-ready");
+            return false;
+        });
+
+        // Uninstall a plugin.
         $root.on("click", ".confirm-uninstall-ready", function () {
             if (PHPDS.ajaxRequestBusy) return false;
             PHPDS.requestPage();
@@ -170,7 +180,8 @@
             // This can be a process and memory intensive process.
             $.post($url, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
                 $(this).removeClass("confirm-uninstall-ready");
-                changePluginStatus(plugin, $url);
+                pluginManagerLog(request);
+                refreshPluginStatus(plugin, $url);
                 PHPDS.destroyPage();
             });
             return false;
@@ -201,12 +212,14 @@
                                             $("#progress-bar").text(phase3.message);
                                             if (phase3.status == 'install' || phase3.status == 'reinstall') {
                                                 $.post($url, {"action": phase3.status, "plugin": plugin}, function (data, textStatus, request) {
-                                                    changePluginStatus(plugin, $url);
+                                                    pluginManagerLog(request);
+                                                    refreshPluginStatus(plugin, $url);
                                                     PHPDS.destroyPage();
                                                 });
                                             }
                                         } else {
-                                            changePluginStatus(plugin, $url);
+                                            pluginManagerLog(request);
+                                            refreshPluginStatus(plugin, $url);
                                             PHPDS.destroyPage();
                                         }
                                     });
@@ -218,7 +231,8 @@
                         // Phase 3 : Installing.
                     } else if (phase1.status == 'install' || phase1.status == 'reinstall') {
                         $.post($url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
-                            changePluginStatus(plugin, $url);
+                            pluginManagerLog(request);
+                            refreshPluginStatus(plugin, $url);
                             PHPDS.destroyPage();
                         });
                     }
@@ -231,11 +245,64 @@
     });
 
     // Change a plugins styling by status
-    function changePluginStatus(plugin, url)
+    function refreshPluginStatus(plugin, url)
     {
         var $plugin = $("#" + plugin);
         $.get(url, {"action": "refresh", "plugin": plugin}, function (data, textStatus, request) {
             $plugin.replaceWith(data);
         });
+        refreshMenus();
+    }
+
+    // Update menus to current state.
+    function refreshMenus()
+    {
+        var url = $("#menu-refresh").attr("href");
+        $.get(url, {"via-ajax": "light+mods"}, function (data, textStatus, request) {
+            var mainnav = $("#main-nav");
+            mainnav.fadeOut('slow');
+            mainnav.html(data).hide();
+            mainnav.fadeIn('slow');
+            countRepositoryOnce();
+        });
+    }
+
+    // Count repository up at once.
+    function countRepositoryOnce()
+    {
+        countRepository("#r-c-available", $(".plugin-repo").size());
+        countRepository("#r-c-installed", $(".plugin-ready").size());
+    }
+
+    // Count single repository value up.
+    function countRepository(id, countto)
+    {
+        $({countNum: 0}).animate({countNum: countto}, {
+            duration: 2500,
+            easing:'swing',
+            step: function() {
+                $(id).text(Math.round(this.countNum));
+            },
+            complete: function() {}
+        });
+    }
+
+    // Get plugin manager log.
+    function pluginManagerLog(request)
+    {
+        if (typeof request == 'undefined') return false;
+        var json = request.getResponseHeader('ajaxPluginManagerLog');
+        if (json) {
+            var logs = jQuery.parseJSON(json);
+            var logs_extracted = '';
+            jQuery.each(logs, function (i, log) {
+                logs_extracted = "<p>" + logs_extracted + log + "</p>";
+            });
+            if (logs_extracted) {
+                $("#last-plugin-log").append(logs_extracted);
+
+            }
+        }
+        return true;
     }
 </script>

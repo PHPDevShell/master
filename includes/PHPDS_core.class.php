@@ -30,6 +30,7 @@ class PHPDS_core extends PHPDS_dependant
      * @var array
      */
     public $skipLogin = false;
+
     /**
      * Execute theme structure according to node type.
      */
@@ -150,7 +151,7 @@ class PHPDS_core extends PHPDS_dependant
 
         if (!empty($this->themeName)) {
             $configuration['theme_folder'] = $this->themeName;
-            $template_dir                     = 'themes/' . $configuration['theme_folder'] . '/';
+            $template_dir                  = 'themes/' . $configuration['theme_folder'] . '/';
         }
 
         try {
@@ -174,17 +175,17 @@ class PHPDS_core extends PHPDS_dependant
      *
      * @throws PHPDS_accessException
      */
-    public function startController ()
+    public function startController()
     {
         $configuration = $this->configuration;
-        $node = $configuration['m'];
+        $node          = $configuration['m'];
 
         // support for deferred, that is code running before and after a controller
         $deferred = null;
         if (is_a($node, 'iPHPDS_deferred')) {
             /* @var iPHPDS_deferred $deferred */
             $deferred = $node;
-            $node = $deferred->reduce();
+            $node     = $deferred->reduce();
         }
 
         $configuration['m'] = $this->navigation->checkNode($node);
@@ -214,7 +215,7 @@ class PHPDS_core extends PHPDS_dependant
         }
 
         // Only if we need a theme.
-        if (! empty($this->themeFile)) {
+        if (!empty($this->themeFile)) {
             $this->loadTheme();
         } else {
             print $this->data;
@@ -234,7 +235,7 @@ class PHPDS_core extends PHPDS_dependant
 
         if (is_a($e, 'PHPDS_accessException')) {
             $logger = $this->factory('PHPDS_debug', 'PHPDS_accessException');
-            $url = $this->configuration['absolute_url'] . $_SERVER['REQUEST_URI'];
+            $url    = $this->configuration['absolute_url'] . $_SERVER['REQUEST_URI'];
 
             PU_silentHeaderStatus($e->HTTPcode);
 
@@ -277,7 +278,6 @@ class PHPDS_core extends PHPDS_dependant
     {
         $navigation    = $this->navigation->navigation;
         $configuration = $this->configuration;
-        $result        = false;
 
         // Node Types:
         // 1. Standard Page from Plugin
@@ -457,13 +457,13 @@ class PHPDS_core extends PHPDS_dependant
                 // HTTP URL.
                 case 5:
                     $result = true;
-                        // Redirect to external http url.
+                    // Redirect to external http url.
                     $this->navigation->redirect($navigation[$node_id]['node_link']);
                     break;
                 // iFrame.
                 case 7:
                     $result = true;
-                        // Clean up height.
+                    // Clean up height.
                     $height = preg_replace('/px/i', '', $navigation[$node_id]['extend']);
                     // Create Iframe.
                     $this->data = $this->template->mod->iFrame($navigation[$node_id]['node_link'], $height, '100%');
@@ -537,9 +537,9 @@ class PHPDS_core extends PHPDS_dependant
     /**
      * Will attempt to load controller file from specific node locations and create its MVC structure.
      *
-     * @param int   $node_id
-     * @param string $include_query if set, load the query file before the controller is run (either a prefix or true for default "query" prefix) - default is not to
-     * @param string $include_view  if set, run the view file after the controller is run (a prefix) ; default is the "view" prefix)
+     * @param int    $node_id
+     * @param string $include_query  if set, load the query file before the controller is run (either a prefix or true for default "query" prefix) - default is not to
+     * @param string $include_view   if set, run the view file after the controller is run (a prefix) ; default is the "view" prefix)
      * @param string $include_model  |boolean $include_view if set, run the view file after the controller is run (a prefix) ; default is the "view" prefix)
      *
      * @throws PHPDS_exception
@@ -560,9 +560,9 @@ class PHPDS_core extends PHPDS_dependant
             // Query
             if ($include_query) {
                 $this->loadFile($plugin_folder . 'models/' . preg_replace(
-                    "/.php/",
-                    '.' . $include_query . '.php',
-                    $node_link)
+                        "/.php/",
+                        '.' . $include_query . '.php',
+                        $node_link)
                 );
             }
 
@@ -571,10 +571,9 @@ class PHPDS_core extends PHPDS_dependant
                 $model_ = $this->loadFile($plugin_folder . 'models/' . preg_replace(
                     "/.php/",
                     '.' . $include_model . '.php',
-                    $node_link))
-                ;
+                    $node_link));
                 if (is_string($model_) && class_exists($model_)) {
-                    $model = $this->factory($model_);
+                    $model          = $this->factory($model_);
                     $model->extends = true;
                 } else {
                     $model = $this->factory($this->configuration['event']['model']);
@@ -584,12 +583,12 @@ class PHPDS_core extends PHPDS_dependant
             // View
             if ($include_view) {
                 $view_ = $this->loadFile($plugin_folder . 'views/' . preg_replace(
-                    "/.php/",
-                    '.' . $include_view . '.php',
-                    $node_link)
+                        "/.php/",
+                        '.' . $include_view . '.php',
+                        $node_link)
                 );
                 if (is_string($view_) && class_exists($view_)) {
-                    $view = $this->factory($view_);
+                    $view          = $this->factory($view_);
                     $view->extends = true;
                 } else {
                     $view = $this->factory($this->configuration['event']['view']);
@@ -598,15 +597,15 @@ class PHPDS_core extends PHPDS_dependant
 
             // Controller
             $active_dir = $plugin_folder . '%s' . $node_link;
-            $control_    = $this->loadFile(sprintf($active_dir, 'controllers/'));
+            $control_   = $this->loadFile(sprintf($active_dir, 'controllers/'));
             if ($control_ === false) {
                 $control_ = $this->loadFile(sprintf($active_dir, ''));
             }
 
             if (is_string($control_) && class_exists($control_)) {
-                $controller         = $this->factory($control_);
-                $controller->model  = $model;
-                $controller->view   = $view;
+                $controller        = $this->factory($control_);
+                $controller->model = $model;
+                $controller->view  = $view;
                 $controller->run();
             }
 
@@ -695,8 +694,8 @@ class PHPDS_core extends PHPDS_dependant
      * This methods allows you to load translation by giving their locations and name.
      *
      * @param string $mo_directory This is the location where language mo file is found.
-     * @param string $mo_filename The mo filename the translation is compiled in.
-     * @param string $textdomain The actual text domain identifier.
+     * @param string $mo_filename  The mo filename the translation is compiled in.
+     * @param string $textdomain   The actual text domain identifier.
      */
     protected function loadTranslation($mo_directory, $mo_filename, $textdomain)
     {
@@ -789,10 +788,10 @@ class PHPDS_core extends PHPDS_dependant
     /**
      * Assumes role of loading files.
      *
-     * @param string $path
-     * @param boolean $required Should the file be required or else included.
-     * @param boolean $relative Is this a relative path, if true, it will be converted to absolute path.
-     * @param boolean $once_only Should it be called only once?
+     * @param string  $path
+     * @param boolean $required      Should the file be required or else included.
+     * @param boolean $relative      Is this a relative path, if true, it will be converted to absolute path.
+     * @param boolean $once_only     Should it be called only once?
      * @param boolean $from_template Should it be called only once?
      *
      * @return mixed whatever the file returned when executed or false if it couldn't be found
@@ -816,9 +815,9 @@ class PHPDS_core extends PHPDS_dependant
 
         if (file_exists($path)) {
             if ($required) {
-                if (!empty($once_only)) $result = require_once ($path); else $result = require ($path);
+                if (!empty($once_only)) $result = require_once($path); else $result = require($path);
             } else {
-                if (!empty($once_only)) $result = include_once ($path); else $result = include ($path);
+                if (!empty($once_only)) $result = include_once($path); else $result = include($path);
             }
         } else {
             if ($required) throw new PHPDS_exception('Trying to load a non-existant file: "' . $path . '"');

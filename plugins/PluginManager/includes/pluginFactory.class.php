@@ -157,10 +157,6 @@ class pluginFactory extends PHPDS_dependant
     {
         $configuration = $this->configuration;
         $navigation    = $this->navigation;
-        $config        = $this->config;
-
-        // Get default and empty theme id's.
-        $themes_array = $config->getSettings(array('default_theme_id'), 'PluginManager');
 
         // Assign nodes q to install.
         $nodes_array = $this->plugin->install->nodes;
@@ -221,12 +217,13 @@ class pluginFactory extends PHPDS_dependant
                         } else if (!empty($node['parentnodeid'])) {
                             $parent_id = $node['parentnodeid'];
                         } else {
-                            $parent_id = null;
+                            $parent_id = 0;
                         }
                     } else {
                         // This must be a root item then.
-                        $parent_id = null;
+                        $parent_id = 0;
                     }
+                    if (empty($parent_id)) $parent_id =(string)0;
 
                     // Link to original plugin item or parent plugin item script.
                     if (!empty($node['symlink'])) {
@@ -234,11 +231,11 @@ class pluginFactory extends PHPDS_dependant
                         if (empty($navigation->navigation["{$extend_to}"]))
                             $extend_to = $this->nodeHelper->createNodeId($plugin_folder, $node['symlink']);
                     } else {
-                        $extend_to = '';
+                        $extend_to = null;
                     }
 
                     // Create custom node name.
-                    $node_name = PU_safeName($node['name']);
+                    $node_name = $node['name'];
 
                     // Create node type.
                     if (!empty($node['type'])) {
@@ -253,7 +250,7 @@ class pluginFactory extends PHPDS_dependant
                         $alias = PU_safeName($navigation->determineNodeName($node['alias'],
                             PU_replaceAccents($node_name_), $node_id));
                     } else {
-                        $alias = false;
+                        $alias = null;
                     }
 
                     // What type of node extension should be used.
@@ -271,7 +268,7 @@ class pluginFactory extends PHPDS_dependant
                             $extend = (string)$node['height'];
                             break;
                         default:
-                            $extend = false;
+                            $extend = null;
                             break;
                     }
 
@@ -294,10 +291,10 @@ class pluginFactory extends PHPDS_dependant
 
                     // Create a theme id or use default.
                     if (empty($node['theme'])) {
-                        $node_theme_insert = $themes_array['default_theme_id'];
+                        $node_theme_insert = $this->configuration->default_theme_id;
                     } else {
                         // Get a unique id.
-                        $node_theme_insert = PU_nameToId($node['theme']);
+                        $node_theme_insert = $node['theme'];
                         // Check if item needs to be created.
                         if ($last_node_theme_insert != $node_theme_insert) {
                             // Create a new node item...
@@ -315,14 +312,14 @@ class pluginFactory extends PHPDS_dependant
                     if (!empty($node['layout'])) {
                         $layout = (string)$node['layout'];
                     } else {
-                        $layout = '';
+                        $layout = null;
                     }
 
                     // Params
                     if (!empty($node['params'])) {
                         $params = (string)$node['params'];
                     } else {
-                        $params = '';
+                        $params = null;
                     }
 
                     ////////////////////////////////
@@ -402,7 +399,7 @@ class pluginFactory extends PHPDS_dependant
 		  VALUES        (:user_role_id, :node_id)
         ";
 
-        return $this->db->affectedRows($sql, array('user_role_id' => $user_role_id, 'node_id' => $node_id));
+        return $this->db->queryAffects($sql, array('user_role_id' => $user_role_id, 'node_id' => $node_id));
     }
 
     /**

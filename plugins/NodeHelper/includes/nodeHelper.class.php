@@ -113,18 +113,19 @@ class nodeHelper extends PHPDS_dependant
 
         $db = $this->db;
 
-        $db->prepare($sql);
-
         // Initiate starting point with node array.
         $this->nodeArray();
 
         // Submit results to database.
         if (!empty($this->databaseInsert)) {
+
             // Clear previous results.
             $db->query("DELETE FROM _db_core_node_structure");
 
             // Reset auto increment counter.
             $db->query("ALTER TABLE _db_core_node_structure AUTO_INCREMENT = 0;");
+
+            $db->prepare($sql);
 
             // Insert new results.
             if (!empty($this->databaseInsert) && is_array($this->databaseInsert)) {
@@ -220,7 +221,6 @@ class nodeHelper extends PHPDS_dependant
 
     /**
      * Insert a new node item in database.
-     *
      */
     public function insertNode(
         $node_id = null, $parent_node_id, $node_name, $node_link, $plugin, $node_type, $extend = false,
@@ -299,12 +299,11 @@ class nodeHelper extends PHPDS_dependant
     }
 
     /**
-     * Convert file location to unsigned CRC32 value.
-     * This is unique and allows one to locate a node item from location as well.
+     * This is a unique and allows one to locate a node item from location as well.
      *
      * @param string $plugin_folder The plugin folder the file is in.
      * @param string $link          Actual file link.
-     * @return integer
+     * @return integer|string
      * @author Jason Schoeman
      */
     public function createNodeId($plugin_folder, $link)
@@ -319,13 +318,18 @@ class nodeHelper extends PHPDS_dependant
         $db         = $this->db;
         $node_id_db = $db->querySingle($sql, array('node_link' => $link, 'plugin' => $plugin_folder));
 
+        // Before we create a node id, we need to check if it is available already.
+        // If it is, we need to get it and return this value rather.
         if (!empty($node_id_db)) {
             return $node_id_db;
-        } else {
-            // Before we create a node id, we need to check if it is available already.
-            // If it is, we need to get it and return this value rather.
+        } else if (!empty($plugin_folder)) {
+            $new_id = $plugin_folder . "-" . $link;
+            $new_id = preg_replace("/.php/", '', $new_id);
+            $new_id = PU_safeName($new_id);
             // Create node id from string.
-            return sprintf('%u', crc32(str_ireplace('/', '', $plugin_folder . $link)));
+            return $new_id;
+        } else {
+            return 0;
         }
     }
 

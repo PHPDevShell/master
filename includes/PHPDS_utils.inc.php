@@ -480,19 +480,28 @@ function PU_rightTrim($str, $remove = null)
  *
  * @param string $name
  * @param string $replace Replace odd characters with what?
+ * @param bool   $lowercase Should string be converted to lowercase?
  *
  * @return string
  */
-function PU_safeName($name, $replace = '-')
+function PU_safeName($name, $replace = '-', $lowercase=true)
 {
     $search            = array('--', '&trade;', '&quot;', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '+', '{', '}', '|', ':', '"', '<', '>', '?', '[', ']', '\\', ';', "'", ',', '.', '/', '*', '+', '~', '`', '=', ' ');
-    $new_replaced_name = strtolower(str_replace($search, $replace, $name));
+    $new_replaced_name = str_replace($search, $replace, $name);
     if (!empty($new_replaced_name)) {
-        return $new_replaced_name;
+        // cleanup
+        $safe_string = trim($new_replaced_name, $replace);
+        $safe_string = preg_replace("/$replace+/", $replace, $safe_string);
+        if ($lowercase)
+            return strtolower($safe_string);
+        else
+            return $safe_string;
     } else {
         return false;
     }
 }
+
+
 
 /**
  * Replaces accents with plain text for a given string.
@@ -502,7 +511,7 @@ function PU_safeName($name, $replace = '-')
  */
 function PU_replaceAccents($string)
 {
-    return str_replace(array('à', 'á', 'â', 'ã', 'ä', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ù', 'Ú', 'Û', 'Ü', 'Ý'), array('a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'A', 'A', 'A', 'A', 'A', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'N', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y'), $string);
+    return strtr($string,'àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ','aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
 }
 
 /**

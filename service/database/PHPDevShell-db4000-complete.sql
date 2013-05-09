@@ -4,7 +4,7 @@
 -- ****************************************************************************************
 
 CREATE TABLE `_db_core_cron` (
-  `node_id`   VARCHAR(64) NOT NULL,
+  `node_id`   VARCHAR(255) NOT NULL,
   `cron_desc` VARCHAR(255) DEFAULT NULL,
   `cron_type` INT(1) DEFAULT NULL,
   `log_cron`  INT(1) DEFAULT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE `_db_core_cron` (
 CREATE TABLE `_db_core_filter` (
   `search_id`     INT(255) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id`       INT(20) DEFAULT NULL,
-  `node_id`       VARCHAR(64)       NOT NULL,
+  `node_id`       VARCHAR(255)       NOT NULL,
   `filter_search` VARCHAR(255) DEFAULT NULL,
   `filter_order`  VARCHAR(5) DEFAULT NULL,
   `filter_by`     VARCHAR(255) DEFAULT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE `_db_core_logs` (
   `log_time`          INT(10) DEFAULT NULL,
   `user_id`           INT(30) DEFAULT NULL,
   `user_display_name` VARCHAR(255) DEFAULT NULL,
-  `node_id`           VARCHAR(64)      NOT NULL,
+  `node_id`           VARCHAR(255)      NOT NULL,
   `file_name`         VARCHAR(255) DEFAULT NULL,
   `node_name`         VARCHAR(255) DEFAULT NULL,
   `user_ip`           VARCHAR(30) DEFAULT NULL,
@@ -52,8 +52,8 @@ CREATE TABLE `_db_core_logs` (
 
 -- Create table for default node items.;
 CREATE TABLE `_db_core_node_items` (
-  `node_id`        VARCHAR(64) NOT NULL,
-  `parent_node_id` VARCHAR(64) DEFAULT NULL,
+  `node_id`        VARCHAR(255) NOT NULL,
+  `parent_node_id` VARCHAR(255) DEFAULT NULL,
   `node_name`      VARCHAR(255) DEFAULT NULL,
   `node_link`      VARCHAR(255) DEFAULT NULL,
   `plugin`         VARCHAR(255) DEFAULT NULL,
@@ -81,7 +81,7 @@ INSERT INTO `_db_core_node_items` VALUES ('plugin-admin', '0', 'Plugins', 'plugi
 -- Create node tree structure.;
 CREATE TABLE `_db_core_node_structure` (
   `id`        INT(50) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `node_id`   VARCHAR(64)      NOT NULL,
+  `node_id`   VARCHAR(255) NOT NULL,
   `is_parent` INT(1) DEFAULT NULL,
   `type`      INT(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -244,7 +244,7 @@ INSERT INTO `_db_core_user_roles` VALUES ('4', 'Disabled', null);
 -- Create security role permissions table.;
 CREATE TABLE `_db_core_user_role_permissions` (
   `user_role_id` INT(10)     NOT NULL DEFAULT '0',
-  `node_id`      VARCHAR(64) NOT NULL,
+  `node_id`      VARCHAR(255) NOT NULL,
   PRIMARY KEY (`user_role_id`, `node_id`)
 )
   ENGINE = InnoDB
