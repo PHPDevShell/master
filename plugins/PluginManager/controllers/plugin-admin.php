@@ -36,6 +36,7 @@ class PluginActivation extends PHPDS_controller
         $this->view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
         $this->view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
         $this->view->set('updatemenus', $this->navigation->selfUrl('update=menus'));
+        $this->view->set('viewlogs', $this->navigation->selfUrl('view=logs'));
         $this->view->set('updatelocal', $this->navigation->selfUrl());
 
         // Output Template.
@@ -69,15 +70,18 @@ class PluginActivation extends PHPDS_controller
 
         // Refresh menus.
         if ($this->G('update') == 'menus') {
-            $this->template->outputMenu();
+            return $this->template->outputMenu();
         }
 
         // Read plugin config.
         if ($this->G('info')) {
-            $modalinfo = $this->repo->pluginModalInfo($this->G('plugin'));
+            $modalinfo = $this->repo->pluginConfig($this->G('plugin'));
             if ($modalinfo) {
                 $this->view->set('p', $modalinfo);
                 return $this->view->getView('info-modal.html');
+            } else {
+                $this->template->critical(sprintf(__('Could not download or locate config for %s'),
+                    $this->G('plugin')));
             }
         }
 
@@ -85,14 +89,27 @@ class PluginActivation extends PHPDS_controller
         if ($this->G('action')) {
             switch ($this->G('action')) {
                 // Will download and move to plugin folder if required.
+                case 'dependencies':
+                    return $this->repo->pluginDependsCollector($this->G('plugin'));
+                    break;
                 case 'prepare':
+                    $result = $this->repo->pluginPrepare($this->G('plugin'));
+                    if ($result == false)
+                        $this->template->critical(sprintf(__('Could not prepare plugin %s'),
+                            $this->G('plugin')));
                     return $this->repo->pluginPrepare($this->G('plugin'));
                     break;
                 case 'download':
-                    return $this->repo->pluginPrepareDownload($this->G('plugin'));
+                    $result = $this->repo->pluginPrepareDownload($this->G('plugin'));
+                    if ($result == false)
+                        $this->template->critical(sprintf(__('Could not download or locate plugin %s'),
+                            $this->G('plugin')));
                     break;
                 case 'refresh':
                     return $this->repoRows($this->G('plugin'));
+                    break;
+                case 'update':
+                    return $this->checkUpdates($this->G('plugin'));
                     break;
             }
         }
@@ -133,10 +150,7 @@ class PluginActivation extends PHPDS_controller
             return $result;
         }
 
-        // Check for updates online for installed plugins.
-        if ($this->P('update') == 'check') {
-            //return $this->repo->checkOnlineUpdates();
-        }
+        return 'no get or post matched';
     }
 }
 

@@ -239,18 +239,18 @@ class pluginRepository extends PHPDS_dependant
         return $repodata['plugins'];
     }
 
-    public function pluginModalInfo($plugin)
+    public function pluginConfig($plugin)
     {
         $plugin_exists = $this->pluginExistsLocally($plugin);
 
         if ($plugin_exists) {
-            $modal = $this->modalInfoLocal($plugin_exists);
+            $cfg = $this->pluginConfigLocal($plugin_exists);
         } else {
-            $modal = $this->modalInfoGithubRemote($plugin);
+            $cfg = $this->pluginConfigGithubRemote($plugin);
         }
 
-        if (isset($modal) && is_array($modal)) {
-            return $modal;
+        if (isset($cfg) && is_array($cfg)) {
+            return $cfg;
         } else {
             return false;
         }
@@ -267,7 +267,7 @@ class pluginRepository extends PHPDS_dependant
         }
     }
 
-    private function modalInfoLocal($xmlcfgfile)
+    private function pluginConfigLocal($xmlcfgfile)
     {
         $xml = @simplexml_load_file($xmlcfgfile);
         if (!isset($xml) && !is_array($xml)) {
@@ -277,7 +277,7 @@ class pluginRepository extends PHPDS_dependant
         return $this->xmlPluginConfigToArray($xml);
     }
 
-    private function modalInfoGithubRemote($plugin)
+    private function pluginConfigGithubRemote($plugin)
     {
         $remote_repo = $this->readOriginalJsonRepo();
         $data        = false;
@@ -308,7 +308,7 @@ class pluginRepository extends PHPDS_dependant
         return false;
     }
 
-    private function generateCurlResponse ($ch, $url)
+    private function generateCurlResponse($ch, $url)
     {
         $curl_errornr = curl_errno($ch);
         $curl_error   = curl_error($ch);
@@ -386,12 +386,33 @@ class pluginRepository extends PHPDS_dependant
         return $depends_on;
     }
 
+    public function pluginDependsCollector($plugin)
+    {
+        $cfg = $this->pluginConfig($plugin);
+        if (empty($cfg)) {
+            $error = sprintf(__('%s config xml could not be loaded'), $plugin);
+            $this->template->critical($error);
+            return false;
+        }
+
+        if (! empty($cfg['dependency']) && is_array($cfg['dependency'])) {
+            foreach($cfg['dependency'] as $dep) {
+                if (empty($dep['ready'])) $install[] = $dep['plugin'];
+            }
+            if (!empty($install)) return json_encode($install);
+        }
+        return json_encode(array($plugin));
+    }
+
     public function pluginDelete($plugin)
     {
-        if (empty($plugin)) throw new PHPDS_exception('No plugin name provided');
+        if (empty($plugin)) {
+            $this->template->critical(__('No plugin name provided'));
+            return false;
+        }
         $dir = $this->configuration['absolute_path'] . 'plugins/' . $plugin . DIRECTORY_SEPARATOR;
         if (!is_dir($dir) || !is_writable($dir)) {
-            $this->template->critical(sprintf("Permission denied to deleting: %s", $dir));
+            $this->template->critical(sprintf(__("Permission denied to deleting: %s"), $dir));
             return false;
         }
         return $this->recursiveFolderDelete($dir);
@@ -491,7 +512,8 @@ class pluginRepository extends PHPDS_dependant
                 if (file_exists($wrong_name))
                     if (!rename($wrong_name, $new_name)) return false;
                 if (!file_exists($new_name)) {
-                    throw new PHPDS_exception(sprintf("There was a problem creating plugin in %s", $new_name));
+                    $this->template->critical(sprintf("There was a problem creating plugin in %s", $new_name));
+                    return false;
                 }
                 if ($results) {
                     return $this->pluginPrepareReadyLocally();

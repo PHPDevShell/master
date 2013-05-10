@@ -249,11 +249,3 @@ div.config-info.hero-unit {
     font-size: inherit !important;
     line-height: normal !important;
 }
-
-#repo-counter {
-    font-size: 28px;
-}
-
-#repo-counter #r-c-available, #repo-counter #r-c-installed {
-    font-size: 38px;
-}

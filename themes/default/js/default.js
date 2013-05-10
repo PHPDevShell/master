@@ -238,20 +238,25 @@ PHPDS.destroyPage = function () {
 PHPDS.ajaxErrorHandler = function () {
     PHPDS.root.ajaxError(function (e, jqXHR, settings, exception) {
         var url = jQuery(location).attr('href');
-        if (jqXHR.status == 401) {
-            location.href = url;
-            throw new Error('Unauthorized');
-        }
-        if (jqXHR.status == 403) {
-            location.href = url;
-            throw new Error('Login Required');
-        }
-        if (jqXHR.status == 404) {
-            //location.href = url;
-        }
-        if (jqXHR.status == 418) {
-            location.href = url;
-            throw new Error('Spam detected');
+
+        switch (jqXHR.status) {
+            case 401:
+                location.href = url;
+                throw new Error('Unauthorized');
+                break;
+            case 403:
+                location.href = url;
+                throw new Error('Login Required');
+                break;
+            case 404:
+                PHPDS.destroyPage();
+                break;
+            case 418:
+                location.href = url;
+                throw new Error('Spam detected');
+                break;
+            default:
+                PHPDS.destroyPage();
         }
     });
 };

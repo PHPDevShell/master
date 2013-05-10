@@ -686,6 +686,7 @@ class pluginFactory extends PHPDS_dependant
                     // Execute query.
                     $db->query($query_array);
                     // Show execution.
+                    $query_array = preg_replace('/\r|\n|\s+/', ' ', $query_array);
                     $this->log[] = sprintf(__("Executed install query for %s : %s.", 'PluginManager'),
                         $plugin_folder, $query_array);
                 }
@@ -798,10 +799,12 @@ class pluginFactory extends PHPDS_dependant
                         // Execute query.
                         $db->query($query_array);
                         // Show execution.
-                        if ($this->action != 'install') $this->log[] =
-                            sprintf(__("Executed uninstalled query for %s : %s", 'PluginManager'),
-                                $plugin_folder, $query_array);
-
+                        if ($this->action != 'install') {
+                            $query_array = preg_replace('/\r|\n|\s+/', ' ', $query_array);
+                            $this->log[] =
+                                sprintf(__("Executed uninstalled query for %s : %s", 'PluginManager'),
+                                    $plugin_folder, $query_array);
+                        }
                     }
                 }
             }
@@ -859,6 +862,7 @@ class pluginFactory extends PHPDS_dependant
                         if (!empty($upgrade_query_)) {
                             // Execute upgrade query.
                             $db->query($upgrade_query_);
+                            $upgrade_query_ = preg_replace('/\r|\n|\s+/', ' ', $upgrade_query_);
                             $this->log[] = sprintf(__("Executed upgrade query for %s : %s", 'PluginManager'),
                                 $plugin_folder, $upgrade_query_);
                         }
