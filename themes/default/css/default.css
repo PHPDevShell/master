@@ -218,28 +218,28 @@ div.plugin-manager {
     margin-top: 20px;
 }
 
-div.plugin-repo .row {
+div#plugin-repo .row {
     border-top: 1px dashed #CCC;
 }
 
-div.plugin-repo .column {
+div#plugin-repo .column {
     padding: 15px 0;
 }
 
-div.plugin-repo .plugin-name {
+div#plugin-repo .plugin-name {
     font-size: 32px;
     padding-bottom: 10px;
 }
 
-div.plugin-repo .plugin-short-description {
+div#plugin-repo .plugin-short-description {
     font-size: 18px;
 }
 
-div.plugin-repo .alert {
+div#plugin-repo .alert {
     margin-bottom: 0;
 }
 
-div.plugin-repo button {
+div#plugin-repo button {
     margin-bottom: 5px;
 }
 

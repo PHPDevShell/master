@@ -43,7 +43,7 @@
                 </form>
             </div>
             <div class="span2">
-                <a href="{{viewlogs}}" id="latest-log" class="lead hide">{{#i}}View last log{{/i}}</a>
+                <a id="latest-log" href="{{viewlogs}}" class="lead hide">{{#i}}View last log{{/i}}</a>
             </div>
             <div id="repo-counter" class="span6">
                 <span id="r-c-available" class="text-info lead">0</span>
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-    <div class="plugin-repo">
+    <div id="plugin-repo">
         {{{reporows}}}
     </div>
     <div id="new-plugin-template" class="hide">
@@ -66,7 +66,7 @@
                 <div class="plugin-name text-warning"></div>
                 <div class="plugin-short-description muted"></div>
             </div>
-            <div class="column span6">
+            <div class="column span3">
                 <div class="hide">
                     <button data-plugin="" title="{{#i}}Info{{/i}}" class="plugin-get-info btn btn-info">
                         <i class="icon-info-sign icon-white"></i>
@@ -98,7 +98,7 @@
 
         countRepositoryOnce();
 
-        $("#plugin-search").searchFilter("div.plugin-repo div.row");
+        $("#plugin-search").searchFilter("div#plugin-repo div.row");
 
         $root.on('mouseenter', ".hidden-button-bind", function (event) {
             $(".hide", this).show();
@@ -117,12 +117,13 @@
                     var results  = $.parseJSON(data);
                     var template = $("#new-plugin-template");
                     $.each(results, function(i, item) {
-                        $(template).attr("data-plugin", i);
+                        $(".plugin-get-info", template).attr("data-plugin", i);
+                        $(".plugin-get-install", template).attr("data-plugin", i);
                         $(".hidden-button-bind", template).attr("id", i);
                         $(".plugin-name", template).text(i);
                         $(".plugin-short-description", template).text(item.desc);
                         var newplugin = template.html();
-                        $(".plugin-repo").prepend(newplugin);
+                        $("#plugin-repo").prepend(newplugin);
                     });
                 }
                 $("#plugin-tools").removeClass("open");
@@ -195,22 +196,6 @@
                 pluginManagerLog(request);
                 refreshPluginStatus(plugin, $url);
                 PHPDS.destroyPage();
-            });
-            return false;
-        });
-
-        // Plugin download+install.
-        $root.on('click', ".plugin-get-install", function () {
-            if (PHPDS.ajaxRequestBusy) return false;
-            PHPDS.requestPage();
-            var plugin = $(this).data("plugin");
-
-            // Get dependencies
-            $.get($url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
-                var depends = jQuery.parseJSON(data);
-                jQuery.each(depends, function (i, plugin_) {
-                    installPlugin($url, plugin_);
-                });
             });
             return false;
         });
@@ -329,7 +314,7 @@
                                         // Phase 3 : Installing.
                                         var phase3 = $.parseJSON(data);
                                         $("#progress-bar").text(phase3.message);
-                                        if (phase3.status == 'install' || phase3.status == 'reinstall') {
+                                        if (phase3.status == 'install') {
                                             $.post($url, {"action": phase3.status, "plugin": plugin}, function (data, textStatus, request) {
                                                 pluginManagerLog(request);
                                                 refreshPluginStatus(plugin, $url);

@@ -87,6 +87,8 @@ class PluginActivation extends PHPDS_controller
 
         // This set of actions is normally runs in sequence once after the other as required.
         if ($this->G('action')) {
+
+            $result = false;
             switch ($this->G('action')) {
                 // Will download and move to plugin folder if required.
                 case 'dependencies':
@@ -97,7 +99,6 @@ class PluginActivation extends PHPDS_controller
                     if ($result == false)
                         $this->template->critical(sprintf(__('Could not prepare plugin %s'),
                             $this->G('plugin')));
-                    return $this->repo->pluginPrepare($this->G('plugin'));
                     break;
                 case 'download':
                     $result = $this->repo->pluginPrepareDownload($this->G('plugin'));
@@ -112,6 +113,7 @@ class PluginActivation extends PHPDS_controller
                     return $this->checkUpdates($this->G('plugin'));
                     break;
             }
+            return $result;
         }
 
         // Perform a plugin action related to database and file changes.
@@ -150,7 +152,7 @@ class PluginActivation extends PHPDS_controller
             return $result;
         }
 
-        return 'no get or post matched';
+        return false;
     }
 }
 

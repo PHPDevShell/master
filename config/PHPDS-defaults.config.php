@@ -269,7 +269,27 @@ $configuration['locale_format'] = '{lang}_{region}{charset}';
  * This is the repository the plugin manager will use to check for updates or install new plugins.
  * @global string
  */
-$configuration['repository'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
+$configuration['repository']['url'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
+
+/**
+ * Allows you to update and install plugins from a private repository. As an example;
+ * Say you purchase a commercial plugin, the owner should then add your Github username to his private repo giving
+ * you read only access. Use your default github username and password and you will be able to update/install normal.
+ * @global string
+ */
+$configuration['repository']['username'] = 'TitanKing';
+$configuration['repository']['password'] = 'lister789';
+
+/**
+ * Allows you to add additional repository plugins into the online repository queue. As an example;
+ * Say you purchase a commercial plugin, the owner will provide you with additional repository plugins that is not
+ * in the public queue. You will then have these available to install and update.
+ */
+$configuration['repository']['plugins'] = array(
+    'FineSamle1'    => array('desc' => 'Just a test', 'repo' => 'https://github.com/TitanKing/FineSamle1')
+    //'PluginName'    => array('desc' => 'Plugin Description', 'repo' => 'https://github.com/PHPDevShell/PluginName'),
+    //'Example'       => array('desc' => 'ExamplePlugin', 'repo' => 'https://github.com/PHPDevShell/Example')
+);
 
 /**
  * Allows a developer to override/extend a core class with his own.
