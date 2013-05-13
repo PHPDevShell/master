@@ -110,7 +110,7 @@
         // Repository update.
         $(".repo-refresh").on('click', function() {
             if (PHPDS.ajaxRequestBusy) return false;
-            PHPDS.requestPage();
+            PHPDS.requestPage(100);
             var url = $(this).attr("data-update-url");
             $.get(url, function (data, textStatus, request) {
                 if (data !== 'false') {
@@ -127,7 +127,7 @@
                     });
                 }
                 $("#plugin-tools").removeClass("open");
-                PHPDS.destroyPage();
+                PHPDS.endRequest();
             });
             refreshMenus();
             return false;
@@ -149,19 +149,19 @@
         // Plugin get info.
         $root.on('click', ".plugin-get-info", function() {
             if (PHPDS.ajaxRequestBusy) return false;
-            PHPDS.requestPage();
+            PHPDS.requestPage(100);
             var plugin        = $(this).data("plugin");
             $.get($url, {"info" : "get", "plugin" : plugin}, function (data, textStatus, request) {
                 if (data !== false) {
                     $(data).modal();
                 }
-                PHPDS.destroyPage();
+                PHPDS.endRequest();
             });
             return false;
         });
 
         // Plugin delete warn.
-        $root.one('click', ".plugin-get-delete", function () {
+        $root.on('click', ".plugin-get-delete", function () {
             $(this).removeClass("btn-warning").addClass("btn-danger confirm-delete-ready");
             return false;
         });
@@ -169,18 +169,18 @@
         // Delete a plugin.
         $root.on('click', ".confirm-delete-ready", function () {
             if (PHPDS.ajaxRequestBusy) return false;
-            PHPDS.requestPage();
+            PHPDS.requestPage(100);
             var plugin = $(this).data("plugin");
             $.post($url, {"action": "delete", "plugin": plugin}, function (data, textStatus, request) {
                 $(this).removeClass("confirm-delete-ready");
                 refreshPluginStatus(plugin, $url);
-                PHPDS.destroyPage();
+                PHPDS.endRequest();
             });
             return false;
         });
 
         // Plugin uninstall warn.
-        $root.one('click', ".plugin-get-uninstall", function () {
+        $root.on('click', ".plugin-get-uninstall", function () {
             $(this).removeClass("btn-warning").addClass("btn-danger confirm-uninstall-ready");
             return false;
         });
@@ -188,14 +188,14 @@
         // Uninstall a plugin.
         $root.on('click', ".confirm-uninstall-ready", function () {
             if (PHPDS.ajaxRequestBusy) return false;
-            PHPDS.requestPage();
+            PHPDS.requestPage(100);
             var plugin = $(this).data("plugin");
 
             $.post($url, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
                 $(this).removeClass("confirm-uninstall-ready");
                 pluginManagerLog(request);
                 refreshPluginStatus(plugin, $url);
-                PHPDS.destroyPage();
+                PHPDS.endRequest();
             });
             return false;
         });
@@ -203,7 +203,7 @@
         // Plugin download+install.
         $root.on('click', ".plugin-get-install", function () {
             if (PHPDS.ajaxRequestBusy) return false;
-            PHPDS.requestPage();
+            PHPDS.requestPage(100);
             var plugin = $(this).data("plugin");
 
             // Get dependencies
@@ -219,7 +219,7 @@
         // Plugin reinstall.
         $root.on('click', ".plugin-get-reinstall", function () {
             if (PHPDS.ajaxRequestBusy) return false;
-            PHPDS.requestPage();
+            PHPDS.requestPage(100);
             var plugin = $(this).data("plugin");
 
             installPlugin($url, plugin);
@@ -254,18 +254,18 @@
     // Count repository up at once.
     function countRepositoryOnce()
     {
-        countRepository("#r-c-available", $(".plugin-repo").size());
+        countRepository("#r-c-available", $(".hidden-button-bind").size());
         countRepository("#r-c-installed", $(".plugin-ready").size());
     }
 
     // Count single repository value up.
     function countRepository(id, countto)
     {
-        $({countNum: 0}).animate({countNum: countto}, {
-            duration: 2500,
+        $({countNum: 0}, "#repository").animate({countNum: countto}, {
+            duration: 1500,
             easing:'swing',
             step: function() {
-                $(id).text(Math.round(this.countNum));
+                $(id).text(Math.floor(this.countNum));
             },
             complete: function() {}
         });
@@ -314,24 +314,24 @@
                                         // Phase 3 : Installing.
                                         var phase3 = $.parseJSON(data);
                                         $("#progress-bar").text(phase3.message);
-                                        if (phase3.status == 'install') {
+                                        if (phase3.status == 'install' || phase1.status == 'reinstall') {
                                             $.post($url, {"action": phase3.status, "plugin": plugin}, function (data, textStatus, request) {
                                                 pluginManagerLog(request);
                                                 refreshPluginStatus(plugin, $url);
-                                                PHPDS.destroyPage();
+                                                PHPDS.endRequest();
                                             });
                                         }
                                     } else {
                                         pluginManagerLog(request);
                                         refreshPluginStatus(plugin, $url);
-                                        PHPDS.destroyPage();
+                                        PHPDS.endRequest();
                                     }
                                 });
                             } else {
-                                PHPDS.destroyPage();
+                                PHPDS.endRequest();
                             }
                         } else {
-                            PHPDS.destroyPage();
+                            PHPDS.endRequest();
                         }
                     });
                     // Phase 3 : Installing.
@@ -339,13 +339,13 @@
                     $.post($url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
                         pluginManagerLog(request);
                         refreshPluginStatus(plugin, $url);
-                        PHPDS.destroyPage();
+                        PHPDS.endRequest();
                     });
                 } else {
-                    PHPDS.destroyPage();
+                    PHPDS.endRequest();
                 }
             } else {
-                PHPDS.destroyPage();
+                PHPDS.endRequest();
             }
         });
     }

@@ -200,7 +200,7 @@ PHPDS.documentReady = function (root) {
         jQuery(window)
             .on("pronto.render", PHPDS.initPage)
             .on("pronto.request", PHPDS.requestPage)
-            .on("pronto.load", PHPDS.destroyPage);
+            .on("pronto.load", PHPDS.endRequest);
         PHPDS.initPage();
     });
 };
@@ -215,17 +215,18 @@ PHPDS.initPage = function () {
 /**
  * Loader when page is requested via Ajax.
  */
-PHPDS.requestPage = function () {
+PHPDS.requestPage = function (delaytime) {
+    delaytime = typeof delaytime !== 'undefined' ? delaytime : 500;
     PHPDS.ajaxRequestBusy = true;
     PHPDS.queuedTimeout = setTimeout(function() {
         $('#ajax-loader-art').modal();
-    }, 500);
+    }, delaytime);
 };
 
 /**
- * Destruct when page requested via Ajax ends.
+ * End when page requested via Ajax ends.
  */
-PHPDS.destroyPage = function () {
+PHPDS.endRequest = function () {
     clearTimeout(PHPDS.queuedTimeout);
     $("#progress-bar").text('');
     $('#ajax-loader-art').modal('hide');
@@ -249,14 +250,14 @@ PHPDS.ajaxErrorHandler = function () {
                 throw new Error('Login Required');
                 break;
             case 404:
-                PHPDS.destroyPage();
+                PHPDS.endRequest();
                 break;
             case 418:
                 location.href = url;
                 throw new Error('Spam detected');
                 break;
             default:
-                PHPDS.destroyPage();
+                PHPDS.endRequest();
         }
     });
 };

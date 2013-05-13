@@ -1,6 +1,6 @@
 <?php
 
-class PluginActivation extends PHPDS_controller
+class PluginManager extends PHPDS_controller
 {
     /**
      * @var pluginFactory $factory
@@ -41,21 +41,6 @@ class PluginActivation extends PHPDS_controller
 
         // Output Template.
         $this->view->show();
-    }
-
-    /**
-     * @param null $plugin
-     * @return mixed
-     */
-    public function repoRows($plugin=null)
-    {
-        // Read plugin directory.
-        $RESULTS = $this->repo->initiateRepository($plugin);
-
-        // Set Array.
-        $this->view->set('RESULTS', $RESULTS);
-
-        return $this->view->getView('repo-rows.html');
     }
 
     /**
@@ -154,6 +139,21 @@ class PluginActivation extends PHPDS_controller
 
         return false;
     }
+
+    /**
+     * @param null $plugin
+     * @return mixed
+     */
+    public function repoRows($plugin=null)
+    {
+        // Read plugin directory.
+        $RESULTS = $this->repo->initiateRepository($plugin);
+
+        // Set Array.
+        $this->view->set('RESULTS', $RESULTS);
+
+        return $this->view->getView('repo-rows.html');
+    }
 }
 
-return 'PluginActivation';
+return 'PluginManager';

@@ -269,7 +269,8 @@ $configuration['locale_format'] = '{lang}_{region}{charset}';
  * This is the repository the plugin manager will use to check for updates or install new plugins.
  * @global string
  */
-$configuration['repository']['url'] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
+$configuration['repository']['url'][] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
+$configuration['repository']['url'][] = 'https://raw.github.com/TitanKing/repository/master/repository.json';
 
 /**
  * Allows you to update and install plugins from a private repository. As an example;
@@ -286,7 +287,7 @@ $configuration['repository']['password'] = 'lister789';
  * in the public queue. You will then have these available to install and update.
  */
 $configuration['repository']['plugins'] = array(
-    'FineSamle1'    => array('desc' => 'Just a test', 'repo' => 'https://github.com/TitanKing/FineSamle1')
+    //'FineSamle1'    => array('desc' => 'Just a test', 'repo' => 'https://github.com/TitanKing/FineSamle1')
     //'PluginName'    => array('desc' => 'Plugin Description', 'repo' => 'https://github.com/PHPDevShell/PluginName'),
     //'Example'       => array('desc' => 'ExamplePlugin', 'repo' => 'https://github.com/PHPDevShell/Example')
 );
