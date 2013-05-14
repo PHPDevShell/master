@@ -199,7 +199,7 @@ PHPDS.documentReady = function (root) {
         jQuery.pronto();
         jQuery(window)
             .on("pronto.render", PHPDS.initPage)
-            .on("pronto.request", PHPDS.requestPage)
+            .on("pronto.request", PHPDS.requestPage(500))
             .on("pronto.load", PHPDS.endRequest);
         PHPDS.initPage();
     });
@@ -217,10 +217,22 @@ PHPDS.initPage = function () {
  */
 PHPDS.requestPage = function (delaytime) {
     delaytime = typeof delaytime !== 'undefined' ? delaytime : 500;
-    PHPDS.ajaxRequestBusy = true;
-    PHPDS.queuedTimeout = setTimeout(function() {
-        $('#ajax-loader-art').modal();
-    }, delaytime);
+    PHPDS.root.removeData("modal");
+    PHPDS.root.ajaxStart(function () {
+        PHPDS.ajaxRequestBusy = true;
+        PHPDS.queuedTimeout = setTimeout(function() {
+            $('#ajax-loader-art').modal({
+                backdrop: 'static',
+                keyboard: true
+            });
+        }, delaytime);
+    });
+    PHPDS.root.ajaxStop(function () {
+        clearTimeout(PHPDS.queuedTimeout);
+        $("#progress-bar").text('');
+        $('#ajax-loader-art').modal('hide');
+        PHPDS.ajaxRequestBusy = false;
+    });
 };
 
 /**

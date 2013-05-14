@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <config type="plugin">
     <name>Mustache</name>
-    <version>2.1.0-Stable</version>
+    <version>2.3.1-Stable</version>
     <description>Mustache provides a simple to use, light and fast template Engine for PHPDevShell.</description>
     <founder>Jason Schoeman</founder>
     <author>Jason Schoeman</author>

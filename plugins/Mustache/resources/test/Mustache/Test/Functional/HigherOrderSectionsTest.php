@@ -27,7 +27,7 @@ class Mustache_Test_Functional_HigherOrderSectionsTest extends PHPUnit_Framework
     {
         $tpl = $this->mustache->loadTemplate('{{#doublewrap}}{{name}}{{/doublewrap}}');
 
-        $foo             = new Mustache_Test_Functional_Foo;
+        $foo = new Mustache_Test_Functional_Foo;
         $foo->doublewrap = array($foo, 'wrapWithBoth');
 
         $this->assertEquals(sprintf('<strong><em>%s</em></strong>', $foo->name), $tpl->render($foo));
@@ -37,7 +37,7 @@ class Mustache_Test_Functional_HigherOrderSectionsTest extends PHPUnit_Framework
     {
         $tpl = $this->mustache->loadTemplate('{{#trimmer}}    {{name}}    {{/trimmer}}');
 
-        $foo          = new Mustache_Test_Functional_Foo;
+        $foo = new Mustache_Test_Functional_Foo;
         $foo->trimmer = array(get_class($foo), 'staticTrim');
 
         $this->assertEquals($foo->name, $tpl->render($foo));
@@ -61,12 +61,12 @@ class Mustache_Test_Functional_HigherOrderSectionsTest extends PHPUnit_Framework
     {
         $tpl = $this->mustache->loadTemplate('{{#title}}{{title}} {{/title}}{{name}}');
 
-        $frank        = new Mustache_Test_Functional_Monster();
+        $frank = new Mustache_Test_Functional_Monster();
         $frank->title = 'Dr.';
         $frank->name  = 'Frankenstein';
         $this->assertEquals('Dr. Frankenstein', $tpl->render($frank));
 
-        $dracula        = new Mustache_Test_Functional_Monster();
+        $dracula = new Mustache_Test_Functional_Monster();
         $dracula->title = 'Count';
         $dracula->name  = 'Dracula';
         $this->assertEquals('Count Dracula', $tpl->render($dracula));

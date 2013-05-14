@@ -16,8 +16,6 @@
         "php": ">=5.2.4"
     },
     "autoload": {
-        "psr-0": {
-            "Mustache": "src/"
-        }
+        "psr-0": { "Mustache": "src/" }
     }
 }

@@ -41,6 +41,8 @@ class PluginManager extends PHPDS_controller
 
         // Output Template.
         $this->view->show();
+
+        $this->view->jsAsset('plugins/PluginManager/js/helper.js');
     }
 
     /**

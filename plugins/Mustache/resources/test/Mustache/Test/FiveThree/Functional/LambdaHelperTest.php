@@ -27,9 +27,9 @@ class Mustache_Test_FiveThree_Functional_LambdaHelperTest extends PHPUnit_Framew
         $one = $this->mustache->loadTemplate('{{name}}');
         $two = $this->mustache->loadTemplate('{{#lambda}}{{name}}{{/lambda}}');
 
-        $foo         = new StdClass;
-        $foo->name   = 'Mario';
-        $foo->lambda = function ($text, $mustache) {
+        $foo = new StdClass;
+        $foo->name = 'Mario';
+        $foo->lambda = function($text, $mustache) {
             return strtoupper($mustache->render($text));
         };
 

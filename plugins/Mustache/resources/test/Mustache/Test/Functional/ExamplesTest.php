@@ -47,16 +47,16 @@ class Mustache_Test_Functional_ExamplesTest extends PHPUnit_Framework_TestCase
      */
     public function getExamples()
     {
-        $path     = realpath(dirname(__FILE__) . '/../../../fixtures/examples');
+        $path     = realpath(dirname(__FILE__).'/../../../fixtures/examples');
         $examples = array();
 
-        $handle = opendir($path);
+        $handle   = opendir($path);
         while (($file = readdir($handle)) !== false) {
             if ($file == '.' || $file == '..') {
                 continue;
             }
 
-            $fullpath = $path . '/' . $file;
+            $fullpath = $path.'/'.$file;
             if (is_dir($fullpath)) {
                 $examples[$file] = $this->loadExample($fullpath);
             }
@@ -82,8 +82,8 @@ class Mustache_Test_Functional_ExamplesTest extends PHPUnit_Framework_TestCase
 
         $handle = opendir($path);
         while (($file = readdir($handle)) !== false) {
-            $fullpath = $path . '/' . $file;
-            $info     = pathinfo($fullpath);
+            $fullpath = $path.'/'.$file;
+            $info = pathinfo($fullpath);
 
             if (is_dir($fullpath) && $info['basename'] == 'partials') {
                 // load partials
@@ -97,7 +97,7 @@ class Mustache_Test_Functional_ExamplesTest extends PHPUnit_Framework_TestCase
                         break;
 
                     case 'mustache':
-                        $source = file_get_contents($fullpath);
+                        $source   = file_get_contents($fullpath);
                         break;
 
                     case 'txt':
@@ -128,8 +128,8 @@ class Mustache_Test_Functional_ExamplesTest extends PHPUnit_Framework_TestCase
                 continue;
             }
 
-            $fullpath = $path . '/' . $file;
-            $info     = pathinfo($fullpath);
+            $fullpath = $path.'/'.$file;
+            $info = pathinfo($fullpath);
 
             if ($info['extension'] === 'mustache') {
                 $partials[$info['filename']] = file_get_contents($fullpath);

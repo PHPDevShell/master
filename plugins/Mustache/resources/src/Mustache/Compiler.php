@@ -22,27 +22,30 @@ class Mustache_Compiler
     private $indentNextLine;
     private $customEscape;
     private $charset;
+    private $strictCallables;
     private $pragmas;
 
     /**
      * Compile a Mustache token parse tree into PHP source code.
      *
-     * @param string $source       Mustache Template source code
-     * @param string $tree         Parse tree of Mustache tokens
-     * @param string $name         Mustache Template class name
-     * @param bool   $customEscape (default: false)
-     * @param string $charset      (default: 'UTF-8')
+     * @param string $source          Mustache Template source code
+     * @param string $tree            Parse tree of Mustache tokens
+     * @param string $name            Mustache Template class name
+     * @param bool   $customEscape    (default: false)
+     * @param string $charset         (default: 'UTF-8')
+     * @param bool   $strictCallables (default: false)
      *
      * @return string Generated PHP source code
      */
-    public function compile($source, array $tree, $name, $customEscape = false, $charset = 'UTF-8')
+    public function compile($source, array $tree, $name, $customEscape = false, $charset = 'UTF-8', $strictCallables = false)
     {
-        $this->pragmas        = array();
-        $this->sections       = array();
-        $this->source         = $source;
-        $this->indentNextLine = true;
-        $this->customEscape   = $customEscape;
-        $this->charset        = $charset;
+        $this->pragmas         = array();
+        $this->sections        = array();
+        $this->source          = $source;
+        $this->indentNextLine  = true;
+        $this->customEscape    = $customEscape;
+        $this->charset         = $charset;
+        $this->strictCallables = $strictCallables;
 
         return $this->writeCode($tree, $name);
     }
@@ -50,7 +53,7 @@ class Mustache_Compiler
     /**
      * Helper function for walking the Mustache token parse tree.
      *
-     * @throws InvalidArgumentException upon encountering unknown token types.
+     * @throws Mustache_Exception_SyntaxException upon encountering unknown token types.
      *
      * @param array $tree  Parse tree of Mustache tokens
      * @param int   $level (default: 0)
@@ -113,7 +116,7 @@ class Mustache_Compiler
                     break;
 
                 default:
-                    throw new InvalidArgumentException('Unknown node type: ' . json_encode($node));
+                    throw new Mustache_Exception_SyntaxException(sprintf('Unknown token type: %s', $node[Mustache_Tokenizer::TYPE]), $node);
             }
         }
 
@@ -124,22 +127,33 @@ class Mustache_Compiler
 
         class %s extends Mustache_Template
         {
-            private $lambdaHelper;
+            private $lambdaHelper;%s
 
-            public function renderInternal(Mustache_Context $context, $indent = \'\', $escape = false)
+            public function renderInternal(Mustache_Context $context, $indent = \'\')
             {
                 $this->lambdaHelper = new Mustache_LambdaHelper($this->mustache, $context);
                 $buffer = \'\';
         %s
 
-                if ($escape) {
-                    return %s;
-                } else {
-                    return $buffer;
-                }
+                return $buffer;
             }
         %s
         }';
+
+    const KLASS_NO_LAMBDAS = '<?php
+
+        class %s extends Mustache_Template
+        {%s
+            public function renderInternal(Mustache_Context $context, $indent = \'\')
+            {
+                $buffer = \'\';
+        %s
+
+                return $buffer;
+            }
+        }';
+
+    const STRICT_CALLABLE = 'protected $strictCallables = true;';
 
     /**
      * Generate Mustache Template class PHP source.
@@ -153,8 +167,10 @@ class Mustache_Compiler
     {
         $code     = $this->walk($tree);
         $sections = implode("\n", $this->sections);
+        $klass    = empty($this->sections) ? self::KLASS_NO_LAMBDAS : self::KLASS;
+        $callable = $this->strictCallables ? $this->prepare(self::STRICT_CALLABLE) : '';
 
-        return sprintf($this->prepare(self::KLASS, 0, false), $name, $code, $this->getEscape('$buffer'), $sections);
+        return sprintf($this->prepare($klass, 0, false, true), $name, $callable, $code, $sections);
     }
 
     const SECTION_CALL = '
@@ -163,9 +179,10 @@ class Mustache_Compiler
     ';
 
     const SECTION = '
-        private function section%s(Mustache_Context $context, $indent, $value) {
+        private function section%s(Mustache_Context $context, $indent, $value)
+        {
             $buffer = \'\';
-            if (!is_string($value) && is_callable($value)) {
+            if (%s) {
                 $source = %s;
                 $buffer .= $this->mustache
                     ->loadLambda((string) call_user_func($value, $source, $this->lambdaHelper)%s)
@@ -196,20 +213,21 @@ class Mustache_Compiler
      */
     private function section($nodes, $id, $start, $end, $otag, $ctag, $level)
     {
-        $method = $this->getFindMethod($id);
-        $id     = var_export($id, true);
-        $source = var_export(substr($this->source, $start, $end - $start), true);
+        $method   = $this->getFindMethod($id);
+        $id       = var_export($id, true);
+        $source   = var_export(substr($this->source, $start, $end - $start), true);
+        $callable = $this->getCallable();
 
         if ($otag !== '{{' || $ctag !== '}}') {
-            $delims = ', ' . var_export(sprintf('{{= %s %s =}}', $otag, $ctag), true);
+            $delims = ', '.var_export(sprintf('{{= %s %s =}}', $otag, $ctag), true);
         } else {
             $delims = '';
         }
 
-        $key = ucfirst(md5($delims . "\n" . $source));
+        $key    = ucfirst(md5($delims."\n".$source));
 
         if (!isset($this->sections[$key])) {
-            $this->sections[$key] = sprintf($this->prepare(self::SECTION), $key, $source, $delims, $this->walk($nodes, 2));
+            $this->sections[$key] = sprintf($this->prepare(self::SECTION), $key, $callable, $source, $delims, $this->walk($nodes, 2));
         }
 
         return sprintf($this->prepare(self::SECTION_CALL, $level), $id, $key, $method, $id);
@@ -264,12 +282,7 @@ class Mustache_Compiler
     }
 
     const VARIABLE = '
-        $value = $context->%s(%s);
-        if (!is_string($value) && is_callable($value)) {
-            $value = $this->mustache
-                ->loadLambda((string) call_user_func($value))
-                ->renderInternal($context, $indent);
-        }%s
+        $value = $this->resolveValue($context->%s(%s), $context, $indent);%s
         $buffer .= %s%s;
     ';
 
@@ -315,8 +328,8 @@ class Mustache_Compiler
 
     const FILTER = '
         $filter = $context->%s(%s);
-        if (is_string($filter) || !is_callable($filter)) {
-            throw new UnexpectedValueException(%s);
+        if (!(%s)) {
+            throw new Mustache_Exception_UnknownFilterException(%s);
         }
         $value = call_user_func($filter, $value);%s
     ';
@@ -335,12 +348,13 @@ class Mustache_Compiler
             return '';
         }
 
-        $name   = array_shift($filters);
-        $method = $this->getFindMethod($name);
-        $filter = ($method !== 'last') ? var_export($name, true) : '';
-        $msg    = var_export(sprintf('Filter not found: %s', $name), true);
+        $name     = array_shift($filters);
+        $method   = $this->getFindMethod($name);
+        $filter   = ($method !== 'last') ? var_export($name, true) : '';
+        $callable = $this->getCallable('$filter');
+        $msg      = var_export($name, true);
 
-        return sprintf($this->prepare(self::FILTER, $level), $method, $filter, $msg, $this->getFilter($filters, $level));
+        return sprintf($this->prepare(self::FILTER, $level), $method, $filter, $callable, $msg, $this->getFilter($filters, $level));
     }
 
     const LINE = '$buffer .= "\n";';
@@ -371,17 +385,21 @@ class Mustache_Compiler
      * @param string  $text
      * @param int     $bonus          Additional indent level (default: 0)
      * @param boolean $prependNewline Prepend a newline to the snippet? (default: true)
+     * @param boolean $appendNewline  Append a newline to the snippet? (default: false)
      *
      * @return string PHP source code snippet
      */
-    private function prepare($text, $bonus = 0, $prependNewline = true)
+    private function prepare($text, $bonus = 0, $prependNewline = true, $appendNewline = false)
     {
-        $text = ($prependNewline ? "\n" : '') . trim($text);
+        $text = ($prependNewline ? "\n" : '').trim($text);
         if ($prependNewline) {
             $bonus++;
         }
+        if ($appendNewline) {
+            $text .= "\n";
+        }
 
-        return preg_replace("/\n( {8})?/", "\n" . str_repeat(" ", $bonus * 4), $text);
+        return preg_replace("/\n( {8})?/", "\n".str_repeat(" ", $bonus * 4), $text);
     }
 
     const DEFAULT_ESCAPE = 'htmlspecialchars(%s, ENT_COMPAT, %s)';
@@ -425,6 +443,16 @@ class Mustache_Compiler
         } else {
             return 'findDot';
         }
+    }
+
+    const IS_CALLABLE        = '!is_string(%s) && is_callable(%s)';
+    const STRICT_IS_CALLABLE = 'is_object(%s) && is_callable(%s)';
+
+    private function getCallable($variable = '$value')
+    {
+        $tpl = $this->strictCallables ? self::STRICT_IS_CALLABLE : self::IS_CALLABLE;
+
+        return sprintf($tpl, $variable, $variable);
     }
 
     const LINE_INDENT = '$indent . ';

@@ -83,6 +83,31 @@ class PHPDS_view extends PHPDS_dependant
     }
 
     /**
+     * Will add any js path to where this tag is called from, best used in controller to add to view.
+     *
+     * @param string $jsRelativePath
+     *
+     * @return void
+     */
+    public function jsAsset($jsRelativePath = '')
+    {
+        echo $this->template->outputJsAsset($jsRelativePath, true);
+    }
+
+    /**
+     * Will add any css path to where this tag is called from, best used in controller to add to view.
+     *
+     * @param string $cssRelativePath
+     * @param string $media
+     *
+     * @return void
+     */
+    public function cssAsset($cssRelativePath = '', $media = '')
+    {
+        echo $this->template->outputCssAsset($cssRelativePath, true, $media);
+    }
+
+    /**
      * Main execution point for class view.
      * Will execute automatically.
      */

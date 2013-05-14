@@ -34,7 +34,7 @@ class Mustache_Test_Logger_StreamLoggerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException LogicException
+     * @expectedException Mustache_Exception_LogicException
      */
     public function testPrematurelyClosedStreamThrowsException()
     {
@@ -70,31 +70,31 @@ class Mustache_Test_Logger_StreamLoggerTest extends PHPUnit_Framework_TestCase
         return array(
             // identities
             array(Mustache_Logger::EMERGENCY, Mustache_Logger::EMERGENCY, true),
-            array(Mustache_Logger::ALERT, Mustache_Logger::ALERT, true),
-            array(Mustache_Logger::CRITICAL, Mustache_Logger::CRITICAL, true),
-            array(Mustache_Logger::ERROR, Mustache_Logger::ERROR, true),
-            array(Mustache_Logger::WARNING, Mustache_Logger::WARNING, true),
-            array(Mustache_Logger::NOTICE, Mustache_Logger::NOTICE, true),
-            array(Mustache_Logger::INFO, Mustache_Logger::INFO, true),
-            array(Mustache_Logger::DEBUG, Mustache_Logger::DEBUG, true),
+            array(Mustache_Logger::ALERT,     Mustache_Logger::ALERT,     true),
+            array(Mustache_Logger::CRITICAL,  Mustache_Logger::CRITICAL,  true),
+            array(Mustache_Logger::ERROR,     Mustache_Logger::ERROR,     true),
+            array(Mustache_Logger::WARNING,   Mustache_Logger::WARNING,   true),
+            array(Mustache_Logger::NOTICE,    Mustache_Logger::NOTICE,    true),
+            array(Mustache_Logger::INFO,      Mustache_Logger::INFO,      true),
+            array(Mustache_Logger::DEBUG,     Mustache_Logger::DEBUG,     true),
 
             // one above
-            array(Mustache_Logger::ALERT, Mustache_Logger::EMERGENCY, true),
-            array(Mustache_Logger::CRITICAL, Mustache_Logger::ALERT, true),
-            array(Mustache_Logger::ERROR, Mustache_Logger::CRITICAL, true),
-            array(Mustache_Logger::WARNING, Mustache_Logger::ERROR, true),
-            array(Mustache_Logger::NOTICE, Mustache_Logger::WARNING, true),
-            array(Mustache_Logger::INFO, Mustache_Logger::NOTICE, true),
-            array(Mustache_Logger::DEBUG, Mustache_Logger::INFO, true),
+            array(Mustache_Logger::ALERT,     Mustache_Logger::EMERGENCY, true),
+            array(Mustache_Logger::CRITICAL,  Mustache_Logger::ALERT,     true),
+            array(Mustache_Logger::ERROR,     Mustache_Logger::CRITICAL,  true),
+            array(Mustache_Logger::WARNING,   Mustache_Logger::ERROR,     true),
+            array(Mustache_Logger::NOTICE,    Mustache_Logger::WARNING,   true),
+            array(Mustache_Logger::INFO,      Mustache_Logger::NOTICE,    true),
+            array(Mustache_Logger::DEBUG,     Mustache_Logger::INFO,      true),
 
             // one below
-            array(Mustache_Logger::EMERGENCY, Mustache_Logger::ALERT, false),
-            array(Mustache_Logger::ALERT, Mustache_Logger::CRITICAL, false),
-            array(Mustache_Logger::CRITICAL, Mustache_Logger::ERROR, false),
-            array(Mustache_Logger::ERROR, Mustache_Logger::WARNING, false),
-            array(Mustache_Logger::WARNING, Mustache_Logger::NOTICE, false),
-            array(Mustache_Logger::NOTICE, Mustache_Logger::INFO, false),
-            array(Mustache_Logger::INFO, Mustache_Logger::DEBUG, false),
+            array(Mustache_Logger::EMERGENCY, Mustache_Logger::ALERT,     false),
+            array(Mustache_Logger::ALERT,     Mustache_Logger::CRITICAL,  false),
+            array(Mustache_Logger::CRITICAL,  Mustache_Logger::ERROR,     false),
+            array(Mustache_Logger::ERROR,     Mustache_Logger::WARNING,   false),
+            array(Mustache_Logger::WARNING,   Mustache_Logger::NOTICE,    false),
+            array(Mustache_Logger::NOTICE,    Mustache_Logger::INFO,      false),
+            array(Mustache_Logger::INFO,      Mustache_Logger::DEBUG,     false),
         );
     }
 
@@ -117,14 +117,14 @@ class Mustache_Test_Logger_StreamLoggerTest extends PHPUnit_Framework_TestCase
     {
         // $level, $message, $context, $expected
         return array(
-            array(Mustache_Logger::DEBUG, 'debug message', array(), "DEBUG: debug message\n"),
-            array(Mustache_Logger::INFO, 'info message', array(), "INFO: info message\n"),
-            array(Mustache_Logger::NOTICE, 'notice message', array(), "NOTICE: notice message\n"),
-            array(Mustache_Logger::WARNING, 'warning message', array(), "WARNING: warning message\n"),
-            array(Mustache_Logger::ERROR, 'error message', array(), "ERROR: error message\n"),
-            array(Mustache_Logger::CRITICAL, 'critical message', array(), "CRITICAL: critical message\n"),
-            array(Mustache_Logger::ALERT, 'alert message', array(), "ALERT: alert message\n"),
-            array(Mustache_Logger::EMERGENCY, 'emergency message', array(), "EMERGENCY: emergency message\n"),
+            array(Mustache_Logger::DEBUG,     'debug message',     array(),  "DEBUG: debug message\n"),
+            array(Mustache_Logger::INFO,      'info message',      array(),  "INFO: info message\n"),
+            array(Mustache_Logger::NOTICE,    'notice message',    array(),  "NOTICE: notice message\n"),
+            array(Mustache_Logger::WARNING,   'warning message',   array(),  "WARNING: warning message\n"),
+            array(Mustache_Logger::ERROR,     'error message',     array(),  "ERROR: error message\n"),
+            array(Mustache_Logger::CRITICAL,  'critical message',  array(),  "CRITICAL: critical message\n"),
+            array(Mustache_Logger::ALERT,     'alert message',     array(),  "ALERT: alert message\n"),
+            array(Mustache_Logger::EMERGENCY, 'emergency message', array(),  "EMERGENCY: emergency message\n"),
 
             // with context
             array(
@@ -187,7 +187,7 @@ class Mustache_Test_Logger_StreamLoggerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Mustache_Exception_InvalidArgumentException
      */
     public function testThrowsInvalidArgumentExceptionWhenSettingUnknownLevels()
     {
@@ -196,7 +196,7 @@ class Mustache_Test_Logger_StreamLoggerTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Mustache_Exception_InvalidArgumentException
      */
     public function testThrowsInvalidArgumentExceptionWhenLoggingUnknownLevels()
     {

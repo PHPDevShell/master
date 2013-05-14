@@ -32,20 +32,20 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
         $partialsLoader = new Mustache_Loader_ArrayLoader;
         $mustache       = new Mustache_Engine(array(
             'template_class_prefix' => '__whot__',
-            'cache'                 => self::$tempDir,
-            'cache_file_mode'       => 777,
-            'logger'                => $logger,
-            'loader'                => $loader,
-            'partials_loader'       => $partialsLoader,
-            'partials'              => array(
+            'cache'  => self::$tempDir,
+            'cache_file_mode' => 777,
+            'logger' => $logger,
+            'loader' => $loader,
+            'partials_loader' => $partialsLoader,
+            'partials' => array(
                 'foo' => '{{ foo }}',
             ),
-            'helpers'               => array(
+            'helpers' => array(
                 'foo' => array($this, 'getFoo'),
                 'bar' => 'BAR',
             ),
-            'escape'                => 'strtoupper',
-            'charset'               => 'ISO-8859-1',
+            'escape'  => 'strtoupper',
+            'charset' => 'ISO-8859-1',
         ));
 
         $this->assertSame($logger, $mustache->getLogger());
@@ -75,7 +75,7 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $mustache           = new MustacheStub;
+        $mustache = new MustacheStub;
         $mustache->template = $template;
 
         $template->expects($this->once())
@@ -128,7 +128,7 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
     {
         $mustache = new Mustache_Engine(array(
             'template_class_prefix' => '__whot__',
-            'cache'                 => self::$tempDir,
+            'cache' => self::$tempDir,
         ));
 
         $source    = '{{ foo }}';
@@ -141,7 +141,7 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Mustache_Exception_InvalidArgumentException
      * @dataProvider getBadEscapers
      */
     public function testNonCallableEscapeThrowsException($escape)
@@ -158,7 +158,7 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException Mustache_Exception_RuntimeException
      */
     public function testImmutablePartialsLoadersThrowException()
     {
@@ -183,8 +183,8 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
 
     public function testHelpers()
     {
-        $foo      = array($this, 'getFoo');
-        $bar      = 'BAR';
+        $foo = array($this, 'getFoo');
+        $bar = 'BAR';
         $mustache = new Mustache_Engine(array('helpers' => array(
             'foo' => $foo,
             'bar' => $bar,
@@ -219,11 +219,11 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
 
     public static function wrapWithUnderscores($text)
     {
-        return '__' . $text . '__';
+        return '__'.$text.'__';
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Mustache_Exception_InvalidArgumentException
      */
     public function testSetHelpersThrowsExceptions()
     {
@@ -232,12 +232,35 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException Mustache_Exception_InvalidArgumentException
      */
     public function testSetLoggerThrowsExceptions()
     {
         $mustache = new Mustache_Engine;
         $mustache->setLogger(new StdClass);
+    }
+
+    public function testLoadPartialCascading()
+    {
+        $loader = new Mustache_Loader_ArrayLoader(array(
+            'foo' => 'FOO',
+        ));
+
+        $mustache = new Mustache_Engine(array('loader' => $loader));
+
+        $tpl = $mustache->loadTemplate('foo');
+
+        $this->assertSame($tpl, $mustache->loadPartial('foo'));
+
+        $mustache->setPartials(array(
+            'foo' => 'f00',
+        ));
+
+        // setting partials overrides the default template loading fallback.
+        $this->assertNotSame($tpl, $mustache->loadPartial('foo'));
+
+        // but it didn't overwrite the original template loader templates.
+        $this->assertSame($tpl, $mustache->loadTemplate('foo'));
     }
 
     public function testPartialLoadFailLogging()
@@ -261,7 +284,7 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
     {
         $name     = tempnam(sys_get_temp_dir(), 'mustache-test');
         $mustache = new Mustache_Engine(array(
-            'logger' => new Mustache_Logger_StreamLogger($name, Mustache_Logger::WARNING)
+            'logger'   => new Mustache_Logger_StreamLogger($name, Mustache_Logger::WARNING)
         ));
 
         $result = $mustache->render('{{ foo }}', array('foo' => 'FOO'));
@@ -274,7 +297,7 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
     {
         $name     = tempnam(sys_get_temp_dir(), 'mustache-test');
         $mustache = new Mustache_Engine(array(
-            'logger' => new Mustache_Logger_StreamLogger($name)
+            'logger'   => new Mustache_Logger_StreamLogger($name)
         ));
 
         $result = $mustache->render('{{ foo }}{{> bar }}', array('foo' => 'FOO'));
@@ -287,7 +310,7 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
     {
         $name     = tempnam(sys_get_temp_dir(), 'mustache-test');
         $mustache = new Mustache_Engine(array(
-            'logger' => new Mustache_Logger_StreamLogger($name, Mustache_Logger::DEBUG)
+            'logger'   => new Mustache_Logger_StreamLogger($name, Mustache_Logger::DEBUG)
         ));
 
         $result = $mustache->render('{{ foo }}{{> bar }}', array('foo' => 'FOO'));
@@ -301,14 +324,14 @@ class Mustache_Test_EngineTest extends PHPUnit_Framework_TestCase
 
     private static function rmdir($path)
     {
-        $path   = rtrim($path, '/') . '/';
+        $path = rtrim($path, '/').'/';
         $handle = opendir($path);
         while (($file = readdir($handle)) !== false) {
             if ($file == '.' || $file == '..') {
                 continue;
             }
 
-            $fullpath = $path . $file;
+            $fullpath = $path.$file;
             if (is_dir($fullpath)) {
                 self::rmdir($fullpath);
             } else {
@@ -325,7 +348,6 @@ class MustacheStub extends Mustache_Engine
 {
     public $source;
     public $template;
-
     public function loadTemplate($source)
     {
         $this->source = $source;

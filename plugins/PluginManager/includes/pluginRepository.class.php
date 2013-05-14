@@ -9,15 +9,15 @@ class pluginRepository extends PHPDS_dependant
     /**
      * @var string
      */
-    protected $githubsub     = 'https://raw.';
+    protected $githubsub = 'https://raw.';
     /**
      * @var string
      */
-    protected $githubcfg     = '/%s/config/';
+    protected $githubcfg = '/%s/config/';
     /**
      * @var string
      */
-    protected $githubbranch  = 'master';
+    protected $githubbranch = 'master';
     /**
      * @var string
      */
@@ -25,11 +25,11 @@ class pluginRepository extends PHPDS_dependant
     /**
      * @var string
      */
-    protected $repotype      = 'github';
+    protected $repotype = 'github';
     /**
      * @var int
      */
-    protected $timeout       = 30;
+    protected $timeout = 30;
 
     /**
      *
@@ -43,7 +43,8 @@ class pluginRepository extends PHPDS_dependant
             $this->template->critical(sprintf('Plugin manager cannot write to: %s', $path));
         } else {
             if (!is_writable($repo)) {
-                $this->template->critical(sprintf('Plugin manager cannot write to repository: %s', $repo));
+                $this->template->critical(
+                    sprintf('Plugin manager cannot write to repository (check file permissions): %s', $repo));
             }
         }
 
@@ -88,7 +89,7 @@ class pluginRepository extends PHPDS_dependant
             if (is_array($repoarray) && !empty($repoarray)) {
                 if (!empty($config['repository']['plugins']) && is_array($config['repository']['plugins'])) {
                     $repoarray_ = array_merge($config['repository']['plugins'], $repoarray['plugins']);
-                    $repoarray = array(
+                    $repoarray  = array(
                         'compatibility-version' => $repoarray['compatibility-version'],
                         'plugins'               => $repoarray_
                     );
@@ -196,7 +197,7 @@ class pluginRepository extends PHPDS_dependant
         // get local plugins with config files, ignore the rest.f
         $xmlconfig = $directory . $plugin . '/config/plugin.config.xml';
         if (file_exists($xmlconfig))
-            $localxml  = @simplexml_load_file($xmlconfig);
+            $localxml = @simplexml_load_file($xmlconfig);
         if (!empty($localxml) && !empty($localxml->name)) {
             $local = array(
                 'name'      => (string)$localxml->name,
@@ -272,8 +273,8 @@ class pluginRepository extends PHPDS_dependant
         if (empty($config['repository']['url'])) throw new PHPDS_exception('No repository specified in config.');
         foreach ($config['repository']['url'] as $repourl) {
             $tmppath = $config['absolute_path'] . $config['tmp_path'] . PU_createRandomString(6) . '_repository.json';
-            $ch = curl_init($repourl);
-            $fp = fopen($tmppath, "w");
+            $ch      = curl_init($repourl);
+            $fp      = fopen($tmppath, "w");
 
             if (!empty($config['repository']['username']) && !empty($config['repository']['password'])) {
                 curl_setopt($ch, CURLOPT_USERPWD,
@@ -422,9 +423,9 @@ class pluginRepository extends PHPDS_dependant
         $remote_repo = $this->readOriginalJsonRepo();
         $data        = false;
 
-        if (! empty($remote_repo['plugins'][$plugin]['repo'])) {
+        if (!empty($remote_repo['plugins'][$plugin]['repo'])) {
             $repo_url = $remote_repo['plugins'][$plugin]['repo'];
-            if (! empty($remote_repo['plugins'][$plugin]['branch']))
+            if (!empty($remote_repo['plugins'][$plugin]['branch']))
                 $this->githubbranch = $remote_repo['plugins'][$plugin]['branch'];
             if (filter_var($repo_url, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED)) {
                 if ($this->repotype == 'github') {
@@ -445,7 +446,7 @@ class pluginRepository extends PHPDS_dependant
                 curl_close($ch);
             }
         }
-        if(!empty($data)) {
+        if (!empty($data)) {
             $xml = @simplexml_load_string($data);
             return $this->xmlPluginConfigToArray($xml);
         }
@@ -567,8 +568,10 @@ class pluginRepository extends PHPDS_dependant
             return false;
         }
 
-        if (! empty($cfg['dependency']) && is_array($cfg['dependency'])) {
-            foreach($cfg['dependency'] as $dep) {
+        if (!empty($cfg['dependency']) && is_array($cfg['dependency'])) {
+            // add main plugin first.
+            $install[] = $plugin;
+            foreach ($cfg['dependency'] as $dep) {
                 if (empty($dep['ready'])) $install[] = $dep['plugin'];
             }
             if (!empty($install)) return json_encode($install);
@@ -579,36 +582,20 @@ class pluginRepository extends PHPDS_dependant
     /**
      * @param $plugin
      * @return bool
+     * @throws PHPDS_exception
      */
     public function pluginDelete($plugin)
     {
-        if (empty($plugin)) {
-            $this->template->critical(__('No plugin name provided'));
-            return false;
-        }
+        if (empty($plugin)) throw new PHPDS_exception(__('No plugin name provided to delete'));
+
         $dir = $this->configuration['absolute_path'] . 'plugins/' . $plugin . DIRECTORY_SEPARATOR;
-        if (!is_dir($dir) || !is_writable($dir)) {
+
+        if (!is_dir($dir) || !$this->isWritable($dir)) {
             $this->template->critical(sprintf(__("File permission denied deleting %s"), $dir));
             return false;
         }
-        return $this->recursiveFolderDelete($dir);
-    }
 
-    /**
-     * @param $dir
-     * @return bool
-     */
-    protected function recursiveFolderDelete($dir)
-    {
-        if (!is_dir($dir) || is_link($dir)) return unlink($dir);
-        foreach (scandir($dir) as $file) {
-            if ($file == '.' || $file == '..') continue;
-            if (!$this->recursiveFolderDelete($dir . DIRECTORY_SEPARATOR . $file)) {
-                chmod($dir . DIRECTORY_SEPARATOR . $file, 0777);
-                if (!$this->recursiveFolderDelete($dir . DIRECTORY_SEPARATOR . $file)) return false;
-            };
-        }
-        return rmdir($dir);
+        return $this->recursiveFolderDelete($dir);
     }
 
     /**
@@ -620,25 +607,30 @@ class pluginRepository extends PHPDS_dependant
         if ($this->pluginExistsLocally($plugin)) {
             if ($this->isPluginInstalled($plugin)) {
                 $repo = $this->readOriginalJsonRepo();
-                if (! empty($repo['plugins'][$plugin]['repo'])) {
+                if (!empty($repo['plugins'][$plugin]['repo'])) {
                     return $this->pluginPrepareNeedDownload();
                 } else {
                     return $this->pluginReinstallReadyLocally();
                 }
             } else {
-                return $this->pluginPrepareReadyLocally();
+                return $this->pluginPrepareReadyLocally($plugin);
             }
         } else {
             return $this->pluginPrepareNeedDownload();
         }
     }
 
-    /**\
+    /**
+     * @param $plugin
      * @return string
      */
-    protected function pluginPrepareReadyLocally()
+    protected function pluginPrepareReadyLocally($plugin)
     {
-        return json_encode(array('status' => 'install', 'message' => __('Installing...')));
+        if (!$this->isPluginInstalled($plugin)) {
+            return json_encode(array('status' => 'install', 'message' => __('Installing...')));
+        } else {
+            return json_encode(array('status' => 'reinstall', 'message' => __('Re-installing...')));
+        }
     }
 
     /**
@@ -664,7 +656,7 @@ class pluginRepository extends PHPDS_dependant
     public function pluginPrepareDownload($plugin)
     {
         $repo = $this->readOriginalJsonRepo();
-        if (! empty($repo['plugins'][$plugin]['repo'])) {
+        if (!empty($repo['plugins'][$plugin]['repo'])) {
             return $this->pluginAttemptGithubDownload($plugin, $repo['plugins'][$plugin]['repo']);
         }
         return false;
@@ -713,33 +705,47 @@ class pluginRepository extends PHPDS_dependant
      */
     public function pluginExtraction($plugin, $zip)
     {
-        $plugin_folder = $this->configuration['absolute_path'] . 'plugins';
+        $config        = $this->configuration;
+        $plugin_folder = $config['absolute_path'] . 'plugins';
+        $tmp_folder    = $config['absolute_path'] . $config['tmp_path'] . PU_createRandomString(6);
 
         clearstatcache();
 
         if (file_exists($zip)) {
             $archive   = new ZipArchive();
-            if (file_exists($plugin_folder  . '/' . $plugin) && is_dir($plugin_folder  . '/' . $plugin)) {
-                $this->recursiveFolderDelete($plugin_folder  . '/' . $plugin);
-            }
             $container = $archive->open($zip, ZipArchive::CREATE);
             if ($container === true) {
                 try {
-                    $results         = $archive->extractTo($plugin_folder);
                     $old_folder_name = trim($archive->getNameIndex(0), "/");
+                    if (empty($old_folder_name)) throw new PHPDS_exception('No root folder found in archive');
+                    if (!preg_match("/$plugin/", $old_folder_name))
+                        throw new PHPDS_exception('Plugin folder not found in archive');
+
+                    $results = $archive->extractTo($tmp_folder);
                     $archive->close();
 
                     // Folder will most probably be incorrect, rename.
-                    $wrong_name = $plugin_folder . '/' . $old_folder_name;
-                    $new_name   = $plugin_folder . '/' . $plugin;
-                    if (file_exists($wrong_name))
-                        if (!rename($wrong_name, $new_name)) return false;
-                    if (!file_exists($new_name)) {
-                        $this->template->critical(sprintf("There was a problem creating plugin in %s", $new_name));
+                    $wrong_name   = $tmp_folder     . '/' . $old_folder_name;
+                    $right_name   = $tmp_folder     . '/' . $plugin;
+                    $final_folder = $plugin_folder  . '/' . $plugin;
+
+                    if (file_exists($wrong_name) && is_dir($wrong_name)) {
+                        if (rename($wrong_name, $right_name)) {
+                            $this->rcopy($right_name, $final_folder);
+                        } else {
+                            throw new PHPDS_exception(sprintf('Could not renaming plugin in %s', $wrong_name));
+                        }
+                    } else {
+                        throw new PHPDS_exception(sprintf('Plugin did not extract to %s', $wrong_name));
+                    }
+
+                    if (!file_exists($final_folder) && !is_dir($final_folder)) {
+                        $this->template->critical(sprintf("There was a problem creating plugin in %s", $final_folder));
                         return false;
                     }
+
                     if ($results) {
-                        return $this->pluginPrepare($plugin);
+                        return $this->pluginPrepareReadyLocally($plugin);
                     } else {
                         return false;
                     }
@@ -754,21 +760,71 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
+     * @param $src
+     * @param $dest
+     *
+     * @return bool
+     * @throws PHPDS_exception
+     */
+    protected function rcopy($src, $dest)
+    {
+        // If source is not a directory stop processing
+        if (!is_dir($src)) throw new PHPDS_exception(sprintf('Directory %s is not a directory', $src));
+
+        // If the destination directory does not exist create it
+        if (!is_dir($dest)) {
+            if (!mkdir($dest)) {
+                throw new PHPDS_exception(sprintf('Directory %s could not be created', $dest));
+            }
+        }
+
+        $files = new DirectoryIterator($src);
+
+        foreach ($files as $file) {
+            if ($file->isFile()) {
+                copy($file->getRealPath(), "$dest/" . $file->getFilename());
+            } else if (!$file->isDot() && $file->isDir()) {
+                $this->rcopy($file->getRealPath(), "$dest/$file");
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param $dir
+     * @return bool
+     */
+    protected function recursiveFolderDelete($dir)
+    {
+        $it = new RecursiveDirectoryIterator($dir);
+        $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+
+        foreach($files as $file) {
+            if ($file->getFilename() === '.' || $file->getFilename() === '..') {
+                continue;
+            }
+            if ($file->isDir()){
+                rmdir($file->getRealPath());
+            } else {
+                unlink($file->getRealPath());
+            }
+        }
+        rmdir($dir);
+    }
+
+    /**
      * @param $dir
      * @return bool
      */
     protected function isWritable($dir)
     {
-        $folder = opendir($dir);
-        while ($file = readdir($folder))
-            if ($file != '.' && $file != '..' &&
-                (!is_writable($dir . "/" . $file) ||
-                (is_dir($dir . "/" . $file) && !$this->isWritable($dir . "/" . $file)))
-            ) {
-                closedir($dir);
+        $files = new DirectoryIterator($dir);
+
+        foreach ($files as $file) {
+            if (!$file->isDot() && !$file->isWritable()) {
                 return false;
             }
-        closedir($dir);
+        }
         return true;
     }
 }

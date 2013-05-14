@@ -198,6 +198,43 @@ class PHPDS_template extends PHPDS_dependant
     }
 
     /**
+     * Will add any js path to where this tag is called from, best used in controller to add to view.
+     *
+     * @param bool   $return
+     * @param string $jsRelativePath
+     *
+     * @return string|void
+     */
+    public function outputJsAsset($jsRelativePath = '', $return = false)
+    {
+        if ($return == false) {
+            print $this->mod->jsAsset($this->CDN . '/' . $jsRelativePath);
+        } else {
+            return $this->mod->jsAsset($this->CDN . '/' . $jsRelativePath);
+        }
+        return null;
+    }
+
+    /**
+     * Will add any css path to where this tag is called from, best used in controller to add to view.
+     *
+     * @param bool   $return
+     * @param string $cssRelativePath
+     * @param string $media
+     *
+     * @return string|void
+     */
+    public function outputCssAsset($cssRelativePath = '', $return = false, $media = '')
+    {
+        if ($return == false) {
+            print $this->mod->cssAsset($this->CDN . '/' . $cssRelativePath, $media);
+        } else {
+            return $this->mod->cssAsset($this->CDN . '/' . $cssRelativePath, $media);
+        }
+        return null;
+    }
+
+    /**
      * Changes head output.
      *
      * @param boolean $return return or print out method

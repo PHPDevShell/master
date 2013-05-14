@@ -70,6 +70,26 @@ HTML;
 HTML;
     }
 
+    public function jsAsset($src)
+    {
+        if (empty($src)) return '';
+        return <<<HTML
+
+            <script type="text/javascript" src="{$src}"></script>
+
+HTML;
+    }
+
+    public function cssAsset($href, $media)
+    {
+        if (empty($src)) return '';
+        return <<<HTML
+
+            <link rel="stylesheet" href="{$href}" media="{$media}">
+
+HTML;
+    }
+
     public function addToHead($head)
     {
         if (empty($head)) return '';
