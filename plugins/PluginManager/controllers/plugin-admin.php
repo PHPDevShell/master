@@ -34,7 +34,7 @@ class PluginManager extends PHPDS_controller
         /////////////////////////////////////////////////
         $this->view->set('reporows', $this->repoRows());
         $this->view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
-        $this->view->set('updateplugins', $this->navigation->selfUrl('update=plugins'));
+        $this->view->set('updateplugins', $this->navigation->selfUrl('check=updates'));
         $this->view->set('updatemenus', $this->navigation->selfUrl('update=menus'));
         $this->view->set('viewlogs', $this->navigation->selfUrl('view=logs'));
         $this->view->set('updatelocal', $this->navigation->selfUrl());
@@ -42,6 +42,7 @@ class PluginManager extends PHPDS_controller
         // Output Template.
         $this->view->show();
 
+        // Add js to view.
         $this->view->jsAsset('plugins/PluginManager/js/helper.js');
     }
 
@@ -72,9 +73,30 @@ class PluginManager extends PHPDS_controller
             }
         }
 
+        // Check plugins and health.
+        if ($this->G('check')) {
+            switch ($this->G('check')) {
+                case 'updates':
+                    return $this->repo->checkPlugins();
+                    break;
+                case 'msg_alluptodate':
+                    $this->template->ok(__('No updates available'));
+                    return false;
+                    break;
+                case 'msg_updatesavail':
+                    $this->template->warning(__('There are updates available'));
+                    return false;
+                    break;
+                case 'update':
+                    return $this->repo->checkUpdate($this->G('plugin'), $this->G('version'));
+                    break;
+                case 'health':
+                    break;
+            }
+        }
+
         // This set of actions is normally runs in sequence once after the other as required.
         if ($this->G('action')) {
-
             $result = false;
             switch ($this->G('action')) {
                 // Will download and move to plugin folder if required.
@@ -95,9 +117,6 @@ class PluginManager extends PHPDS_controller
                     break;
                 case 'refresh':
                     return $this->repoRows($this->G('plugin'));
-                    break;
-                case 'update':
-                    return $this->checkUpdates($this->G('plugin'));
                     break;
             }
             return $result;

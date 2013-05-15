@@ -17,7 +17,7 @@
             </p>
 		]]>
     </info>
-    <install>
+    <install version="1000">
         <classes>
             <class name="models" alias="LightModels_models" plugin="LightModels" rank="last"/>
         </classes>

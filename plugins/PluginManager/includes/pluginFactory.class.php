@@ -99,8 +99,8 @@ class pluginFactory extends PHPDS_dependant
      */
     public function upgrade($plugin_folder)
     {
-        $version = $this->plugin->install['version'];
         $this->preConstruct($plugin_folder);
+        $version = $this->plugin->install['version'];
 
         // Upgrade custom database query.
         $this->upgradeQueries($plugin_folder, $version);

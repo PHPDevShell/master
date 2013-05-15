@@ -365,16 +365,21 @@ class pluginRepository extends PHPDS_dependant
 
     /**
      * @param $plugin
+     * @param $remote_only
      * @return array|bool
      */
-    public function pluginConfig($plugin)
+    public function pluginConfig($plugin, $remote_only=false)
     {
-        $plugin_exists = $this->pluginExistsLocally($plugin);
-
-        if ($plugin_exists) {
-            $cfg = $this->pluginConfigLocal($plugin_exists);
-        } else {
+        if ($remote_only) {
             $cfg = $this->pluginConfigGithubRemote($plugin);
+        } else {
+            $plugin_exists = $this->pluginExistsLocally($plugin);
+
+            if ($plugin_exists) {
+                $cfg = $this->pluginConfigLocal($plugin_exists);
+            } else {
+                $cfg = $this->pluginConfigGithubRemote($plugin);
+            }
         }
 
         if (isset($cfg) && is_array($cfg)) {
@@ -501,20 +506,20 @@ class pluginRepository extends PHPDS_dependant
      */
     protected function xmlPluginConfigToArray($xml)
     {
-        $p['database_version'] = (empty($xml->install['version'])) ? 'na' : (int)$xml->install['version'];
-        $p['name']             = (empty($xml->name)) ? false : (string)$xml->name;
-        $p['version']          = (empty($xml->version)) ? false : (string)$xml->version;
-        $p['description']      = (empty($xml->description)) ? 'na' : (string)$xml->description;
-        $p['versionurl']       = (empty($xml->versionurl)) ? 'na' : (string)$xml->versionurl;
-        $p['current']          = (empty($xml->versionurl['current'])) ? 'na' : (string)$xml->versionurl['current'];
-        $p['founder']          = (empty($xml->founder)) ? 'na' : (string)$xml->founder;
-        $p['author']           = (empty($xml->author)) ? 'na' : (string)$xml->author;
-        $p['email']            = (empty($xml->email)) ? 'na' : (string)$xml->email;
-        $p['homepage']         = (empty($xml->homepage)) ? 'na' : (string)$xml->homepage;
-        $p['date']             = (empty($xml->date)) ? 'na' : (string)$xml->date;
-        $p['copyright']        = (empty($xml->copyright)) ? 'na' : (string)$xml->copyright;
-        $p['license']          = (empty($xml->license)) ? 'na' : (string)$xml->license;
-        $p['info']             = (empty($xml->info)) ? 'na' : (string)$xml->info;
+        $p['database_version'] = (empty($xml->install['version'])) ? 0 : (int)$xml->install['version'];
+        $p['name']             = (empty($xml->name)) ? null : (string)$xml->name;
+        $p['version']          = (empty($xml->version)) ? null : (string)$xml->version;
+        $p['description']      = (empty($xml->description)) ? null : (string)$xml->description;
+        $p['versionurl']       = (empty($xml->versionurl)) ? null : (string)$xml->versionurl;
+        $p['current']          = (empty($xml->versionurl['current'])) ? null : (string)$xml->versionurl['current'];
+        $p['founder']          = (empty($xml->founder)) ? null : (string)$xml->founder;
+        $p['author']           = (empty($xml->author)) ? null : (string)$xml->author;
+        $p['email']            = (empty($xml->email)) ? null : (string)$xml->email;
+        $p['homepage']         = (empty($xml->homepage)) ? null : (string)$xml->homepage;
+        $p['date']             = (empty($xml->date)) ? null : (string)$xml->date;
+        $p['copyright']        = (empty($xml->copyright)) ? null : (string)$xml->copyright;
+        $p['license']          = (empty($xml->license)) ? null : (string)$xml->license;
+        $p['info']             = (empty($xml->info)) ? null : (string)$xml->info;
 
         if (!empty($xml->install->dependencies[0])) {
             $p['dependency'] = $this->pluginDependencies($xml->install->dependencies[0]);
@@ -522,6 +527,44 @@ class pluginRepository extends PHPDS_dependant
 
         if ($xml && $p['name'] && $p['version']) {
             return ($xml) ? $p : false;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function checkPlugins()
+    {
+        $p = $this->config->pluginsInstalled;
+        return json_encode($p);
+    }
+
+    /**
+     * @param $plugin
+     * @param $version
+     * @return bool
+     */
+    public function checkUpdate($plugin, $version)
+    {
+        if (empty($version)) return false;
+
+        $repo = $this->readOriginalJsonRepo();
+
+        // Check online first.
+        if (!empty($repo['plugins'][$plugin]['repo'])) {
+            $config = $this->pluginConfig($plugin, true);
+        } else {
+            $config = $this->pluginConfig($plugin);
+        }
+
+        if (! empty($config['database_version']) && ! empty($version)) {
+            if ($config['database_version'] > $version) {
+                return json_encode(array('plugin' => $plugin, 'label' => __('update')));
+            } else {
+                return false;
+            }
         } else {
             return false;
         }

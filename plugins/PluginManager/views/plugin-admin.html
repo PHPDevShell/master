@@ -18,12 +18,17 @@
                         </li>
                         <li>
                             <a id="check-updates" href="{{updateplugins}}">
-                                <i class="icon-globe icon-white"></i> {{#i}}Check Plugin Updates{{/i}}
+                                <i class="icon-globe icon-white"></i> {{#i}}Seek Updates{{/i}}
+                            </a>
+                        </li>
+                        <li>
+                            <a id="check-health" href="{{updateplugins}}">
+                                <i class="icon-heart icon-white"></i> {{#i}}Check Health{{/i}}
                             </a>
                         </li>
                         <li>
                             <a href="{{updatelocal}}" data-via-ajax="page">
-                                <i class="icon-refresh icon-white"></i> {{#i}}Refresh Local Plugins{{/i}}
+                                <i class="icon-refresh icon-white"></i> {{#i}}Refresh Plugins{{/i}}
                             </a>
                         </li>
                         <li>
@@ -58,20 +63,20 @@
     </div>
     <div id="new-plugin-template" class="hide">
         <div id="" class="row hidden-button-bind">
-            <div class="column span1">
+            <div class="column span1 labeling-row">
                 <span class="label label-info plugin-repo">{{#i}}repo{{/i}}</span>
                 <span class="label label-warning plugin-ready">{{#i}}new{{/i}}</span>
             </div>
-            <div class="column span5">
+            <div class="column span5 plugin-information-row">
                 <div class="plugin-name text-warning"></div>
                 <div class="plugin-short-description muted"></div>
             </div>
-            <div class="column span3">
+            <div class="column span3 action-buttons">
                 <div class="hide">
-                    <button data-plugin="" title="{{#i}}Info{{/i}}" class="plugin-get-info btn btn-info">
+                    <button data-plugin="" title="{{#i}}info{{/i}}" class="plugin-get-info btn btn-info">
                         <i class="icon-info-sign icon-white"></i>
                     </button>
-                    <button data-plugin="" title="{{#i}}Install{{/i}}" class="plugin-get-install btn btn-inverse">
+                    <button data-plugin="" title="{{#i}}install{{/i}}" class="plugin-get-install btn btn-inverse">
                         <i class="icon-download-alt icon-white"></i>
                     </button>
                 </div>

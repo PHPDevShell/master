@@ -198,9 +198,9 @@ PHPDS.documentReady = function (root) {
     PHPDS.root.ready(function () {
         jQuery.pronto();
         jQuery(window)
-            .on("pronto.render", PHPDS.initPage)
-            .on("pronto.request", PHPDS.requestPage(500))
-            .on("pronto.load", PHPDS.endRequest);
+            .on("pronto.load", PHPDS.initPage)
+            .on("pronto.request", PHPDS.requestPage)
+            .on("pronto.render", PHPDS.endRequest);
         PHPDS.initPage();
     });
 };
@@ -209,30 +209,20 @@ PHPDS.documentReady = function (root) {
  * Could be used in cases to do something as soon as page starts.
  */
 PHPDS.initPage = function () {
-
+    PHPDS.root.ajaxStop(function () {
+        PHPDS.endRequest();
+    });
 };
 
 /**
  * Loader when page is requested via Ajax.
  */
-PHPDS.requestPage = function (delaytime) {
-    delaytime = typeof delaytime !== 'undefined' ? delaytime : 500;
+PHPDS.requestPage = function () {
+    PHPDS.ajaxRequestBusy = true;
     PHPDS.root.removeData("modal");
-    PHPDS.root.ajaxStart(function () {
-        PHPDS.ajaxRequestBusy = true;
-        PHPDS.queuedTimeout = setTimeout(function() {
-            $('#ajax-loader-art').modal({
-                backdrop: 'static',
-                keyboard: true
-            });
-        }, delaytime);
-    });
-    PHPDS.root.ajaxStop(function () {
-        clearTimeout(PHPDS.queuedTimeout);
-        $("#progress-bar").text('');
-        $('#ajax-loader-art').modal('hide');
-        PHPDS.ajaxRequestBusy = false;
-    });
+    PHPDS.queuedTimeout = setTimeout(function() {
+        $('#ajax-loader-art').modal();
+    }, 300);
 };
 
 /**
