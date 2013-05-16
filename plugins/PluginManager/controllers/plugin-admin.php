@@ -36,7 +36,6 @@ class PluginManager extends PHPDS_controller
         $this->view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
         $this->view->set('updateplugins', $this->navigation->selfUrl('check=updates'));
         $this->view->set('updatemenus', $this->navigation->selfUrl('update=menus'));
-        $this->view->set('viewlogs', $this->navigation->selfUrl('view=logs'));
         $this->view->set('updatelocal', $this->navigation->selfUrl());
 
         // Output Template.
@@ -104,7 +103,7 @@ class PluginManager extends PHPDS_controller
                     return $this->repo->pluginDependsCollector($this->G('plugin'));
                     break;
                 case 'prepare':
-                    $result = $this->repo->pluginPrepare($this->G('plugin'));
+                    $result = $this->repo->pluginPrepare($this->G('plugin'), $this->G('actiontype'));
                     if ($result == false)
                         $this->template->critical(sprintf(__('Could not prepare plugin %s'),
                             $this->G('plugin')));
@@ -126,7 +125,9 @@ class PluginManager extends PHPDS_controller
         if ($this->P('action')) {
             switch ($this->P('action')) {
                 case 'extract':
-                    $result = $this->repo->pluginExtraction($this->P('plugin'), $this->P('zip'));
+                    $result = $this->repo->pluginExtraction(
+                        $this->P('plugin'), $this->P('zip'), $this->P('actiontype')
+                    );
                     break;
                 case 'install':
                     $result = $this->factory->install($this->P('plugin'));

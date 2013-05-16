@@ -837,6 +837,7 @@ class pluginFactory extends PHPDS_dependant
      *
      * @param string $plugin_folder     Folder and unique name where plugin was copied.
      * @param int    $installed_version Upgrade database against this version.
+     * @return bool
      */
     protected function upgradeQueries($plugin_folder, $installed_version)
     {
@@ -846,6 +847,11 @@ class pluginFactory extends PHPDS_dependant
         // Assign queries q.
         $upgrade_array  = $this->plugin->upgrade;
         $latest_version = $this->plugin->install['version'];
+
+        if (empty($upgrade_array)) {
+            $this->pluginUpgraded = $latest_version;
+            return false;
+        }
         // Loop through all upgrade objects.
         foreach ($upgrade_array as $upgrade) {
             // Active loop version.
@@ -924,6 +930,7 @@ class pluginFactory extends PHPDS_dependant
                 $this->pluginUpgraded = $active_loop_version;
             }
         }
+        return true;
     }
 
     /**

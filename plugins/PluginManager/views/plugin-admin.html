@@ -48,7 +48,14 @@
                 </form>
             </div>
             <div class="span2">
-                <a id="latest-log" href="{{viewlogs}}" class="lead hide">{{#i}}View last log{{/i}}</a>
+                <button id="latest-log" class="btn btn-inverse hide"
+                        title="{{#i}}View last log{{/i}}">
+                    <i class="icon-list-alt icon-white"></i>
+                </button>
+                <button id="upgrade-all-plugins" class="btn btn-primary hide"
+                        title="{{#i}}Upgrade all plugins{{/i}}">
+                    <i class="icon-gift icon-white"></i>
+                </button>
             </div>
             <div id="repo-counter" class="span6">
                 <span id="r-c-available" class="text-info lead">0</span>

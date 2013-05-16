@@ -561,7 +561,7 @@ class pluginRepository extends PHPDS_dependant
 
         if (! empty($config['database_version']) && ! empty($version)) {
             if ($config['database_version'] > $version) {
-                return json_encode(array('plugin' => $plugin, 'label' => __('update')));
+                return json_encode(array('plugin' => $plugin, 'label' => __('upgrade')));
             } else {
                 return false;
             }
@@ -643,9 +643,10 @@ class pluginRepository extends PHPDS_dependant
 
     /**
      * @param $plugin
+     * @param $actiontype
      * @return string
      */
-    public function pluginPrepare($plugin)
+    public function pluginPrepare($plugin, $actiontype = false)
     {
         if ($this->pluginExistsLocally($plugin)) {
             if ($this->isPluginInstalled($plugin)) {
@@ -653,10 +654,14 @@ class pluginRepository extends PHPDS_dependant
                 if (!empty($repo['plugins'][$plugin]['repo'])) {
                     return $this->pluginPrepareNeedDownload();
                 } else {
-                    return $this->pluginReinstallReadyLocally();
+                    if ($actiontype == 'upgrade') {
+                        return $this->pluginUpgradeReadyLocally();
+                    } else {
+                        return $this->pluginReinstallReadyLocally();
+                    }
                 }
             } else {
-                return $this->pluginPrepareReadyLocally($plugin);
+                return $this->pluginPrepareReadyLocally($plugin, $actiontype);
             }
         } else {
             return $this->pluginPrepareNeedDownload();
@@ -665,15 +670,30 @@ class pluginRepository extends PHPDS_dependant
 
     /**
      * @param $plugin
+     * @param $actiontype
      * @return string
      */
-    protected function pluginPrepareReadyLocally($plugin)
+    protected function pluginPrepareReadyLocally($plugin, $actiontype = false)
     {
-        if (!$this->isPluginInstalled($plugin)) {
-            return json_encode(array('status' => 'install', 'message' => __('Installing...')));
+        if ($this->isPluginInstalled($plugin)) {
+            if ($actiontype == 'upgrade') {
+                return $this->pluginUpgradeReadyLocally();
+            } else if ($actiontype == 'reinstall') {
+                return $this->pluginReInstallReadyLocally();
+            } else {
+                return false;
+            }
         } else {
-            return json_encode(array('status' => 'reinstall', 'message' => __('Re-installing...')));
+            return $this->pluginInstallReadyLocally();
         }
+    }
+
+    /**
+     * @return string
+     */
+    protected function pluginInstallReadyLocally()
+    {
+        return json_encode(array('status' => 'install', 'message' => __('Installing...')));
     }
 
     /**
@@ -682,6 +702,14 @@ class pluginRepository extends PHPDS_dependant
     protected function pluginReinstallReadyLocally()
     {
         return json_encode(array('status' => 'reinstall', 'message' => __('Re-installing...')));
+    }
+
+    /**
+     * @return string
+     */
+    protected function pluginUpgradeReadyLocally()
+    {
+        return json_encode(array('status' => 'upgrade', 'message' => __('Upgrading...')));
     }
 
     /**
@@ -743,10 +771,11 @@ class pluginRepository extends PHPDS_dependant
     /**
      * @param $plugin
      * @param $zip
+     * @param $actiontype
      * @return bool|string
      * @throws PHPDS_exception
      */
-    public function pluginExtraction($plugin, $zip)
+    public function pluginExtraction($plugin, $zip, $actiontype = false)
     {
         $config        = $this->configuration;
         $plugin_folder = $config['absolute_path'] . 'plugins';
@@ -788,7 +817,7 @@ class pluginRepository extends PHPDS_dependant
                     }
 
                     if ($results) {
-                        return $this->pluginPrepareReadyLocally($plugin);
+                        return $this->pluginPrepareReadyLocally($plugin, $actiontype);
                     } else {
                         return false;
                     }
@@ -830,7 +859,12 @@ class pluginRepository extends PHPDS_dependant
                 $this->rcopy($file->getRealPath(), "$dest/$file");
             }
         }
-        return false;
+
+        if (!empty($files) && $this->isWritable($src)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -852,7 +886,14 @@ class pluginRepository extends PHPDS_dependant
                 unlink($file->getRealPath());
             }
         }
+
         rmdir($dir);
+
+        if (!is_dir($dir) && !file_exists($dir)) {
+           return true;
+        } else {
+           return false;
+        }
     }
 
     /**

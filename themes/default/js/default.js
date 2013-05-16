@@ -241,7 +241,6 @@ PHPDS.endRequest = function () {
 PHPDS.ajaxErrorHandler = function () {
     PHPDS.root.ajaxError(function (e, jqXHR, settings, exception) {
         var url = jQuery(location).attr('href');
-
         switch (jqXHR.status) {
             case 401:
                 location.href = url;
@@ -307,7 +306,7 @@ PHPDS.ajaxInputError = function (request) {
  * @param fadeout
  */
 PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
-    delaytime = typeof delaytime !== 'undefined' ? delaytime : 1600;
+    delaytime = typeof delaytime !== 'undefined' ? delaytime : 2000;
     fadeout = typeof fadeout !== 'undefined' ? fadeout : 1000;
     var json = request.getResponseHeader('ajaxResponseMessage');
     if (json) {
@@ -327,7 +326,7 @@ PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
 
                     case "warning":
                         notify_type = 'alert-notice';
-                        delaytime = 3800;
+                        delaytime = 4000;
                         break;
 
                     case "error":

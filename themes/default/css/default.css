@@ -156,6 +156,10 @@ li .login-actions:after {
 }
 
 /* Notifications */
+.alert {
+    border: 3px solid;
+}
+
 .notifications {
     position: fixed;
     right: 0;
