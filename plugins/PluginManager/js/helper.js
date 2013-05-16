@@ -72,8 +72,10 @@ PluginManager.countRepository = function (id, countto) {
 
 // Do some janitor tasks.
 PluginManager.janitor = function () {
-    PluginManager.countRepositoryOnce();
-    PluginManager.refreshMenus();
+    PHPDS.root.ajaxStop(function () {
+        PluginManager.countRepositoryOnce();
+        PluginManager.refreshMenus();
+    });
 };
 
 // Get plugin manager log.
