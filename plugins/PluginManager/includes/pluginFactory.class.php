@@ -190,7 +190,7 @@ class pluginFactory extends PHPDS_dependant
                         if ($this->nodeExists($node_id)) {
                             // Before we continue, update the link in-case it changed.
                             if ($this->updateNodeLink($node_link, $node_id)) {
-                                $this->log[] = sprintf(__("Checked/Updated node for %s with id (%s) and linked to %s.",
+                                $this->log[] = sprintf(__("Checked/Updated node for %s with id (%s) and linked to %s",
                                     'PluginManager'), $plugin_folder, $node_id, $node_link);
                             }
                             continue;
@@ -300,7 +300,7 @@ class pluginFactory extends PHPDS_dependant
                             // Create a new node item...
                             if ($this->createTheme($node_theme_insert, $node['theme'])) {
                                 // Show execution.
-                                $this->log[] = sprintf(__("Installed new theme for %s.", 'PluginManager'),
+                                $this->log[] = sprintf(__("Installed new theme for %s", 'PluginManager'),
                                     $node['theme']);
                             }
                             // Assign so we don't create it twice.
@@ -355,7 +355,7 @@ class pluginFactory extends PHPDS_dependant
                         'params'         => $params))
                     ) {
                         // Show execution.
-                        $this->log[] = sprintf(__("Installed node for %s with id (%s) and linked to %s.",
+                        $this->log[] = sprintf(__("Installed node for %s with id (%s) and linked to %s",
                             'PluginManager'), $plugin_folder, $node_id, $node_link);
                     }
                 }
@@ -600,7 +600,7 @@ class pluginFactory extends PHPDS_dependant
             if (isset($param_write)) {
                 // Finally write setting.
                 if ($config->writeSettings($param_write, $plugin_folder, $notes)) // Show execution.
-                    $this->log[] = sprintf(__("Installed settings for %s.", 'PluginManager'), $plugin_folder);
+                    $this->log[] = sprintf(__("Installed settings for %s", 'PluginManager'), $plugin_folder);
             }
         }
     }
@@ -659,7 +659,7 @@ class pluginFactory extends PHPDS_dependant
 
         if ($classes_array) {
             // Show execution.
-            $this->log[] = sprintf(__("Installed classes for %s.", 'PluginManager'), $plugin_folder);
+            $this->log[] = sprintf(__("Installed classes for %s", 'PluginManager'), $plugin_folder);
         }
     }
 
@@ -687,7 +687,7 @@ class pluginFactory extends PHPDS_dependant
                     $db->query($query_array);
                     // Show execution.
                     $query_array = preg_replace('/\r|\n|\s+/', ' ', $query_array);
-                    $this->log[] = sprintf(__("Executed install query for %s : %s.", 'PluginManager'),
+                    $this->log[] = sprintf(__("Executed install query for %s : %s", 'PluginManager'),
                         $plugin_folder, $query_array);
                 }
             }
@@ -724,7 +724,7 @@ class pluginFactory extends PHPDS_dependant
                 )
             )) {
                 // Show execution.
-                $this->log[] = sprintf(__("Installed plugin %s.", 'PluginManager'), $plugin_folder);
+                $this->log[] = sprintf(__("Installed plugin %s", 'PluginManager'), $plugin_folder);
             }
         }
     }
@@ -739,7 +739,7 @@ class pluginFactory extends PHPDS_dependant
     {
         if (!empty($plugin_folder)) {
             if ($this->nodeHelper->deleteNode(false, $plugin_folder, $delete_critical_only)) // Show execution.
-                $this->log[] = sprintf(__("Uninstall nodes for %s.", 'PluginManager'), $plugin_folder);
+                $this->log[] = sprintf(__("Uninstall nodes for %s", 'PluginManager'), $plugin_folder);
         }
     }
 
@@ -760,7 +760,7 @@ class pluginFactory extends PHPDS_dependant
         // Delete all hooks for this plugin.
         if ($db->queryAffects($sql, array('plugin_folder' => $plugin_folder))) {
             // Show execution.
-            $this->log[] = sprintf(__("Uninstalled classes for %s.", 'PluginManager'), $plugin_folder);
+            $this->log[] = sprintf(__("Uninstalled classes for %s", 'PluginManager'), $plugin_folder);
         }
     }
 
@@ -828,7 +828,7 @@ class pluginFactory extends PHPDS_dependant
         // Delete database activation.
         if ($db->queryAffects($sql, array('plugin_folder' => $plugin_folder))) {
             // Show execution.
-            $this->log[] = sprintf(__("Uninstalled plugin %s.", 'PluginManager'), $plugin_folder);
+            $this->log[] = sprintf(__("Uninstalled plugin %s", 'PluginManager'), $plugin_folder);
         }
     }
 
@@ -897,14 +897,14 @@ class pluginFactory extends PHPDS_dependant
                 if (isset($param_write)) {
                     // Write settings string.
                     if ($config->writeSettings($param_write, $plugin_folder)) // Show execution.
-                        $this->log[] = sprintf(__("Upgraded settings for %s.", 'PluginManager'),
+                        $this->log[] = sprintf(__("Upgraded settings for %s", 'PluginManager'),
                             $plugin_folder);
                 }
                 // Is there settings to delete in array?
                 if (isset($param_delete)) {
                     // Delete settings string.
                     if ($config->deleteSettings($param_delete, $plugin_folder)) // Show execution.
-                        $this->log[] = sprintf(__("Uninstalled some setting on upgrade for %s.", 'PluginManager'),
+                        $this->log[] = sprintf(__("Uninstalled some setting on upgrade for %s", 'PluginManager'),
                             $plugin_folder);
                 }
                 // Make sure node upgrades is not empty.
@@ -921,7 +921,7 @@ class pluginFactory extends PHPDS_dependant
                 if (!empty($node_id_to_delete)) {
                     // Delete node item.
                     if ($this->nodeHelper->deleteNode($node_id_to_delete)) // Show execution.
-                        $this->log[] = sprintf(__("Uninstalled some nodes on upgrade for %s.", 'PluginManager'),
+                        $this->log[] = sprintf(__("Uninstalled some nodes on upgrade for %s", 'PluginManager'),
                             $plugin_folder);
                 }
                 // Unset items for new loop.
@@ -956,7 +956,7 @@ class pluginFactory extends PHPDS_dependant
                 array('status' => $status, 'version' => $this->pluginUpgraded, 'plugin_folder' => $plugin_folder)
             )) {
                 // Show execution.
-                $this->log[] = sprintf(__("Upgraded plugin %s database to version %s.", 'PluginManager'),
+                $this->log[] = sprintf(__("Upgraded plugin %s database to version %s", 'PluginManager'),
                     $plugin_folder, $this->pluginUpgraded);
             }
         }

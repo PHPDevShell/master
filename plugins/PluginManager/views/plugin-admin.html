@@ -1,9 +1,9 @@
-<div id="repository" data-url="{{updatelocal}}">
+<div id="repository" data-url="{{update_local}}">
     <div class="plugin-manager">
         <div class="row">
             <div class="span1">
                 <div id="plugin-tools" class="btn-group">
-                    <button class="repo-refresh btn btn-inverse" data-update-url="{{updaterepo}}">
+                    <button class="repo-refresh btn btn-inverse" data-update-url="{{update_repo}}">
                         <i class="icon-retweet icon-white"></i>
                     </button>
                     <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
@@ -11,28 +11,28 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <a id="repo-refresh" class="repo-refresh" data-update-url="{{updaterepo}}"
-                               href="{{updaterepo}}">
+                            <a id="repo-refresh" class="repo-refresh" data-update-url="{{update_repo}}"
+                               href="{{update_repo}}">
                                 <i class="icon-retweet icon-white"></i> {{#i}}Update Repository{{/i}}
                             </a>
                         </li>
                         <li>
-                            <a id="check-updates" href="{{updateplugins}}">
+                            <a id="check-updates" href="{{check_updates}}">
                                 <i class="icon-globe icon-white"></i> {{#i}}Seek Updates{{/i}}
                             </a>
                         </li>
                         <li>
-                            <a id="check-health" href="{{updateplugins}}">
-                                <i class="icon-heart icon-white"></i> {{#i}}Check Health{{/i}}
+                            <a id="check-dependencies" href="{{check_dependencies}}">
+                                <i class="icon-heart icon-white"></i> {{#i}}Check Dependency{{/i}}
                             </a>
                         </li>
                         <li>
-                            <a href="{{updatelocal}}" data-via-ajax="page">
+                            <a id="refresh-plugins" href="{{refresh_plugins}}">
                                 <i class="icon-refresh icon-white"></i> {{#i}}Refresh Plugins{{/i}}
                             </a>
                         </li>
                         <li>
-                            <a id="menu-refresh" href="{{updatemenus}}">
+                            <a id="menu-refresh" href="{{update_menus}}">
                                 <i class="icon-list-alt icon-white"></i> {{#i}}Refresh Menus{{/i}}
                             </a>
                         </li>
@@ -62,11 +62,15 @@
                 <span class="muted lead">{{#i}}Plugins{{/i}}</span>
                 <span id="r-c-installed" class="text-success lead">0</span>
                 <span class="muted lead">{{#i}}Installed{{/i}}</span>
+                <span id="count-updates" class="hide">
+                    <span id="r-c-updates" class="text-error lead">0</span>
+                    <span class="muted lead">{{#i}}Updates{{/i}}</span>
+                </span>
             </div>
         </div>
     </div>
     <div id="plugin-repo">
-        {{{reporows}}}
+        {{{repo_rows}}}
     </div>
     <div id="new-plugin-template" class="hide">
         <div id="" class="row hidden-button-bind">

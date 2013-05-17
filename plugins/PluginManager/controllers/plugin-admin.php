@@ -32,11 +32,13 @@ class PluginManager extends PHPDS_controller
         /////////////////////////////////////////////////
         // Call current plugins status from database. ///
         /////////////////////////////////////////////////
-        $this->view->set('reporows', $this->repoRows());
-        $this->view->set('updaterepo', $this->navigation->selfUrl('update=repo'));
-        $this->view->set('updateplugins', $this->navigation->selfUrl('check=updates'));
-        $this->view->set('updatemenus', $this->navigation->selfUrl('update=menus'));
-        $this->view->set('updatelocal', $this->navigation->selfUrl());
+        $this->view->set('repo_rows', $this->repoRows());
+        $this->view->set('update_repo', $this->navigation->selfUrl('update=repo'));
+        $this->view->set('check_updates', $this->navigation->selfUrl('check=updates'));
+        $this->view->set('check_dependencies', $this->navigation->selfUrl('check=dependencies'));
+        $this->view->set('update_menus', $this->navigation->selfUrl('update=menus'));
+        $this->view->set('refresh_plugins', $this->navigation->selfUrl('refresh=plugins'));
+        $this->view->set('update_local', $this->navigation->selfUrl());
 
         // Output Template.
         $this->view->show();
@@ -50,6 +52,11 @@ class PluginManager extends PHPDS_controller
      */
     public function viaAjax()
     {
+        // Refresh plugins.
+        if ($this->G('refresh') == 'plugins') {
+            return $this->execute();
+        }
+
         // Repo update.
         if ($this->G('update') == 'repo') {
             return $this->repo->updateRepository();
@@ -74,24 +81,29 @@ class PluginManager extends PHPDS_controller
 
         // Check plugins and health.
         if ($this->G('check')) {
+            $result = false;
             switch ($this->G('check')) {
                 case 'updates':
-                    return $this->repo->checkPlugins();
+                    $result = $this->repo->checkPlugins();
+                    if (!$result)
+                        $this->template->warning(__('No plugins installed to check updated for'));
                     break;
-                case 'msg_alluptodate':
+                case 'msg-alluptodate':
                     $this->template->ok(__('No updates available'));
                     return false;
                     break;
-                case 'msg_updatesavail':
+                case 'msg-updatesavail':
                     $this->template->warning(__('There are updates available'));
+                    return true;
+                    break;
+                case 'update-process':
+                    $result = $this->repo->checkUpdate($this->G('plugin'), $this->G('version'));
+                    break;
+                case 'dependencies':
                     return false;
                     break;
-                case 'update':
-                    return $this->repo->checkUpdate($this->G('plugin'), $this->G('version'));
-                    break;
-                case 'health':
-                    break;
             }
+            return $result;
         }
 
         // This set of actions is normally runs in sequence once after the other as required.

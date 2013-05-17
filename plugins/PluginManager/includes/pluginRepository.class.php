@@ -538,7 +538,11 @@ class pluginRepository extends PHPDS_dependant
     public function checkPlugins()
     {
         $p = $this->config->pluginsInstalled;
-        return json_encode($p);
+        if (!empty($p)) {
+            return json_encode($p);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -615,7 +619,8 @@ class pluginRepository extends PHPDS_dependant
             // add main plugin first.
             $install[] = $plugin;
             foreach ($cfg['dependency'] as $dep) {
-                if (empty($dep['ready'])) $install[] = $dep['plugin'];
+                if (!$this->isPluginInstalled($dep['plugin']))
+                    if (empty($dep['ready'])) $install[] = $dep['plugin'];
             }
             if (!empty($install)) return json_encode($install);
         }
