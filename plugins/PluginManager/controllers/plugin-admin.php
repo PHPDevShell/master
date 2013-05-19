@@ -29,9 +29,6 @@ class PluginManager extends PHPDS_controller
         // Pre-checks.
         $this->repo->canPluginManagerWork();
 
-        /////////////////////////////////////////////////
-        // Call current plugins status from database. ///
-        /////////////////////////////////////////////////
         $this->view->set('repo_rows', $this->repoRows());
         $this->view->set('update_repo', $this->navigation->selfUrl('update=repo'));
         $this->view->set('check_updates', $this->navigation->selfUrl('check=updates'));
@@ -44,7 +41,7 @@ class PluginManager extends PHPDS_controller
         $this->view->show();
 
         // Add js to view.
-        $this->view->jsAsset('plugins/PluginManager/js/helper.js');
+        $this->view->jsAsset('plugins/PluginManager/js/asset.js');
     }
 
     /**
@@ -81,104 +78,128 @@ class PluginManager extends PHPDS_controller
 
         // Check plugins and health.
         if ($this->G('check')) {
-            $result = false;
-            switch ($this->G('check')) {
-                case 'updates':
-                    $result = $this->repo->checkPlugins();
-                    if (!$result)
-                        $this->template->warning(__('No plugins installed to check updated for'));
-                    break;
-                case 'msg-alluptodate':
-                    $this->template->ok(__('No updates available'));
-                    return false;
-                    break;
-                case 'msg-updatesavail':
-                    $this->template->warning(__('There are updates available'));
-                    return true;
-                    break;
-                case 'update-process':
-                    $result = $this->repo->checkUpdate($this->G('plugin'), $this->G('version'));
-                    break;
-                case 'dependencies':
-                    return false;
-                    break;
-            }
-            return $result;
+            return $this->getCheck();
         }
 
         // This set of actions is normally runs in sequence once after the other as required.
         if ($this->G('action')) {
-            $result = false;
-            switch ($this->G('action')) {
-                // Will download and move to plugin folder if required.
-                case 'dependencies':
-                    return $this->repo->pluginDependsCollector($this->G('plugin'));
-                    break;
-                case 'prepare':
-                    $result = $this->repo->pluginPrepare($this->G('plugin'), $this->G('actiontype'));
-                    if ($result == false)
-                        $this->template->critical(sprintf(__('Could not prepare plugin %s'),
-                            $this->G('plugin')));
-                    break;
-                case 'download':
-                    $result = $this->repo->pluginPrepareDownload($this->G('plugin'));
-                    if ($result == false)
-                        $this->template->critical(sprintf(__('Could not download or locate plugin %s'),
-                            $this->G('plugin')));
-                    break;
-                case 'refresh':
-                    return $this->repoRows($this->G('plugin'));
-                    break;
-            }
-            return $result;
+            return $this->getAction();
         }
 
         // Perform a plugin action related to database and file changes.
         if ($this->P('action')) {
-            switch ($this->P('action')) {
-                case 'extract':
-                    $result = $this->repo->pluginExtraction(
-                        $this->P('plugin'), $this->P('zip'), $this->P('actiontype')
-                    );
-                    break;
-                case 'install':
-                    $result = $this->factory->install($this->P('plugin'));
-                    if ($result == true) $this->template->ok(sprintf("Plugin %s installed", $this->P('plugin')));
-                    break;
-                case 'upgrade':
-                    $result = $this->factory->upgrade($this->P('plugin'));
-                    if ($result == true) $this->template->ok(sprintf("Plugin %s upgraded", $this->P('plugin')));
-                    break;
-                case 'reinstall':
-                    $result = $this->factory->reinstall($this->P('plugin'));
-                    if ($result == true) $this->template->ok(sprintf("Plugin %s reinstalled", $this->P('plugin')));
-                    break;
-                case 'uninstall':
-                    $result = $this->factory->uninstall($this->P('plugin'));
-                    if ($result == true) $this->template->ok(sprintf("Plugin %s uninstalled", $this->P('plugin')));
-                    break;
-                case 'delete':
-                    $result = $this->repo->pluginDelete($this->P('plugin'));
-                    if ($result == true) $this->template->ok(sprintf("Plugin %s removed", $this->P('plugin')));
-                    break;
-                default:
-                    $result = null;
-                    break;
-            }
-            if (!empty($this->factory->log)) {
-                PU_silentHeader("ajaxPluginManagerLog: " . json_encode($this->factory->log));
-            }
-            return $result;
+            return $this->postAction();
         }
 
         return false;
     }
 
     /**
+     * @return bool|string
+     */
+    protected function getCheck()
+    {
+        $result = false;
+        switch ($this->G('check')) {
+            case 'updates':
+                $result = $this->repo->checkPlugins();
+                if (!$result)
+                    $this->template->warning(__('No plugins installed to check updated for'));
+                break;
+            case 'msg-alluptodate':
+                $this->template->ok(__('No updates available'));
+                return false;
+                break;
+            case 'msg-updatesavail':
+                $this->template->warning(__('There are updates available'));
+                return true;
+                break;
+            case 'update-process':
+                $result = $this->repo->checkUpdate($this->G('plugin'), $this->G('version'));
+                break;
+            case 'dependencies':
+                return false;
+                break;
+        }
+        return $result;
+    }
+
+    /**
+     * @return bool|mixed|string
+     */
+    protected function getAction()
+    {
+        $result = false;
+        switch ($this->G('action')) {
+            // Will download and move to plugin folder if required.
+            case 'dependencies':
+                return $this->repo->pluginDependsCollector($this->G('plugin'));
+                break;
+            case 'prepare':
+                $result = $this->repo->pluginPrepare($this->G('plugin'), $this->G('actiontype'));
+                if ($result == false)
+                    $this->template->critical(sprintf(__('Could not prepare plugin %s'),
+                        $this->G('plugin')));
+                break;
+            case 'download':
+                $result = $this->repo->pluginPrepareDownload($this->G('plugin'));
+                if ($result == false)
+                    $this->template->critical(sprintf(__('Could not download or locate plugin %s'),
+                        $this->G('plugin')));
+                break;
+            case 'refresh':
+                return $this->repoRows($this->G('plugin'));
+                break;
+        }
+        return $result;
+    }
+
+    /**
+     * @return bool|null|string
+     */
+    protected function postAction()
+    {
+        switch ($this->P('action')) {
+            case 'extract':
+                $result = $this->repo->pluginExtraction(
+                    $this->P('plugin'), $this->P('zip'), $this->P('actiontype')
+                );
+                break;
+            case 'install':
+                $result = $this->factory->install($this->P('plugin'));
+                if ($result == true) $this->template->ok(sprintf("Plugin %s installed", $this->P('plugin')));
+                break;
+            case 'upgrade':
+                $result = $this->factory->upgrade($this->P('plugin'));
+                if ($result == true) $this->template->ok(sprintf("Plugin %s upgraded", $this->P('plugin')));
+                break;
+            case 'reinstall':
+                $result = $this->factory->reinstall($this->P('plugin'));
+                if ($result == true) $this->template->ok(sprintf("Plugin %s reinstalled", $this->P('plugin')));
+                break;
+            case 'uninstall':
+                $result = $this->factory->uninstall($this->P('plugin'));
+                if ($result == true) $this->template->ok(sprintf("Plugin %s uninstalled", $this->P('plugin')));
+                break;
+            case 'delete':
+                $result = $this->repo->pluginDelete($this->P('plugin'));
+                if ($result == true) $this->template->ok(sprintf("Plugin %s removed", $this->P('plugin')));
+                break;
+            default:
+                $result = null;
+                break;
+        }
+        if (!empty($this->factory->log)) {
+            PU_silentHeader("ajaxPluginManagerLog: " . json_encode($this->factory->log));
+        }
+        return $result;
+    }
+
+    /**
      * @param null $plugin
      * @return mixed
      */
-    public function repoRows($plugin=null)
+    protected function repoRows($plugin=null)
     {
         // Read plugin directory.
         $RESULTS = $this->repo->initiateRepository($plugin);

@@ -477,7 +477,8 @@ class pluginRepository extends PHPDS_dependant
                 if (!empty($config['repository']['username']) && !empty($config['repository']['password'])) {
                     $this->template->critical(
                         sprintf('HTTP Response Error : %s (%s) -- %s', $http_code, $url,
-                            __('Check your repository USERNAME and PASSWORD in custom config'))
+                            __('* Try again, or if private repo Check your repository
+                            USERNAME and PASSWORD in custom config.'))
                     );
                 } else {
                     $this->template->critical(sprintf('HTTP Response Error : %s (%s)', $http_code, $url));
