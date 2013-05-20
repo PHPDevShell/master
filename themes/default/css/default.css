@@ -151,6 +151,19 @@ li .login-actions:after {
     font-weight: bold;
 }
 
+.progress {
+    background: #666;
+}
+
+#progress-bar-message {
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #fff;
+    text-align: center;
+    width: 100%;
+}
+
 #wrap-loader {
 
 }

@@ -230,7 +230,7 @@ PHPDS.requestPage = function () {
  */
 PHPDS.endRequest = function () {
     clearTimeout(PHPDS.queuedTimeout);
-    $("#progress-bar").text('');
+    $("#progress-bar-message").text('');
     $('#ajax-loader-art').modal('hide');
     PHPDS.ajaxRequestBusy = false;
 };
