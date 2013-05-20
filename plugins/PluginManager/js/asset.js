@@ -72,8 +72,6 @@ PluginManager.checkUpdates = function ($url, data) {
                     var updatesavail = $(".plugin-get-upgrade").length;
                     if (updatesavail > 0) {
                         $.get($url, {"check": "msg-updatesavail"});
-                        $("#upgrade-all-plugins, #count-updates").show("slow");
-                        PluginManager.countRepository("#r-c-updates", updatesavail + 0.5);
                     } else {
                         $.get($url, {"check": "msg-alluptodate"});
                     }
@@ -176,55 +174,55 @@ PluginManager.pluginManagerLog = function (request) {
  */
 PluginManager.managePlugin = function ($url, plugin, actiontype) {
     // Phase 0: Does plugin need downloading?
-    $.get($url, {"action": "prepare", "plugin": plugin, "actiontype": actiontype},
-        function (data, textStatus, request) {
-            if (data != 'false') {
-                var phase1 = $.parseJSON(data);
-                $("#progress-bar-message").text(phase1.message);
-                // Phase 1 : Plugins needs downloading.
-                if (phase1.status == 'download') {
-                    $.get($url, {"action": phase1.status, "plugin": plugin, "actiontype": actiontype},
-                        function (data, textStatus, request) {
-                        if (data != 'false') {
-                            // Phase 2 : Plugin needs extraction.
-                            var phase2 = $.parseJSON(data);
-                            $("#progress-bar-message").text(phase2.message);
-                            PluginManager.progressPercentage();
-                            if (phase2.status == 'extract') {
-                                $.post($url, {"action": phase2.status,
-                                        "plugin": plugin, "zip": phase2.zip, "actiontype": actiontype},
-                                    function (data, textStatus, request) {
-                                        if (data != 'false') {
-                                            // Phase 3 : Installing.
-                                            var phase3 = $.parseJSON(data);
-                                            $("#progress-bar-message").text(phase3.message);
-                                            if (phase3.status == 'install' ||
-                                                phase3.status == 'reinstall' ||
-                                                phase3.status == 'upgrade') {
-                                                $.post($url, {"action": phase3.status, "plugin": plugin},
-                                                    function (data, textStatus, request) {
-                                                        PluginManager.pluginManagerLog(request);
-                                                        PluginManager.refreshPluginStatus(plugin, $url);
-                                                    });
+        $.get($url, {"action": "prepare", "plugin": plugin, "actiontype": actiontype},
+            function (data, textStatus, request) {
+                if (data != 'false') {
+                    var phase1 = $.parseJSON(data);
+                    $("#progress-bar-message").text(phase1.message);
+                    // Phase 1 : Plugins needs downloading.
+                    if (phase1.status == 'download') {
+                        $.get($url, {"action": phase1.status, "plugin": plugin, "actiontype": actiontype},
+                            function (data, textStatus, request) {
+                            if (data != 'false') {
+                                PluginManager.progressPercentage();
+                                // Phase 2 : Plugin needs extraction.
+                                var phase2 = $.parseJSON(data);
+                                $("#progress-bar-message").text(phase2.message);
+                                if (phase2.status == 'extract') {
+                                    $.post($url, {"action": phase2.status,
+                                            "plugin": plugin, "zip": phase2.zip, "actiontype": actiontype},
+                                        function (data, textStatus, request) {
+                                            if (data != 'false') {
+                                                // Phase 3 : Installing.
+                                                var phase3 = $.parseJSON(data);
+                                                $("#progress-bar-message").text(phase3.message);
+                                                if (phase3.status == 'install' ||
+                                                    phase3.status == 'reinstall' ||
+                                                    phase3.status == 'upgrade') {
+                                                    $.post($url, {"action": phase3.status, "plugin": plugin},
+                                                        function (data, textStatus, request) {
+                                                            PluginManager.pluginManagerLog(request);
+                                                            PluginManager.refreshPluginStatus(plugin, $url);
+                                                        });
+                                                }
+                                            } else {
+                                                PluginManager.pluginManagerLog(request);
+                                                PluginManager.refreshPluginStatus(plugin, $url);
                                             }
-                                        } else {
-                                            PluginManager.pluginManagerLog(request);
-                                            PluginManager.refreshPluginStatus(plugin, $url);
-                                        }
-                                    });
+                                        });
+                                }
                             }
-                        }
-                    });
-                    // Phase 3 : Installing.
-                } else if (phase1.status == 'install' || phase1.status == 'reinstall' || phase1.status == 'upgrade') {
-                    $.post($url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
-                        PluginManager.pluginManagerLog(request);
-                        PluginManager.refreshPluginStatus(plugin, $url);
-                        PluginManager.progressPercentage();
-                    });
+                        });
+                        // Phase 3 : Installing.
+                    } else if (phase1.status == 'install' || phase1.status == 'reinstall' || phase1.status == 'upgrade') {
+                        $.post($url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
+                            PluginManager.pluginManagerLog(request);
+                            PluginManager.refreshPluginStatus(plugin, $url);
+                            PluginManager.progressPercentage();
+                        });
+                    }
                 }
-            }
-        });
+            });
 };
 
 /**
@@ -234,7 +232,9 @@ PluginManager.progress_parts = 0;
 PluginManager.progress_part  = 0;
 PluginManager.progressPercentage = function () {
     PluginManager.progress_part ++;
-    PluginManager.progress_bar.css({'width': (PluginManager.progress_part * PluginManager.progress_parts) + "%"});
+    var percentage = PluginManager.progress_part * PluginManager.progress_parts;
+    if (percentage > 100) percentage = 100;
+    PluginManager.progress_bar.css({'width': percentage + "%"});
 };
 
 /**
@@ -432,6 +432,8 @@ $(document).ready(function () {
         if (PHPDS.ajaxRequestBusy) return false;
         PHPDS.requestPage();
         var upgrades = $(".plugin-get-upgrade", $root);
+        PluginManager.progressPercentage();
+        PluginManager.progress_parts = Math.floor(100 / upgrades.length) / 2;
         $.each(upgrades, function (i, data) {
             var plugin = $(data).data("plugin-upgrade-available");
             PluginManager.managePlugin($url, plugin, 'upgrade');
@@ -451,7 +453,7 @@ $(document).ready(function () {
         $.get($url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
             var depends = jQuery.parseJSON(data);
             PluginManager.progressPercentage();
-            PluginManager.progress_parts = Math.floor(100 / Object.keys(depends).length);
+            PluginManager.progress_parts = Math.floor(100 / Object.keys(depends).length) / 2;
             $.each(depends, function (key, plugin_) {
                 PluginManager.managePlugin($url, plugin_, 'install');
             });
