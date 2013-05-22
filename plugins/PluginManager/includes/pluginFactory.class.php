@@ -109,7 +109,6 @@ class pluginFactory extends PHPDS_dependant
             throw new PHPDS_exception('This plugins does not seem to be installed?');
         }
 
-        $this->debug->log($version);
         // Upgrade custom database query.
         $this->upgradeQueries($plugin_folder, $version);
         // Install node items to database.
@@ -627,8 +626,6 @@ class pluginFactory extends PHPDS_dependant
           VALUES       (:class_id, :class_name, :alias, :plugin_folder, :enable, :rank)
         ";
 
-        $db->prepare($sql);
-
         // Assign settings q to install.
         $classes_array = $this->plugin->install->classes->class;
 
@@ -655,7 +652,7 @@ class pluginFactory extends PHPDS_dependant
                 (empty($max_rank)) ? $rank = 1 : $rank = $max_rank + 1;
             }
             // Assign settings array.
-            $this->db->execute(array(
+            $this->db->query($sql, array(
                 'class_id'      => null,
                 'class_name'    => $name,
                 'alias'         => $alias,

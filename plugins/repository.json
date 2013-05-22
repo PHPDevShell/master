@@ -9,6 +9,10 @@
             "desc": "Just another repo test plugin",
             "repo": "https://github.com/PHPDevShell/FineSamle2"
         },
+        "NewPlugin2": {
+            "desc": "Another plugin test",
+            "repo": "https://github.com/TitanKing/NewPlugin2"
+        },
         "NewPlugin": {
             "desc": "Empty plugin to get you started",
             "repo": "https://github.com/PHPDevShell/NewPlugin"
@@ -35,10 +39,6 @@
         },
         "RepoTest2": {
             "desc": "This is a cURL repo download test2",
-            "repo": "todo2"
-        },
-        "RepoTester333": {
-            "desc": "Just another awesome repo update test, and guess what, it works!",
             "repo": "todo2"
         },
         "BrandNewPlugin": {

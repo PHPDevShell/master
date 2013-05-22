@@ -184,6 +184,7 @@ class pluginRepository extends PHPDS_dependant
      * @param       $plugin
      * @param array $remote
      * @return array
+     * @throws PHPDS_exception
      */
     protected function localPluginsListInfo($directory, $plugin, $remote = array())
     {
@@ -197,10 +198,15 @@ class pluginRepository extends PHPDS_dependant
         // get local plugins with config files, ignore the rest.f
         $xmlconfig = $directory . $plugin . '/config/plugin.config.xml';
         if (file_exists($xmlconfig))
-            $localxml = @simplexml_load_file($xmlconfig);
+            try {
+                $localxml = simplexml_load_file($xmlconfig);
+            } catch (Exception $e) {
+                throw new PHPDS_exception(sprintf('XML config file could be malformed in %s. %s', $xmlconfig,
+                    $e->getMessage()));
+            }
         if (!empty($localxml) && !empty($localxml->name)) {
             $local = array(
-                'name'      => (string)$localxml->name,
+                'name'      => $plugin,
                 'desc'      => rtrim((string)$localxml->description, '.'),
                 'repo'      => $repo,
                 'local'     => true,
@@ -407,10 +413,16 @@ class pluginRepository extends PHPDS_dependant
     /**
      * @param $xmlcfgfile
      * @return bool
+     * @throws PHPDS_exception
      */
     protected function pluginConfigLocal($xmlcfgfile)
     {
-        $xml = @simplexml_load_file($xmlcfgfile);
+        try {
+            $xml = simplexml_load_file($xmlcfgfile);
+        } catch (Exception $e) {
+            throw new PHPDS_exception(sprintf('XML config file could be malformed in %s. %s', $xmlcfgfile,
+                $e->getMessage()));
+        }
         if (!isset($xml) && !is_array($xml)) {
             $this->template->warning(sprintf(__('No info available for: %s'), $xmlcfgfile));
             return false;
@@ -452,7 +464,7 @@ class pluginRepository extends PHPDS_dependant
             }
         }
         if (!empty($data)) {
-            $xml = @simplexml_load_string($data);
+            $xml = simplexml_load_string($data);
             return $this->xmlPluginConfigToArray($xml);
         }
         return false;

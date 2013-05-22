@@ -23,7 +23,6 @@
 	</info>
 	<install version="1000">
         <dependencies>
-            <dependence class="models" plugin="LightModels" />
             <dependence class="nodeHelper" plugin="NodeHelper" />
         </dependencies>
 		<classes>
