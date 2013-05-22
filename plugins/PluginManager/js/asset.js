@@ -29,6 +29,7 @@ PluginManager.janitor = function () {
         PluginManager.progress_bar.css({'width': "100%"});
         PluginManager.progress_parts = 0;
         PluginManager.progress_part  = 0;
+        PluginManager.dealtWith = [];
     });
     $("#plugin-tools").removeClass("open");
 };
@@ -171,6 +172,13 @@ PluginManager.countRepository = function (id, countto) {
     });
 };
 
+/**
+ * Assigns plugins that was dealt with in recent actions of install.
+ *
+ * @type {Array}
+ */
+PluginManager.dealtWith = [];
+
 PluginManager.repoRefresh = function(url) {
     $.get(url, function (data, textStatus, request) {
         if (data != 'false') {
@@ -221,14 +229,22 @@ PluginManager.pluginManagerLog = function (request) {
  * Installs a specific plugin while including all dependencies.
  *
  * @param plugin
+ * @param exclude_self
  */
-PluginManager.installWithDependency = function (plugin) {
+PluginManager.installWithDependency = function (plugin, exclude_self) {
+    exclude_self = typeof exclude_self !== 'undefined' ? exclude_self : false;
     $.get(PluginManager.url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
         var depends = jQuery.parseJSON(data);
+
         PluginManager.progressPercentage();
         PluginManager.progress_parts = Math.floor(100 / Object.keys(depends).length) / 2;
+
         $.each(depends, function (key, plugin_) {
-            PluginManager.managePlugin(plugin_, 'install');
+            if (exclude_self == true) {
+                if (plugin != plugin_) PluginManager.managePlugin(plugin_, 'install');
+            } else {
+                PluginManager.managePlugin(plugin_, 'install');
+            }
         });
     });
 };
@@ -240,57 +256,66 @@ PluginManager.installWithDependency = function (plugin) {
  * @param actiontype
  */
 PluginManager.managePlugin = function (plugin, actiontype) {
-    // Phase 0: Does plugin need downloading?
-    $.when($.get(PluginManager.url, {"action": "prepare", "plugin": plugin, "actiontype": actiontype})
-    ).then(function(data, textStatus, request) {
-        if (data != 'false') {
-            var phase1 = $.parseJSON(data);
-            $("#progress-bar-message").text(phase1.message);
-            // Phase 1 : Plugins needs downloading.
-            if (phase1.status == 'download') {
-                $.when($.get(PluginManager.url, {"action": phase1.status, "plugin": plugin, "actiontype": actiontype})
-                ).then(function (data, textStatus, request) {
-                        if (data != 'false') {
-                            PluginManager.progressPercentage();
-                            // Phase 2 : Plugin needs extraction.
-                            var phase2 = $.parseJSON(data);
-                            $("#progress-bar-message").text(phase2.message);
-                            if (phase2.status == 'extract') {
-                                $.when($.post(PluginManager.url, {"action": phase2.status,
-                                        "plugin": plugin, "zip": phase2.zip, "actiontype": actiontype})
-                                ).then(function (data, textStatus, request) {
-                                        if (data != 'false') {
-                                            // Phase 3 : Installing.
-                                            var phase3 = $.parseJSON(data);
-                                            $("#progress-bar-message").text(phase3.message);
-                                            if (phase3.status == 'install' ||
-                                                phase3.status == 'reinstall' ||
-                                                phase3.status == 'upgrade') {
-                                                $.when($.post(PluginManager.url, {"action": phase3.status, "plugin": plugin})
-                                                ).then(function (data, textStatus, request) {
-                                                        PluginManager.pluginManagerLog(request);
-                                                        PluginManager.refreshPluginStatus(plugin);
-                                                        PluginManager.progressPercentage();
-                                                    });
+    if (typeof PluginManager.dealtWith[plugin] == 'undefined') {
+        // Phase 0: Does plugin need downloading?
+        $.when($.get(PluginManager.url, {"action": "prepare", "plugin": plugin, "actiontype": actiontype})
+        ).then(function(data, textStatus, request) {
+            if (data != 'false') {
+                var phase1 = $.parseJSON(data);
+                $("#progress-bar-message").text(phase1.message);
+                // Phase 1 : Plugins needs downloading.
+                if (phase1.status == 'download') {
+                    $.when($.get(PluginManager.url,
+                            {"action": phase1.status, "plugin": plugin, "actiontype": actiontype})
+                    ).then(function (data, textStatus, request) {
+                            if (data != 'false') {
+                                PluginManager.progressPercentage();
+                                // Phase 2 : Plugin needs extraction.
+                                var phase2 = $.parseJSON(data);
+                                $("#progress-bar-message").text(phase2.message);
+                                if (phase2.status == 'extract') {
+                                    $.when($.post(PluginManager.url, {"action": phase2.status,
+                                            "plugin": plugin, "zip": phase2.zip, "actiontype": actiontype})
+                                    ).then(function (data, textStatus, request) {
+                                            if (data != 'false') {
+                                                // Phase 3 : Installing.
+                                                var phase3 = $.parseJSON(data);
+                                                $("#progress-bar-message").text(phase3.message);
+                                                if (phase3.status == 'install' ||
+                                                    phase3.status == 'reinstall' ||
+                                                    phase3.status == 'upgrade') {
+                                                    $.when($.post(PluginManager.url,
+                                                            {"action": phase3.status, "plugin": plugin})
+                                                    ).then(function (data, textStatus, request) {
+                                                            PluginManager.pluginManagerLog(request);
+                                                            PluginManager.refreshPluginStatus(plugin);
+                                                            PluginManager.progressPercentage();
+                                                            PluginManager.installWithDependency(plugin, true);
+                                                        });
+                                                }
+                                            } else {
+                                                PluginManager.pluginManagerLog(request);
+                                                PluginManager.refreshPluginStatus(plugin);
                                             }
-                                        } else {
-                                            PluginManager.pluginManagerLog(request);
-                                            PluginManager.refreshPluginStatus(plugin);
-                                        }
-                                    });
+                                        });
+                                }
                             }
-                        }
+                        });
+                    // Phase 3 : Installing.
+                } else if (phase1.status == 'install' || phase1.status == 'reinstall' || phase1.status == 'upgrade') {
+                    $.post(PluginManager.url, {"action": phase1.status, "plugin": plugin},
+                        function (data, textStatus, request) {
+                        PluginManager.pluginManagerLog(request);
+                        PluginManager.refreshPluginStatus(plugin);
+                        PluginManager.progressPercentage();
+                        PluginManager.installWithDependency(plugin, true);
                     });
-                // Phase 3 : Installing.
-            } else if (phase1.status == 'install' || phase1.status == 'reinstall' || phase1.status == 'upgrade') {
-                $.post(PluginManager.url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
-                    PluginManager.pluginManagerLog(request);
-                    PluginManager.refreshPluginStatus(plugin);
-                    PluginManager.progressPercentage();
-                });
+                }
             }
-        }
-    });
+        });
+    }
+
+    PluginManager.dealtWith[plugin] = true;
 };
 
 /**
@@ -503,9 +528,11 @@ $(document).ready(function () {
     $root.on('click', ".plugin-get-fix", function () {
         if (PHPDS.ajaxRequestBusy) return false;
         PHPDS.requestPage();
+        $("#progress-bar-message").text(i18n_busy_text);
         var plugin = $(this).data("plugin-fix-available");
         // Get dependencies
-        PluginManager.installWithDependency(plugin);
+        PluginManager.managePlugin(plugin, 'reinstall');
+        PluginManager.refreshPluginStatus(plugin);
         PluginManager.janitor();
         return false;
     });
@@ -516,7 +543,7 @@ $(document).ready(function () {
     $root.on('click', "#fix-all-plugins", function () {
         if (PHPDS.ajaxRequestBusy) return false;
         PHPDS.requestPage();
-        var fix = $(".label-dep-broken-plugin", $root);
+        var fix = $(".plugin-get-fix", $root);
         PluginManager.progressPercentage();
         PluginManager.progress_parts = Math.floor(100 / fix.length) / 2;
         $.each(fix, function (i, data) {

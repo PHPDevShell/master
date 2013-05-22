@@ -96,12 +96,20 @@ class pluginFactory extends PHPDS_dependant
      * class, queries, settings
      * @param string $plugin_folder
      * @return bool
+     * @throws PHPDS_exception
      */
     public function upgrade($plugin_folder)
     {
         $this->preConstruct($plugin_folder);
-        $version = $this->plugin->install['version'];
+        $p = $this->config->pluginsInstalled;
 
+        if (!empty($p[$plugin_folder]['version'])) {
+           $version = $p[$plugin_folder]['version'];
+        } else {
+            throw new PHPDS_exception('This plugins does not seem to be installed?');
+        }
+
+        $this->debug->log($version);
         // Upgrade custom database query.
         $this->upgradeQueries($plugin_folder, $version);
         // Install node items to database.
@@ -676,19 +684,31 @@ class pluginFactory extends PHPDS_dependant
         // Check if install query exists.
         if (!empty($queries_array)) {
             // Run all queries in database.
-            foreach ($queries_array as $query_array) {
+            foreach ($queries_array as $query) {
 
                 // Assign query as string.
-                $query_array = (string)trim($query_array);
+                $query = (string)trim($query);
 
                 // Make sure query is not empty.
-                if (!empty($query_array)) {
-                    // Execute query.
-                    $db->query($query_array);
-                    // Show execution.
-                    $query_array = preg_replace('/\r|\n|\s+/', ' ', $query_array);
-                    $this->log[] = sprintf(__("Executed install query for %s : %s", 'PluginManager'),
-                        $plugin_folder, $query_array);
+                if (!empty($query)) {
+                    $sqlinfile = $this->checkSQLInFile($query);
+                    if (!empty($sqlinfile) && is_array($sqlinfile)) {
+                        foreach ($sqlinfile as $query_) {
+                            // Execute query.
+                            $db->query($query_);
+                            // Show execution.
+                            $query_ = preg_replace('/\r|\n|\s+/', ' ', $query_);
+                            $this->log[] = sprintf(__("Executed install query for %s : %s", 'PluginManager'),
+                                $plugin_folder, $query_);
+                        }
+                    } else {
+                        // Execute query.
+                        $db->query($query);
+                        // Show execution.
+                        $query = preg_replace('/\r|\n|\s+/', ' ', $query);
+                        $this->log[] = sprintf(__("Executed install query for %s : %s", 'PluginManager'),
+                            $plugin_folder, $query);
+                    }
                 }
             }
         }
@@ -791,19 +811,31 @@ class pluginFactory extends PHPDS_dependant
             $queries_array = $this->plugin->uninstall->queries->query;
             if (!empty($queries_array)) {
                 // Run all queries in database.
-                foreach ($queries_array as $query_array) {
+                foreach ($queries_array as $query) {
                     // Assign query as string.
-                    $query_array = (string)$query_array;
+                    $query = (string)$query;
                     // Make sure query is not empty.
-                    if (!empty($query_array)) {
-                        // Execute query.
-                        $db->query($query_array);
-                        // Show execution.
-                        if ($this->action != 'install') {
-                            $query_array = preg_replace('/\r|\n|\s+/', ' ', $query_array);
-                            $this->log[] =
-                                sprintf(__("Executed uninstalled query for %s : %s", 'PluginManager'),
-                                    $plugin_folder, $query_array);
+                    if (!empty($query)) {
+                        $sqlinfile = $this->checkSQLInFile($query);
+                        if (!empty($sqlinfile) && is_array($sqlinfile)) {
+                            foreach ($sqlinfile as $query_) {
+                                // Execute query.
+                                $db->query($query_);
+                                // Show execution.
+                                $query_ = preg_replace('/\r|\n|\s+/', ' ', $query_);
+                                $this->log[] = sprintf(__("Executed uninstalled query for %s : %s", 'PluginManager'),
+                                    $plugin_folder, $query_);
+                            }
+                        } else {
+                            // Execute query.
+                            $db->query($query);
+                            // Show execution.
+                            if ($this->action != 'install') {
+                                $query = preg_replace('/\r|\n|\s+/', ' ', $query);
+                                $this->log[] =
+                                    sprintf(__("Executed uninstalled query for %s : %s", 'PluginManager'),
+                                        $plugin_folder, $query);
+                            }
                         }
                     }
                 }
@@ -866,11 +898,24 @@ class pluginFactory extends PHPDS_dependant
                         $upgrade_query_ = (string)trim($upgrade_query);
                         // Make sure query is not empty.
                         if (!empty($upgrade_query_)) {
-                            // Execute upgrade query.
-                            $db->query($upgrade_query_);
-                            $upgrade_query_ = preg_replace('/\r|\n|\s+/', ' ', $upgrade_query_);
-                            $this->log[] = sprintf(__("Executed upgrade query for %s : %s", 'PluginManager'),
-                                $plugin_folder, $upgrade_query_);
+                            $sqlinfile = $this->checkSQLInFile($upgrade_query_);
+                            if (!empty($sqlinfile) && is_array($sqlinfile)) {
+                                foreach ($sqlinfile as $query_) {
+                                    // Execute query.
+                                    $db->query($query_);
+                                    // Show execution.
+                                    $query_ = preg_replace('/\r|\n|\s+/', ' ', $query_);
+                                    $this->log[] = sprintf(
+                                        __("Executed upgrade query for %s : %s", 'PluginManager'),
+                                        $plugin_folder, $query_);
+                                }
+                            } else {
+                                // Execute upgrade query.
+                                $db->query($upgrade_query_);
+                                $upgrade_query_ = preg_replace('/\r|\n|\s+/', ' ', $upgrade_query_);
+                                $this->log[] = sprintf(__("Executed upgrade query for %s : %s", 'PluginManager'),
+                                    $plugin_folder, $upgrade_query_);
+                            }
                         }
                     }
                 }
@@ -959,6 +1004,33 @@ class pluginFactory extends PHPDS_dependant
                 $this->log[] = sprintf(__("Upgraded plugin %s database to version %s", 'PluginManager'),
                     $plugin_folder, $this->pluginUpgraded);
             }
+        }
+    }
+
+    /**
+     * Check if SQL should be looked for in file rather than direct sql.
+     *
+     * @param $string
+     * @return boolean|array
+     */
+    protected function checkSQLInFile($string)
+    {
+        if (preg_match("/.sql$/", $string)) {
+            $path = BASEPATH . $string;
+            $path = str_replace("//", "/", $path);
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+                $queries_array = explode("-- SQL;", $content);
+                if (!empty($queries_array) && is_array($queries_array)) {
+                    return $queries_array;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 }
