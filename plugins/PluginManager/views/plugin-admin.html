@@ -56,6 +56,10 @@
                         title="{{#i}}Upgrade all plugins{{/i}}">
                     <i class="icon-gift icon-white"></i>
                 </button>
+                <button id="fix-all-plugins" class="btn btn-danger hide"
+                        title="{{#i}}Fix dependencies{{/i}}">
+                    <i class="icon-heart icon-white"></i>
+                </button>
             </div>
             <div id="repo-counter" class="span6">
                 <span id="r-c-available" class="text-info lead">0</span>
@@ -65,6 +69,10 @@
                 <span id="count-updates" class="hide">
                     <span id="r-c-updates" class="text-error lead">0</span>
                     <span class="muted lead">{{#i}}Updates{{/i}}</span>
+                </span>
+                <span id="count-broken" class="hide">
+                    <span id="r-c-broken" class="text-error lead">0</span>
+                    <span class="muted lead">{{#i}}Broken{{/i}}</span>
                 </span>
             </div>
         </div>
@@ -92,7 +100,7 @@
                     </button>
                 </div>
             </div>
-            <div class="column span3"></div>
+            <div class="column span3 error-row"></div>
         </div>
     </div>
     <div id="plugin-latest-log" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="plugin-modal-label" aria-hidden="true">
@@ -108,4 +116,7 @@
 </div>
 <script type="text/javascript">
     var i18n_busy_text = '{{#i}}Please wait...{{/i}}';
+    var i18n_seeking_text = '{{#i}}Seeking updates...{{/i}}';
+    var i18n_upgrade_text = '{{#i}}upgrade{{/i}}';
+    var i18n_fix_text = '{{#i}}fix-me{{/i}}';
 </script>

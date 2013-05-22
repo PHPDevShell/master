@@ -106,6 +106,14 @@ class PluginManager extends PHPDS_controller
                 if (!$result)
                     $this->template->warning(__('No plugins installed to check updated for'));
                 break;
+            case 'msg-dep-ok':
+                $this->template->ok(__('All dependencies met'));
+                return false;
+                break;
+            case 'msg-dep-broken':
+                $this->template->warning(__('Dependencies are broken'));
+                return true;
+                break;
             case 'msg-alluptodate':
                 $this->template->ok(__('No updates available'));
                 return false;
@@ -118,7 +126,9 @@ class PluginManager extends PHPDS_controller
                 $result = $this->repo->checkUpdate($this->G('plugin'), $this->G('version'));
                 break;
             case 'dependencies':
-                return false;
+                $result = $this->repo->checkDependencies();
+                if (!$result)
+                    $this->template->ok(__('All plugin dependencies met'));
                 break;
         }
         return $result;

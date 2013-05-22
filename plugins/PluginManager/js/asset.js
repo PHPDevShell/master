@@ -18,6 +18,13 @@ PluginManager.janitor = function () {
         } else {
             $("#upgrade-all-plugins, #count-updates").hide();
         }
+        var dep_broken = $(".plugin-get-fix").length;
+        if (dep_broken > 0) {
+            $("#fix-all-plugins, #count-broken").show("slow");
+            PluginManager.countRepository("#r-c-broken", dep_broken + 0.5);
+        } else {
+            $("#fix-all-plugins, #count-broken").hide();
+        }
         $("#progress-bar-message").text('');
         PluginManager.progress_bar.css({'width': "100%"});
         PluginManager.progress_parts = 0;
@@ -30,11 +37,10 @@ PluginManager.janitor = function () {
  * Change a plugins styling by status
  *
  * @param plugin
- * @param url
  */
-PluginManager.refreshPluginStatus = function (plugin, url) {
+PluginManager.refreshPluginStatus = function (plugin) {
     var $plugin = $("#" + plugin);
-    $.get(url, {"action": "refresh", "plugin": plugin}, function (data, textStatus, request) {
+    $.get(PluginManager.url, {"action": "refresh", "plugin": plugin}, function (data, textStatus, request) {
         $plugin.replaceWith(data);
     });
 };
@@ -42,42 +48,88 @@ PluginManager.refreshPluginStatus = function (plugin, url) {
 /**
  * Checks single plugins for updates and creates buttons with update status.
  *
- * @param $url
- * @param data
+ * @param url
  */
-PluginManager.checkUpdates = function ($url, data) {
-    var plugins = jQuery.parseJSON(data), count = 0, deferc = Object.keys(plugins).length;
-    PluginManager.progressPercentage();
-    PluginManager.progress_parts = Math.floor(100 / deferc);
-    $.each(plugins, function (pkey, plugin_) {
-        $.get($url, {"check": "update-process", "plugin": pkey, "version": plugin_.version},
-            function (data, textStatus, request) {
-                count++;
-                if (data != 'false') {
-                    var results = $.parseJSON(data);
-                    // tag update
-                    var labeling = $(".labeling-row", "#" + pkey);
-                    if (!$("span", labeling).hasClass("label-upgrade-plugin")) {
-                            labeling.append('<span class="label label-important label-upgrade-plugin">'
-                            + results.label + '</span>');
-                        $(".action-buttons div.hide", "#" + pkey).
-                            append('<button data-plugin-upgrade-available="' + pkey +
-                                '" class="plugin-get-upgrade btn btn-primary" ' +
-                                'title="' + results.label + '"><i class="icon-gift icon-white"></i></button>');
-                        $(".plugin-information-row div.plugin-name", "#" + pkey)
-                            .removeClass('text-success').addClass("text-error");
-                    }
-                }
-                if (count == deferc) {
-                    var updatesavail = $(".plugin-get-upgrade").length;
-                    if (updatesavail > 0) {
-                        $.get($url, {"check": "msg-updatesavail"});
-                    } else {
-                        $.get($url, {"check": "msg-alluptodate"});
-                    }
-                }
-                PluginManager.progressPercentage();
+PluginManager.checkUpdates = function (url) {
+    $.get(url, function (data, textStatus, request) {
+        if (data != 'false') {
+            var plugins = jQuery.parseJSON(data), count = 0, deferc = Object.keys(plugins).length;
+            PluginManager.progressPercentage();
+            PluginManager.progress_parts = Math.floor(100 / deferc);
+            $.each(plugins, function (pkey, plugin_) {
+                $.get(PluginManager.url, {"check": "update-process", "plugin": pkey, "version": plugin_.version},
+                    function (data, textStatus, request) {
+                        count++;
+                        if (data != 'false') {
+                            // tag update
+                            var labeling = $(".labeling-row", "#" + pkey);
+                            if (!$("span", labeling).hasClass("label-upgrade-plugin")) {
+                                    labeling.append('<span class="label label-important label-upgrade-plugin">'
+                                    + i18n_upgrade_text + '</span>');
+                                $(".action-buttons div.hide", "#" + pkey).
+                                    append('<button data-plugin-upgrade-available="' + pkey +
+                                        '" class="plugin-get-upgrade btn btn-primary" ' +
+                                        'title="' + i18n_upgrade_text + '">' +
+                                        '<i class="icon-gift icon-white"></i></button>');
+                                $(".plugin-information-row div.plugin-name", "#" + pkey)
+                                    .removeClass('text-success').addClass("text-error");
+                            }
+                        }
+                        if (count == deferc) {
+                            var updatesavail = $(".plugin-get-upgrade").length;
+                            if (updatesavail > 0) {
+                                $.get(PluginManager.url, {"check": "msg-updatesavail"});
+                            } else {
+                                $.get(PluginManager.url, {"check": "msg-alluptodate"});
+                            }
+                        }
+                        PluginManager.progressPercentage();
+                    });
             });
+        }
+    });
+};
+
+/**
+ * Checks dependencies for installed plugins.
+ *
+ * @param url
+ */
+PluginManager.checkDependencies = function (url) {
+    $.get(url, function (data, textStatus, request) {
+        if (data != 'false') {
+            var plugins = jQuery.parseJSON(data), count = 0, deferc = Object.keys(plugins).length;
+            $.each(plugins, function (pkey, classes) {
+                count ++;
+                var broken_  = false;
+                var labeling = $(".labeling-row", "#" + pkey);
+                $.each(classes, function (ckey, classes_) {
+                    if (classes_.ready == false) {
+                        if (!$("span", labeling).hasClass("label-dep-broken-plugin")) {
+                            labeling.append('<span class="label label-important label-dep-broken-plugin">'
+                                + i18n_fix_text + '</span>');
+                            $(".label-success", labeling).hide();
+                            $(".action-buttons div.hide", "#" + pkey).
+                                append('<button data-plugin-fix-available="' + pkey +
+                                    '" class="plugin-get-fix btn btn-danger" ' +
+                                    'title="' + i18n_fix_text + '">' +
+                                    '<i class="icon-heart icon-white"></i></button>');
+                            $(".plugin-information-row div.plugin-name", "#" + pkey)
+                                .removeClass('text-success').addClass("text-error");
+                        }
+                        broken_ = true;
+                    }
+                });
+                if (count == deferc) {
+                    var dep_broken = $(".plugin-get-fix").length;
+                    if (dep_broken > 0) {
+                        $.get(PluginManager.url, {"check": "msg-dep-broken"});
+                    } else {
+                        $.get(PluginManager.url, {"check": "msg-dep-ok"});
+                    }
+                }
+            });
+        }
     });
 };
 
@@ -166,63 +218,79 @@ PluginManager.pluginManagerLog = function (request) {
 };
 
 /**
+ * Installs a specific plugin while including all dependencies.
+ *
+ * @param plugin
+ */
+PluginManager.installWithDependency = function (plugin) {
+    $.get(PluginManager.url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
+        var depends = jQuery.parseJSON(data);
+        PluginManager.progressPercentage();
+        PluginManager.progress_parts = Math.floor(100 / Object.keys(depends).length) / 2;
+        $.each(depends, function (key, plugin_) {
+            PluginManager.managePlugin(plugin_, 'install');
+        });
+    });
+};
+
+/**
  * Install/Re-install/Upgrade a plugin.
  *
- * @param $url
  * @param plugin
  * @param actiontype
  */
-PluginManager.managePlugin = function ($url, plugin, actiontype) {
+PluginManager.managePlugin = function (plugin, actiontype) {
     // Phase 0: Does plugin need downloading?
-        $.get($url, {"action": "prepare", "plugin": plugin, "actiontype": actiontype},
-            function (data, textStatus, request) {
-                if (data != 'false') {
-                    var phase1 = $.parseJSON(data);
-                    $("#progress-bar-message").text(phase1.message);
-                    // Phase 1 : Plugins needs downloading.
-                    if (phase1.status == 'download') {
-                        $.get($url, {"action": phase1.status, "plugin": plugin, "actiontype": actiontype},
-                            function (data, textStatus, request) {
-                            if (data != 'false') {
-                                PluginManager.progressPercentage();
-                                // Phase 2 : Plugin needs extraction.
-                                var phase2 = $.parseJSON(data);
-                                $("#progress-bar-message").text(phase2.message);
-                                if (phase2.status == 'extract') {
-                                    $.post($url, {"action": phase2.status,
-                                            "plugin": plugin, "zip": phase2.zip, "actiontype": actiontype},
-                                        function (data, textStatus, request) {
-                                            if (data != 'false') {
-                                                // Phase 3 : Installing.
-                                                var phase3 = $.parseJSON(data);
-                                                $("#progress-bar-message").text(phase3.message);
-                                                if (phase3.status == 'install' ||
-                                                    phase3.status == 'reinstall' ||
-                                                    phase3.status == 'upgrade') {
-                                                    $.post($url, {"action": phase3.status, "plugin": plugin},
-                                                        function (data, textStatus, request) {
-                                                            PluginManager.pluginManagerLog(request);
-                                                            PluginManager.refreshPluginStatus(plugin, $url);
-                                                        });
-                                                }
-                                            } else {
-                                                PluginManager.pluginManagerLog(request);
-                                                PluginManager.refreshPluginStatus(plugin, $url);
-                                            }
-                                        });
-                                }
-                            }
-                        });
-                        // Phase 3 : Installing.
-                    } else if (phase1.status == 'install' || phase1.status == 'reinstall' || phase1.status == 'upgrade') {
-                        $.post($url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
-                            PluginManager.pluginManagerLog(request);
-                            PluginManager.refreshPluginStatus(plugin, $url);
+    $.when($.get(PluginManager.url, {"action": "prepare", "plugin": plugin, "actiontype": actiontype})
+    ).then(function(data, textStatus, request) {
+        if (data != 'false') {
+            var phase1 = $.parseJSON(data);
+            $("#progress-bar-message").text(phase1.message);
+            // Phase 1 : Plugins needs downloading.
+            if (phase1.status == 'download') {
+                $.when($.get(PluginManager.url, {"action": phase1.status, "plugin": plugin, "actiontype": actiontype})
+                ).then(function (data, textStatus, request) {
+                        if (data != 'false') {
                             PluginManager.progressPercentage();
-                        });
-                    }
-                }
-            });
+                            // Phase 2 : Plugin needs extraction.
+                            var phase2 = $.parseJSON(data);
+                            $("#progress-bar-message").text(phase2.message);
+                            if (phase2.status == 'extract') {
+                                $.when($.post(PluginManager.url, {"action": phase2.status,
+                                        "plugin": plugin, "zip": phase2.zip, "actiontype": actiontype})
+                                ).then(function (data, textStatus, request) {
+                                        if (data != 'false') {
+                                            // Phase 3 : Installing.
+                                            var phase3 = $.parseJSON(data);
+                                            $("#progress-bar-message").text(phase3.message);
+                                            if (phase3.status == 'install' ||
+                                                phase3.status == 'reinstall' ||
+                                                phase3.status == 'upgrade') {
+                                                $.when($.post(PluginManager.url, {"action": phase3.status, "plugin": plugin})
+                                                ).then(function (data, textStatus, request) {
+                                                        PluginManager.pluginManagerLog(request);
+                                                        PluginManager.refreshPluginStatus(plugin);
+                                                        PluginManager.progressPercentage();
+                                                    });
+                                            }
+                                        } else {
+                                            PluginManager.pluginManagerLog(request);
+                                            PluginManager.refreshPluginStatus(plugin);
+                                        }
+                                    });
+                            }
+                        }
+                    });
+                // Phase 3 : Installing.
+            } else if (phase1.status == 'install' || phase1.status == 'reinstall' || phase1.status == 'upgrade') {
+                $.post(PluginManager.url, {"action": phase1.status, "plugin": plugin}, function (data, textStatus, request) {
+                    PluginManager.pluginManagerLog(request);
+                    PluginManager.refreshPluginStatus(plugin);
+                    PluginManager.progressPercentage();
+                });
+            }
+        }
+    });
 };
 
 /**
@@ -242,7 +310,7 @@ PluginManager.progressPercentage = function () {
  */
 $(document).ready(function () {
     var $root                   = $("#repository");
-    var $url                    = $root.attr("data-url");
+    PluginManager.url           = $root.attr("data-url");
     PluginManager.progress_bar  = $("#progress-bar");
 
     PluginManager.countRepositoryOnce();
@@ -275,12 +343,9 @@ $(document).ready(function () {
     $("#check-updates").on('click', function () {
         if (PHPDS.ajaxRequestBusy) return false;
         PHPDS.requestPage();
+        $("#progress-bar-message").text(i18n_seeking_text);
         var url = $(this).attr("href");
-        $.get(url, function (data, textStatus, request) {
-            if (data != 'false') {
-                PluginManager.checkUpdates($url, data);
-            }
-        });
+        PluginManager.checkUpdates(url);
         PluginManager.janitor();
         return false;
     });
@@ -293,18 +358,8 @@ $(document).ready(function () {
         if (PHPDS.ajaxRequestBusy) return false;
         PHPDS.requestPage();
         var url = $(this).attr("href");
-        $.get(url, function (data, textStatus, request) {
-            if (data != 'false') {
-                var plugins = jQuery.parseJSON(data);
-                $.each(plugins, function (pkey, plugin_) {
-                    $.get($url, {"check": "dependency-process", "plugin": pkey, "version": plugin_.version},
-                        function (data, textStatus, request) {
-
-                        });
-                });
-            }
-        });
-        $("#plugin-tools").removeClass("open");
+        PluginManager.checkDependencies(url);
+        PluginManager.janitor();
         return false;
     });
 
@@ -354,7 +409,7 @@ $(document).ready(function () {
         PHPDS.requestPage();
         $("#progress-bar-message").text(i18n_busy_text);
         var plugin = $(this).data("plugin");
-        $.get($url, {"info": "get", "plugin": plugin}, function (data, textStatus, request) {
+        $.get(PluginManager.url, {"info": "get", "plugin": plugin}, function (data, textStatus, request) {
             if (data != 'false') {
                 $(data).modal();
             }
@@ -378,9 +433,9 @@ $(document).ready(function () {
         PHPDS.requestPage();
         $("#progress-bar-message").text(i18n_busy_text);
         var plugin = $(this).data("plugin");
-        $.post($url, {"action": "delete", "plugin": plugin}, function (data, textStatus, request) {
+        $.post(PluginManager.url, {"action": "delete", "plugin": plugin}, function (data, textStatus, request) {
             $(this).removeClass("confirm-delete-ready");
-            PluginManager.refreshPluginStatus(plugin, $url);
+            PluginManager.refreshPluginStatus(plugin);
             PluginManager.countRepositoryOnce();
             PluginManager.janitor();
         });
@@ -403,10 +458,10 @@ $(document).ready(function () {
         PHPDS.requestPage();
         $("#progress-bar-message").text(i18n_busy_text);
         var plugin = $(this).data("plugin");
-        $.post($url, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
+        $.post(PluginManager.url, {"action": "uninstall", "plugin": plugin}, function (data, textStatus, request) {
             $(this).removeClass("confirm-uninstall-ready");
             PluginManager.pluginManagerLog(request);
-            PluginManager.refreshPluginStatus(plugin, $url);
+            PluginManager.refreshPluginStatus(plugin);
             PluginManager.janitor();
         });
         return false;
@@ -420,7 +475,7 @@ $(document).ready(function () {
         PHPDS.requestPage();
         $("#progress-bar-message").text(i18n_busy_text);
         var plugin = $(this).data("plugin-upgrade-available");
-        PluginManager.managePlugin($url, plugin, 'upgrade');
+        PluginManager.managePlugin(plugin, 'upgrade');
         PluginManager.janitor();
         return false;
     });
@@ -436,7 +491,37 @@ $(document).ready(function () {
         PluginManager.progress_parts = Math.floor(100 / upgrades.length) / 2;
         $.each(upgrades, function (i, data) {
             var plugin = $(data).data("plugin-upgrade-available");
-            PluginManager.managePlugin($url, plugin, 'upgrade');
+            PluginManager.managePlugin(plugin, 'upgrade');
+        });
+        PluginManager.janitor();
+        return false;
+    });
+
+    /**
+     * Plugin fix attempt by reinstalling and collecting dependencies.
+     */
+    $root.on('click', ".plugin-get-fix", function () {
+        if (PHPDS.ajaxRequestBusy) return false;
+        PHPDS.requestPage();
+        var plugin = $(this).data("plugin-fix-available");
+        // Get dependencies
+        PluginManager.installWithDependency(plugin);
+        PluginManager.janitor();
+        return false;
+    });
+
+    /**
+     * Fix all plugin dependencies.
+     */
+    $root.on('click', "#fix-all-plugins", function () {
+        if (PHPDS.ajaxRequestBusy) return false;
+        PHPDS.requestPage();
+        var fix = $(".label-dep-broken-plugin", $root);
+        PluginManager.progressPercentage();
+        PluginManager.progress_parts = Math.floor(100 / fix.length) / 2;
+        $.each(fix, function (i, data) {
+            var plugin = $(data).data("plugin-fix-available");
+            PluginManager.managePlugin(plugin, 'reinstall');
         });
         PluginManager.janitor();
         return false;
@@ -450,27 +535,20 @@ $(document).ready(function () {
         PHPDS.requestPage();
         var plugin = $(this).data("plugin");
         // Get dependencies
-        $.get($url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
-            var depends = jQuery.parseJSON(data);
-            PluginManager.progressPercentage();
-            PluginManager.progress_parts = Math.floor(100 / Object.keys(depends).length) / 2;
-            $.each(depends, function (key, plugin_) {
-                PluginManager.managePlugin($url, plugin_, 'install');
-            });
-            PluginManager.janitor();
-        });
+        PluginManager.installWithDependency(plugin);
+        PluginManager.janitor();
         return false;
     });
 
     /**
-     * Plugin reinstall.
+     * Plugin reinstall/fix.
      */
     $root.on('click', ".plugin-get-reinstall", function () {
         if (PHPDS.ajaxRequestBusy) return false;
         PHPDS.requestPage();
         $("#progress-bar-message").text(i18n_busy_text);
         var plugin = $(this).data("plugin");
-        PluginManager.managePlugin($url, plugin, 'reinstall');
+        PluginManager.managePlugin(plugin, 'reinstall');
         PluginManager.janitor();
         return false;
     });

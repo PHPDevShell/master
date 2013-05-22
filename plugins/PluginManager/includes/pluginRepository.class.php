@@ -533,6 +533,31 @@ class pluginRepository extends PHPDS_dependant
         }
     }
 
+    public function checkDependencies()
+    {
+        $p = $this->config->pluginsInstalled;
+        if (!empty($p)) {
+            foreach ($p as $plugin => $data) {
+                $pluginxmllocation = $this->pluginExistsLocally($plugin);
+                if (!empty($pluginxmllocation)) {
+                    $cfg = $this->pluginConfigLocal($pluginxmllocation);
+                    if (!empty($cfg['dependency']) && is_array($cfg['dependency'])) {
+                        $dependency[$plugin] = $cfg['dependency'];
+                    }
+                }
+            }
+
+            if (!empty($dependency)) {
+                return json_encode($dependency);
+            } else {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
+    }
+
     /**
      * @return string
      */
@@ -566,7 +591,7 @@ class pluginRepository extends PHPDS_dependant
 
         if (! empty($config['database_version']) && ! empty($version)) {
             if ($config['database_version'] > $version) {
-                return json_encode(array('plugin' => $plugin, 'label' => __('upgrade')));
+                return json_encode(array('plugin' => $plugin));
             } else {
                 return false;
             }
