@@ -10,11 +10,10 @@
 	<date>14 August 2010</date>
 	<copyright>Copyright 2009 PHPDevShell.org All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU/LGPL</license>
-	<versionurl current="1000"></versionurl>
 	<info>
 		<![CDATA[
 			<p>
-				This simple to use filters plugins enables you to have pagination and search filters in your queries in no time.
+				Simple to use query pagination and filtering plugin.
 			</p>
 		]]>
 	</info>

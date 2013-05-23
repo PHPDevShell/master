@@ -7,36 +7,47 @@
 class pluginRepository extends PHPDS_dependant
 {
     /**
+     * Git server url prefix.
      * @var string
      */
     protected $githubsub = 'https://raw.';
     /**
+     * Directory where configuration lays.
      * @var string
      */
     protected $githubcfg = '/%s/config/';
     /**
+     * The repository url trunk that contains plugin.
      * @var string
      */
     protected $githubbranch = 'master';
     /**
+     * The archive location in the URL.
      * @var string
      */
     protected $githubarchive = 'archive';
     /**
+     * What server to use for repository.
      * @var string
      */
     protected $repotype = 'github';
     /**
+     * The suffix url for forking.
      * @var string
      */
     protected $fork = 'fork';
     /**
+     * Timeout before accepting it as an timeout error.
      * @var int
      */
     protected $timeout = 30;
 
+    /****************************************************
+     * Public helper methods continue...
+     ****************************************************/
+
     /**
-     *
+     * Checks if plugin manager can actually perform the needed tasks by checking permissions.
      */
     public function canPluginManagerWork()
     {
@@ -58,7 +69,9 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param null $plugin
+     * Loads most current repository data.
+     *
+     * @param string $plugin
      * @return array
      */
     public function initiateRepository($plugin = null)
@@ -77,6 +90,290 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
+     * Alias to writing and updating local repository file.
+     *
+     * @return bool|string
+     */
+    public function updateRepository()
+    {
+        return $this->updateRepositoryFile();
+    }
+
+    /**
+     * Loads depending on install status the config xml of the plugin and returns it as array.
+     *
+     * @param string $plugin
+     * @param bool $remote_only
+     * @return array|bool
+     */
+    public function pluginConfig($plugin, $remote_only=false)
+    {
+        if ($remote_only) {
+            $cfg = $this->pluginConfigGithubRemote($plugin);
+        } else {
+            $plugin_exists = $this->pluginExistsLocally($plugin);
+            if ($plugin_exists) {
+                $cfg = $this->pluginConfigLocal($plugin_exists);
+            } else {
+                $cfg = $this->pluginConfigGithubRemote($plugin);
+            }
+        }
+
+        $repo = $this->readOriginalJsonRepo();
+
+        if (isset($cfg) && is_array($cfg)) {
+            if (! empty($repo['plugins'][$plugin]['repo'])) {
+                $cfg['repository'] = $repo['plugins'][$plugin]['repo'];
+                $cfg['fork']       = $repo['plugins'][$plugin]['repo'] . DIRECTORY_SEPARATOR . $this->fork;
+            }
+            return $cfg;
+        } else {
+            return false;
+        }
+    }
+
+
+    /**
+     * Checks for dependencies of all installed plugins.
+     *
+     * @return bool|string
+     */
+    public function checkDependencies()
+    {
+        $p = $this->config->pluginsInstalled;
+        if (!empty($p)) {
+            foreach ($p as $plugin => $data) {
+                $pluginxmllocation = $this->pluginExistsLocally($plugin);
+                if (!empty($pluginxmllocation)) {
+                    $cfg = $this->pluginConfigLocal($pluginxmllocation);
+                    if (!empty($cfg['dependency']) && is_array($cfg['dependency'])) {
+                        $dependency[$plugin] = $cfg['dependency'];
+                    }
+                }
+            }
+
+            if (!empty($dependency)) {
+                return json_encode($dependency);
+            } else {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Return json of all installed plugins.
+     *
+     * @return string
+     */
+    public function checkPlugins()
+    {
+        $p = $this->config->pluginsInstalled;
+        if (!empty($p)) {
+            return json_encode($p);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Checks if any update is required on all installed plugins returning json of the items requiring updates.
+     *
+     * @param string $plugin
+     * @param bool $version
+     * @return bool|string
+     */
+    public function checkUpdate($plugin, $version)
+    {
+        if (empty($version)) return false;
+
+        $repo = $this->readOriginalJsonRepo();
+
+        // Check online first.
+        if (!empty($repo['plugins'][$plugin]['repo'])) {
+            $config = $this->pluginConfig($plugin, true);
+        } else {
+            $config = $this->pluginConfig($plugin);
+        }
+
+        if (! empty($config['database_version']) && ! empty($version)) {
+            if ($config['database_version'] > $version) {
+                return json_encode(array('plugin' => $plugin));
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+
+    /**
+     * Collects dependencies for a specific requested plugin.
+     *
+     * @param string $plugin
+     * @return bool|string
+     */
+    public function pluginDependsCollector($plugin)
+    {
+        $cfg = $this->pluginConfig($plugin);
+        if (empty($cfg)) {
+            $error = sprintf(__('%s config xml could not be loaded'), $plugin);
+            $this->template->critical($error);
+            return false;
+        }
+
+        if (!empty($cfg['dependency']) && is_array($cfg['dependency'])) {
+            // add main plugin first.
+            $install[] = $plugin;
+            foreach ($cfg['dependency'] as $dep) {
+                if (!$this->isPluginInstalled($dep['plugin']))
+                    if (empty($dep['ready'])) $install[] = $dep['plugin'];
+            }
+            if (!empty($install)) return json_encode($install);
+        }
+        return json_encode(array($plugin));
+    }
+
+    /**
+     * Physically deletes a specific provide plugin from file system.
+     *
+     * @param string $plugin
+     * @return bool
+     * @throws PHPDS_exception
+     */
+    public function pluginDelete($plugin)
+    {
+        if (empty($plugin)) throw new PHPDS_exception(__('No plugin name provided to delete'));
+
+        $dir = $this->configuration['absolute_path'] . 'plugins/' . $plugin . DIRECTORY_SEPARATOR;
+
+        if (!is_dir($dir) || !$this->isWritable($dir)) {
+            $this->template->critical(sprintf(__("File permission denied deleting %s"), $dir));
+            return false;
+        }
+
+        return $this->recursiveFolderDelete($dir);
+    }
+
+    /**
+     * Prepares a specific action to take on a plugin action requested.
+     *
+     * @param string $plugin
+     * @param string $actiontype
+     * @return string
+     */
+    public function pluginPrepare($plugin, $actiontype = null)
+    {
+        if ($this->pluginExistsLocally($plugin)) {
+            if ($this->isPluginInstalled($plugin)) {
+                $repo = $this->readOriginalJsonRepo();
+                if (!empty($repo['plugins'][$plugin]['repo'])) {
+                    return $this->pluginPrepareNeedDownload();
+                } else {
+                    if ($actiontype == 'upgrade') {
+                        return $this->pluginUpgradeReadyLocally();
+                    } else {
+                        return $this->pluginReinstallReadyLocally();
+                    }
+                }
+            } else {
+                return $this->pluginPrepareReadyLocally($plugin, $actiontype);
+            }
+        } else {
+            return $this->pluginPrepareNeedDownload();
+        }
+    }
+
+    /**
+     * Extracts and moves plugin to its correct location.
+     *
+     * @param string $plugin
+     * @param string $zip
+     * @param string $actiontype
+     * @return bool|string
+     * @throws PHPDS_exception
+     */
+    public function pluginExtraction($plugin, $zip, $actiontype = null)
+    {
+        $config        = $this->configuration;
+        $plugin_folder = $config['absolute_path'] . 'plugins';
+        $tmp_folder    = $config['absolute_path'] . $config['tmp_path'] . PU_createRandomString(6);
+
+        clearstatcache();
+
+        if (file_exists($zip)) {
+            $archive   = new ZipArchive();
+            $container = $archive->open($zip, ZipArchive::CREATE);
+            if ($container === true) {
+                try {
+                    $old_folder_name = trim($archive->getNameIndex(0), "/");
+                    if (empty($old_folder_name)) throw new PHPDS_exception('No root folder found in archive');
+                    if (!preg_match("/$plugin/", $old_folder_name))
+                        throw new PHPDS_exception('Plugin folder not found in archive');
+
+                    $results = $archive->extractTo($tmp_folder);
+                    $archive->close();
+
+                    // Folder will most probably be incorrect, rename.
+                    $wrong_name   = $tmp_folder     . '/' . $old_folder_name;
+                    $right_name   = $tmp_folder     . '/' . $plugin;
+                    $final_folder = $plugin_folder  . '/' . $plugin;
+
+                    if (file_exists($wrong_name) && is_dir($wrong_name)) {
+                        if (rename($wrong_name, $right_name)) {
+                            $this->rcopy($right_name, $final_folder);
+                        } else {
+                            throw new PHPDS_exception(sprintf('Could not renaming plugin in %s', $wrong_name));
+                        }
+                    } else {
+                        throw new PHPDS_exception(sprintf('Plugin did not extract to %s', $wrong_name));
+                    }
+
+                    if (!file_exists($final_folder) && !is_dir($final_folder)) {
+                        $this->template->critical(sprintf("There was a problem creating plugin in %s", $final_folder));
+                        return false;
+                    }
+
+                    if ($results) {
+                        return $this->pluginPrepareReadyLocally($plugin, $actiontype);
+                    } else {
+                        return false;
+                    }
+                } catch (Exception $e) {
+                    throw new PHPDS_exception(sprintf('Could not extract plugin, error message: %s', $e->getMessage()));
+                }
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Activates action for a plugin to be downloaded.
+     *
+     * @param string $plugin
+     * @return bool|string
+     */
+    public function pluginPrepareDownload($plugin)
+    {
+        $repo = $this->readOriginalJsonRepo();
+        if (!empty($repo['plugins'][$plugin]['repo'])) {
+            return $this->pluginAttemptGithubDownload($plugin, $repo['plugins'][$plugin]['repo']);
+        }
+        return false;
+    }
+
+    /****************************************************
+     * Private helper methods continue...
+     ****************************************************/
+
+    /**
+     * Reads last written repository from disk.
+     *
      * @return array
      * @throws PHPDS_exception
      */
@@ -110,7 +407,9 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $repoarray
+     * Generates readable array of data for repository display.
+     *
+     * @param array $repoarray
      * @return array
      */
     protected function repositoryList($repoarray)
@@ -143,7 +442,9 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $remote
+     * Creates array of plugins which contains a file structure locally.
+     *
+     * @param array $remote
      * @return array
      */
     protected function localAvailablePlugins($remote)
@@ -168,8 +469,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $remote
-     * @param $local
+     * Sorts plugins by their names in alphabetic order.
+     *
+     * @param array $remote
+     * @param array $local
      * @return array
      */
     protected function sortPluginByName($remote, $local)
@@ -184,8 +487,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param       $directory
-     * @param       $plugin
+     * Reads local xml cfg information and adds data to array.
+     *
+     * @param string $directory
+     * @param string $plugin
      * @param array $remote
      * @return array
      * @throws PHPDS_exception
@@ -232,7 +537,9 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $plugin
+     * Check if plugin is already installed.
+     *
+     * @param string $plugin
      * @return bool
      */
     protected function isPluginInstalled($plugin)
@@ -253,20 +560,8 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @return bool|string
-     */
-    public function updateRepository()
-    {
-        $update = $this->updateRepositoryFile();
-        if (!$update) {
-            $this->template->info(__('Repository was up to date.'));
-        } else {
-            $this->template->ok(__('New plugins added to repository.'));
-        }
-        return $update;
-    }
-
-    /**
+     * Actual writing and updating of local repository file.
+     *
      * @return bool|string
      * @throws PHPDS_exception
      */
@@ -352,8 +647,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $repo
-     * @return mixed
+     * Reads json repository file and decodes the json to an array.
+     *
+     * @param string $repo
+     * @return array
      */
     protected function readJsonRepoFile($repo)
     {
@@ -363,8 +660,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $repo
-     * @return mixed
+     * Reads json repository file and decodes the json to an array specifically for plugins.
+     *
+     * @param string $repo
+     * @return array
      */
     protected function readPluginsJsonRepoFile($repo)
     {
@@ -374,38 +673,9 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $plugin
-     * @param $remote_only
-     * @return array|bool
-     */
-    public function pluginConfig($plugin, $remote_only=false)
-    {
-        if ($remote_only) {
-            $cfg = $this->pluginConfigGithubRemote($plugin);
-        } else {
-            $plugin_exists = $this->pluginExistsLocally($plugin);
-            if ($plugin_exists) {
-                $cfg = $this->pluginConfigLocal($plugin_exists);
-            } else {
-                $cfg = $this->pluginConfigGithubRemote($plugin);
-            }
-        }
-
-        $repo = $this->readOriginalJsonRepo();
-
-        if (isset($cfg) && is_array($cfg)) {
-            if (! empty($repo['plugins'][$plugin]['repo'])) {
-                $cfg['repository'] = $repo['plugins'][$plugin]['repo'];
-                $cfg['fork']       = $repo['plugins'][$plugin]['repo'] . DIRECTORY_SEPARATOR . $this->fork;
-            }
-            return $cfg;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @param $plugin
+     * Checks if plugin exists locally, if it does, it will return xml config location.
+     *
+     * @param string $plugin
      * @return bool|string
      */
     protected function pluginExistsLocally($plugin)
@@ -420,8 +690,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $xmlcfgfile
-     * @return bool
+     * Reads local xml config file and parces the xml into an object returning the object and converts it to array.
+     *
+     * @param string $xmlcfgfile
+     * @return bool|array
      * @throws PHPDS_exception
      */
     protected function pluginConfigLocal($xmlcfgfile)
@@ -440,8 +712,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $plugin
-     * @return bool
+     * Loads config xml from remote location and converts it to array returning it.
+     *
+     * @param string $plugin
+     * @return bool|array
      */
     protected function pluginConfigGithubRemote($plugin)
     {
@@ -480,8 +754,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $ch
-     * @param $url
+     * Handles the response received by the php curl object.
+     *
+     * @param object $ch
+     * @param string $url
      * @return bool
      */
     protected function generateCurlResponse($ch, $url)
@@ -513,8 +789,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $repo_url
-     * @return mixed
+     * Builds the url for online get of the xml config file.
+     *
+     * @param string $repo_url
+     * @return string
      */
     protected function prepGithubRawConfigUrl($repo_url)
     {
@@ -523,8 +801,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $xml
-     * @return bool
+     * Converts xml object to array returning it.
+     *
+     * @param object $xml
+     * @return bool|array
      */
     protected function xmlPluginConfigToArray($xml)
     {
@@ -555,77 +835,9 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @return bool|string
-     */
-    public function checkDependencies()
-    {
-        $p = $this->config->pluginsInstalled;
-        if (!empty($p)) {
-            foreach ($p as $plugin => $data) {
-                $pluginxmllocation = $this->pluginExistsLocally($plugin);
-                if (!empty($pluginxmllocation)) {
-                    $cfg = $this->pluginConfigLocal($pluginxmllocation);
-                    if (!empty($cfg['dependency']) && is_array($cfg['dependency'])) {
-                        $dependency[$plugin] = $cfg['dependency'];
-                    }
-                }
-            }
-
-            if (!empty($dependency)) {
-                return json_encode($dependency);
-            } else {
-                return false;
-            }
-
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @return string
-     */
-    public function checkPlugins()
-    {
-        $p = $this->config->pluginsInstalled;
-        if (!empty($p)) {
-            return json_encode($p);
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @param $plugin
-     * @param $version
-     * @return bool
-     */
-    public function checkUpdate($plugin, $version)
-    {
-        if (empty($version)) return false;
-
-        $repo = $this->readOriginalJsonRepo();
-
-        // Check online first.
-        if (!empty($repo['plugins'][$plugin]['repo'])) {
-            $config = $this->pluginConfig($plugin, true);
-        } else {
-            $config = $this->pluginConfig($plugin);
-        }
-
-        if (! empty($config['database_version']) && ! empty($version)) {
-            if ($config['database_version'] > $version) {
-                return json_encode(array('plugin' => $plugin));
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @param $dependencies
+     * Checks class dependencies of all installed plugins against the required dependency list.
+     *
+     * @param array $dependencies
      * @return array|null
      */
     protected function pluginDependencies($dependencies)
@@ -653,82 +865,13 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $plugin
-     * @return bool|string
-     */
-    public function pluginDependsCollector($plugin)
-    {
-        $cfg = $this->pluginConfig($plugin);
-        if (empty($cfg)) {
-            $error = sprintf(__('%s config xml could not be loaded'), $plugin);
-            $this->template->critical($error);
-            return false;
-        }
-
-        if (!empty($cfg['dependency']) && is_array($cfg['dependency'])) {
-            // add main plugin first.
-            $install[] = $plugin;
-            foreach ($cfg['dependency'] as $dep) {
-                if (!$this->isPluginInstalled($dep['plugin']))
-                    if (empty($dep['ready'])) $install[] = $dep['plugin'];
-            }
-            if (!empty($install)) return json_encode($install);
-        }
-        return json_encode(array($plugin));
-    }
-
-    /**
-     * @param $plugin
-     * @return bool
-     * @throws PHPDS_exception
-     */
-    public function pluginDelete($plugin)
-    {
-        if (empty($plugin)) throw new PHPDS_exception(__('No plugin name provided to delete'));
-
-        $dir = $this->configuration['absolute_path'] . 'plugins/' . $plugin . DIRECTORY_SEPARATOR;
-
-        if (!is_dir($dir) || !$this->isWritable($dir)) {
-            $this->template->critical(sprintf(__("File permission denied deleting %s"), $dir));
-            return false;
-        }
-
-        return $this->recursiveFolderDelete($dir);
-    }
-
-    /**
-     * @param $plugin
-     * @param $actiontype
+     * Prepares a plugin for a specific action for local available plugins.
+     *
+     * @param string $plugin
+     * @param string $actiontype
      * @return string
      */
-    public function pluginPrepare($plugin, $actiontype = false)
-    {
-        if ($this->pluginExistsLocally($plugin)) {
-            if ($this->isPluginInstalled($plugin)) {
-                $repo = $this->readOriginalJsonRepo();
-                if (!empty($repo['plugins'][$plugin]['repo'])) {
-                    return $this->pluginPrepareNeedDownload();
-                } else {
-                    if ($actiontype == 'upgrade') {
-                        return $this->pluginUpgradeReadyLocally();
-                    } else {
-                        return $this->pluginReinstallReadyLocally();
-                    }
-                }
-            } else {
-                return $this->pluginPrepareReadyLocally($plugin, $actiontype);
-            }
-        } else {
-            return $this->pluginPrepareNeedDownload();
-        }
-    }
-
-    /**
-     * @param $plugin
-     * @param $actiontype
-     * @return string
-     */
-    protected function pluginPrepareReadyLocally($plugin, $actiontype = false)
+    protected function pluginPrepareReadyLocally($plugin, $actiontype = null)
     {
         if ($this->isPluginInstalled($plugin)) {
             if ($actiontype == 'upgrade') {
@@ -744,6 +887,8 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
+     * Json for plugin is ready to be installed.
+     *
      * @return string
      */
     protected function pluginInstallReadyLocally()
@@ -752,6 +897,8 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
+     * Json for plugin is ready to be reinstalled.
+     *
      * @return string
      */
     protected function pluginReinstallReadyLocally()
@@ -760,6 +907,8 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
+     * Json for plugin is ready to be upgraded.
+     *
      * @return string
      */
     protected function pluginUpgradeReadyLocally()
@@ -768,6 +917,8 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
+     * Json for plugin requesting downloading.
+     *
      * @return string
      */
     protected function pluginPrepareNeedDownload()
@@ -776,21 +927,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $plugin
-     * @return bool|string
-     */
-    public function pluginPrepareDownload($plugin)
-    {
-        $repo = $this->readOriginalJsonRepo();
-        if (!empty($repo['plugins'][$plugin]['repo'])) {
-            return $this->pluginAttemptGithubDownload($plugin, $repo['plugins'][$plugin]['repo']);
-        }
-        return false;
-    }
-
-    /**
-     * @param $plugin
-     * @param $repo
+     * Does actual download of plugin through curl.
+     *
+     * @param string $plugin
+     * @param string $repo
      * @return bool|string
      */
     protected function pluginAttemptGithubDownload($plugin, $repo)
@@ -824,71 +964,10 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $plugin
-     * @param $zip
-     * @param $actiontype
-     * @return bool|string
-     * @throws PHPDS_exception
-     */
-    public function pluginExtraction($plugin, $zip, $actiontype = false)
-    {
-        $config        = $this->configuration;
-        $plugin_folder = $config['absolute_path'] . 'plugins';
-        $tmp_folder    = $config['absolute_path'] . $config['tmp_path'] . PU_createRandomString(6);
-
-        clearstatcache();
-
-        if (file_exists($zip)) {
-            $archive   = new ZipArchive();
-            $container = $archive->open($zip, ZipArchive::CREATE);
-            if ($container === true) {
-                try {
-                    $old_folder_name = trim($archive->getNameIndex(0), "/");
-                    if (empty($old_folder_name)) throw new PHPDS_exception('No root folder found in archive');
-                    if (!preg_match("/$plugin/", $old_folder_name))
-                        throw new PHPDS_exception('Plugin folder not found in archive');
-
-                    $results = $archive->extractTo($tmp_folder);
-                    $archive->close();
-
-                    // Folder will most probably be incorrect, rename.
-                    $wrong_name   = $tmp_folder     . '/' . $old_folder_name;
-                    $right_name   = $tmp_folder     . '/' . $plugin;
-                    $final_folder = $plugin_folder  . '/' . $plugin;
-
-                    if (file_exists($wrong_name) && is_dir($wrong_name)) {
-                        if (rename($wrong_name, $right_name)) {
-                            $this->rcopy($right_name, $final_folder);
-                        } else {
-                            throw new PHPDS_exception(sprintf('Could not renaming plugin in %s', $wrong_name));
-                        }
-                    } else {
-                        throw new PHPDS_exception(sprintf('Plugin did not extract to %s', $wrong_name));
-                    }
-
-                    if (!file_exists($final_folder) && !is_dir($final_folder)) {
-                        $this->template->critical(sprintf("There was a problem creating plugin in %s", $final_folder));
-                        return false;
-                    }
-
-                    if ($results) {
-                        return $this->pluginPrepareReadyLocally($plugin, $actiontype);
-                    } else {
-                        return false;
-                    }
-                } catch (Exception $e) {
-                    throw new PHPDS_exception(sprintf('Could not extract plugin, error message: %s', $e->getMessage()));
-                }
-            } else {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param $src
-     * @param $dest
+     * Recursively copies a plugin from one location to another.
+     *
+     * @param string $src
+     * @param string $dest
      *
      * @return bool
      * @throws PHPDS_exception
@@ -923,7 +1002,9 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $dir
+     * Recursively deletes a folder.
+     *
+     * @param string $dir
      * @return bool
      */
     protected function recursiveFolderDelete($dir)
@@ -952,7 +1033,9 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * @param $dir
+     * Checks recursively if folder and files are writable.
+     *
+     * @param string $dir
      * @return bool
      */
     protected function isWritable($dir)

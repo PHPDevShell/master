@@ -13,7 +13,7 @@ class PluginManager extends PHPDS_controller
     public $repo;
 
     /**
-     *
+     * Always loads independent of ajax or not.
      */
     public function onLoad()
     {
@@ -22,6 +22,7 @@ class PluginManager extends PHPDS_controller
     }
 
     /**
+     * Main execution.
      * @return mixed|void
      */
     public function execute()
@@ -45,6 +46,8 @@ class PluginManager extends PHPDS_controller
     }
 
     /**
+     * Ajax controller.
+     *
      * @return bool|mixed|string
      */
     public function viaAjax()
@@ -56,7 +59,12 @@ class PluginManager extends PHPDS_controller
 
         // Repo update.
         if ($this->G('update') == 'repo') {
-            return $this->repo->updateRepository();
+            $result = $this->repo->updateRepository();
+            if (!$result) {
+                $this->template->info(__('Repository was up to date.'));
+            } else {
+                $this->template->ok(__('New plugins added to repository.'));
+            }
         }
 
         // Refresh menus.
@@ -95,6 +103,8 @@ class PluginManager extends PHPDS_controller
     }
 
     /**
+     * Does checks for repository and processes results also handles some notifications.
+     *
      * @return bool|string
      */
     protected function getCheck()
@@ -135,6 +145,8 @@ class PluginManager extends PHPDS_controller
     }
 
     /**
+     * Getting information for plugins.
+     *
      * @return bool|mixed|string
      */
     protected function getAction()
@@ -165,6 +177,8 @@ class PluginManager extends PHPDS_controller
     }
 
     /**
+     * All actions involving database action for a plugin.
+     *
      * @return bool|null|string
      */
     protected function postAction()
@@ -206,8 +220,10 @@ class PluginManager extends PHPDS_controller
     }
 
     /**
-     * @param null $plugin
-     * @return mixed
+     * Gets and draws all plugin repo rows.
+     *
+     * @param string $plugin
+     * @return string (html)
      */
     protected function repoRows($plugin=null)
     {
