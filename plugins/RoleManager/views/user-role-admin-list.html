@@ -1,0 +1,57 @@
+<!-- HTML -->
+<div class="results-row row-fluid">
+    <div class="span12 action-table">
+        {{{searchForm}}}
+        <div class="add-button">
+            <a href="{{new}}" class="btn btn-inverse" data-via-ajax="page"><i class="icon-plus icon-white"></i></a>
+        </div>
+        <table class="table">
+            {{#show}}
+            <thead>
+                <tr>
+                    {{{th}}}
+                    <th class="tr"></th>
+                </tr>
+            </thead>
+            {{/show}}
+            <tbody>
+            {{#RESULTS}}
+                <tr>
+                    <td>
+                        {{user_role_id}}
+                    </td>
+                    <td>
+                        <a href="{{edit_role_url}}" data-via-ajax="page">{{translated_role_name}}</a>
+                    </td>
+                    <td>
+                        {{user_role_note}}
+                    </td>
+                    <td class="tr">
+                        <a href="{{delete_role_url}}" class="btn btn-mini delete-row"><i class="icon-remove"></i></a>
+                    </td>
+                </tr>
+            {{/RESULTS}}
+            </tbody>
+        </table>
+        <div id="no-results">
+            {{^show}}
+            <div class="well text-warning">
+                {{#i}}No results found...{{/i}}
+            </div>
+            {{/show}}
+        </div>
+        <div id="pagination-links">
+        {{{pagination}}}
+        </div>
+    </div>
+</div>
+<!-- Javascript -->
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".results-row").on('rowsUpdated', function (event) {
+            $(".delete-row").viaAjaxDeleteRow();
+        });
+        $(".action-table").viaAjaxSearch();
+    });
+</script>
+

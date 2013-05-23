@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<config type="plugin">
+	<name>RoleManager</name>
+	<version>4.0.0-Beta-1</version>
+	<description>a Simple UI to manage roles.</description>
+	<founder>Jason Schoeman</founder>
+	<author>Jason Schoeman</author>
+	<email>titan@phpdevshell.org</email>
+	<homepage>http://www.phpdevshell.org</homepage>
+	<date>05 April 2013</date>
+	<copyright>Your plugins Copyright 2009 Notice All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html GNU/LGPL</license>
+	<info>
+		<![CDATA[
+			<p>
+				Role Manager allows an admin to perform Edit, Delete, Create and Tags actions through on Roles.
+			</p>
+		]]>
+	</info>
+	<install version="1000">
+		<queries>
+		</queries>
+		<nodes>
+            <node nodeid="role-admin-list" name="Roles" link="user-role-admin-list.php" alias="role-list" type="1">
+                <node nodeid="1" name="Menu1" link="menu1" />
+                <node nodeid="2" name="Menu2" link="menu2" />
+                <node nodeid="3" name="Menu3" link="menu3" />
+            </node>
+            <node nodeid="role-admin" name="Role Admin" link="user-role-admin.php" alias="role-admin-list" type="1" hide="1" />
+        </nodes>
+		<dependencies>
+		</dependencies>
+		<classes>
+		</classes>
+	</install>
+	<uninstall>
+		<queries>
+		</queries>
+	</uninstall>
+</config>

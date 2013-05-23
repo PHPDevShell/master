@@ -30,6 +30,9 @@ plugins/*
 !plugins/Mustache/
 !plugins/NodeHelper/
 !plugins/PluginManager/
+!plugins/CRUD/
+!plugins/Pagination/
+!plugins/RoleManager/
 !plugins/repository.json
 
 write/cache/*
