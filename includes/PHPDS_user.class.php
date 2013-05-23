@@ -252,22 +252,24 @@ class PHPDS_user extends PHPDS_dependant
 			WHERE   user_id = :user_id
         ";
 
+        $configuration = $this->configuration;
+
         if (!empty($user_id)) {
-            if ($this->configuration['user_id'] == $user_id) {
-                if ($this->configuration['user_role'] == $this->configuration['root_role']) {
+            if ($configuration['user_id'] == $user_id) {
+                if ($configuration['user_role'] == $configuration['root_role']) {
                     return true;
                 } else {
                     return false;
                 }
             } else {
                 $check_role_id = $this->db->querySingle($sql, array('user_id' => $user_id));
-                if ($check_role_id == $this->configuration['root_role']) {
+                if ($check_role_id == $configuration['root_role']) {
                     return $check_role_id;
                 } else {
                     return false;
                 }
             }
-        } else if (($this->configuration['user_role'] == $this->configuration['root_role'])) {
+        } else if (($configuration['user_role'] == $configuration['root_role'])) {
             return true;
         } else {
             return false;
@@ -363,7 +365,7 @@ class PHPDS_user extends PHPDS_dependant
         $log_array = $this->logArray;
 
         // Check if we need to log.
-        if (!empty($log_array) && $this->configuration['system_logging'] == true) {
+        if (!empty($log_array) && $config['system_logging'] == true) {
             $affects = 0;
             // Set.
             $navigation = $this->navigation->navigation;
