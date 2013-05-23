@@ -993,39 +993,8 @@ class crud extends PHPDS_dependant
     }
 
     /**
-     * Checks that given value matches following country pin codes.
-     * at = austria
-     * au = australia
-     * ca = canada
-     * de = german
-     * ee = estonia
-     * nl = netherlands
-     * it = italy
-     * pt = portugal
-     * se = sweden
-     * uk = united kingdom
-     * us = united states
-     * @param String expecting form field name
-     * @param String expecting country code
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isPincode($val, $country = 'us', $default = null)
-    {
-        $val      = $this->field($val, $default);
-        $patterns = array('at'                                                => '^[0-9]{4,4}$', 'au' => '^[2-9][0-9]{2,3}$', 'ca' =>
-        '^[a-zA-Z].[0-9].[a-zA-Z].\s[0-9].[a-zA-Z].[0-9].', 'de'              => '^[0-9]{5,5}$', 'ee' =>
-                          '^[0-9]{5,5}$', 'nl'                                => '^[0-9]{4,4}\s[a-zA-Z]{2,2}$', 'it' => '^[0-9]{5,5}$',
-                          'pt'                                                => '^[0-9]{4,4}-[0-9]{3,3}$', 'se' => '^[0-9]{3,3}\s[0-9]{2,2}$', 'uk' =>
-            '^([A-Z]{1,2}[0-9]{1}[0-9A-Z]{0,1}) ?([0-9]{1}[A-Z]{1,2})$', 'us' =>
-                          '^[0-9]{5,5}[\-]{0,1}[0-9]{4,4}$');
-        if (!array_key_exists($country, $patterns))
-            return false;
-        return (bool)preg_match("/" . $patterns[$country] . "/", $val);
-    }
-
-    /**
      * Check given url really exists?
+     *
      * @param   string expecting form field name
      * @param    mixed The default value that should be used when empty.
      * @return  boolean
@@ -1040,6 +1009,7 @@ class crud extends PHPDS_dependant
 
     /**
      * Check given sting has script tags
+     *
      * @param   string expecting form field name
      * @param    mixed The default value that should be used when empty.
      * @return  boolean
@@ -1052,6 +1022,7 @@ class crud extends PHPDS_dependant
 
     /**
      * given sting has html tags?
+     *
      * @param   string expecting form field name
      * @param    mixed The default value that should be used when empty.
      * @return  boolean
@@ -1064,6 +1035,7 @@ class crud extends PHPDS_dependant
 
     /**
      * check given sring has multilines
+     *
      * @param   string expecting form field name
      * @param    mixed The default value that should be used when empty.
      * @return  boolean
@@ -1075,9 +1047,11 @@ class crud extends PHPDS_dependant
     }
 
     /**
-     * check given array key element exists?
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
+     * Check given array key element exists.
+     *
+     * @param   string $val expecting form field name
+     * @param   mixed $arr The default value that should be used when empty.
+     * @param   mixed $default
      * @return  boolean
      */
     public function isExists($val, $arr, $default = null)
@@ -1085,106 +1059,6 @@ class crud extends PHPDS_dependant
         $val = $this->field($val, $default);
         return isset($arr[$val]);
     }
-
-    /**
-     * is given string is ascii format?
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isAscii($val, $default = null)
-    {
-        $val = $this->field($val, $default);
-        return !preg_match('/[^\x00-\x7F]/i', $val);
-    }
-
-    /**
-     * Checks given value again MAC address of the computer
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isMacAddress($val, $default = null)
-    {
-        $val = $this->field($val, $default);
-        return (bool)preg_match('/^([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])$/', $val);
-    }
-
-    /**
-     * Checks given value matches us citizen social security number
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isUsssn($val, $default = null)
-    {
-        $val = $this->field($val, $default);
-        return (bool)preg_match("/^\d{3}-\d{2}-\d{4}$/", $val);
-    }
-
-    /**
-     * Checks given value matches date de
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isDateDE($val, $default = null)
-    {
-        $date = $this->field($val, $default);
-        return (bool)preg_match("/^\d\d?\.\d\d?\.\d\d\d?\d?$/", $date);
-    }
-
-    /**
-     * Checks given value matches us citizen social security number
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isDateISO($val, $default = null)
-    {
-        $date = $this->field($val, $default);
-        return (bool)preg_match("/^\d{4}[\/-]\d{1,2}[\/-]\d{1,2}$/", $date);
-    }
-
-    /**
-     * Checks given value matches a time zone
-     * +00:00 | -05:00
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isTimezone($val, $default = null)
-    {
-        $val = $this->field($val, $default);
-        return (bool)preg_match("/^[-+]((0[0-9]|1[0-3]):([03]0|45)|14:00)$/", $val);
-    }
-
-    /**
-     * Time in 24 hours format with optional seconds
-     * 12:15 | 10:26:59 | 22:01:15
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isTime24($val, $default = null)
-    {
-        $val = $this->field($val, $default);
-        return (bool)preg_match("/^(([0-1]?[0-9])|([2][0-3])):([0-5]?[0-9])(:([0-5]?[0-9]))?$/", $val);
-    }
-
-    /**
-     * Time in 12 hours format with optional seconds
-     * 08:00AM | 10:00am | 7:00pm
-     * @param   string expecting form field name
-     * @param    mixed The default value that should be used when empty.
-     * @return  boolean
-     */
-    public function isTime12($val, $default = null)
-    {
-        $val = $this->field($val, $default);
-        return (bool)preg_match("/^([1-9]|1[0-2]|0[1-9]){1}(:[0-5][0-9][aApP][mM]){1}$/", $val);
-    }
-
 }
 
 class field

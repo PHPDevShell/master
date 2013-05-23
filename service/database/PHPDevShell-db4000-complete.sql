@@ -228,6 +228,8 @@ CREATE TABLE `_db_core_users` (
 -- Create primary roles table a user can belong to.;
 CREATE TABLE `_db_core_user_roles` (
   `user_role_id`   INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `inherit`        INT(1) DEFAULT NULL,
+  `home_node`      VARCHAR(255) DEFAULT NULL,
   `user_role_name` VARCHAR(255) DEFAULT NULL,
   `user_role_note` TINYTEXT,
   PRIMARY KEY (`user_role_id`)
@@ -236,10 +238,10 @@ CREATE TABLE `_db_core_user_roles` (
   DEFAULT CHARSET = utf8;
 
 -- Insert primary roles table a user can belong to.;
-INSERT INTO `_db_core_user_roles` VALUES ('1', 'Super Admin', null);
-INSERT INTO `_db_core_user_roles` VALUES ('2', 'Normal User', null);
-INSERT INTO `_db_core_user_roles` VALUES ('3', 'Guest User', null);
-INSERT INTO `_db_core_user_roles` VALUES ('4', 'Disabled', null);
+INSERT INTO `_db_core_user_roles` VALUES ('1', 1, null, 'Super Admin', null);
+INSERT INTO `_db_core_user_roles` VALUES ('2', 0, null, 'Normal User', null);
+INSERT INTO `_db_core_user_roles` VALUES ('3', 0, null, 'Guest User', null);
+INSERT INTO `_db_core_user_roles` VALUES ('4', 0, null, 'Disabled', null);
 
 -- Create security role permissions table.;
 CREATE TABLE `_db_core_user_role_permissions` (

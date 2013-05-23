@@ -27,6 +27,10 @@ class pluginRepository extends PHPDS_dependant
      */
     protected $repotype = 'github';
     /**
+     * @var string
+     */
+    protected $fork = 'fork';
+    /**
      * @var int
      */
     protected $timeout = 30;
@@ -380,7 +384,6 @@ class pluginRepository extends PHPDS_dependant
             $cfg = $this->pluginConfigGithubRemote($plugin);
         } else {
             $plugin_exists = $this->pluginExistsLocally($plugin);
-
             if ($plugin_exists) {
                 $cfg = $this->pluginConfigLocal($plugin_exists);
             } else {
@@ -388,7 +391,13 @@ class pluginRepository extends PHPDS_dependant
             }
         }
 
+        $repo = $this->readOriginalJsonRepo();
+
         if (isset($cfg) && is_array($cfg)) {
+            if (! empty($repo['plugins'][$plugin]['repo'])) {
+                $cfg['repository'] = $repo['plugins'][$plugin]['repo'];
+                $cfg['fork']       = $repo['plugins'][$plugin]['repo'] . DIRECTORY_SEPARATOR . $this->fork;
+            }
             return $cfg;
         } else {
             return false;
@@ -545,6 +554,9 @@ class pluginRepository extends PHPDS_dependant
         }
     }
 
+    /**
+     * @return bool|string
+     */
     public function checkDependencies()
     {
         $p = $this->config->pluginsInstalled;
