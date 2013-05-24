@@ -170,14 +170,48 @@ li .login-actions:after {
 
 /* Notifications */
 .alert {
-    border: 3px solid;
+    margin: 0 !important;
+    border: 1px 0 0 0  !important;
+    box-shadow: none !important;
+    -webkit-border-radius: 0 !important;
+    -moz-border-radius: 0 !important;
+    border-radius: 0 !important;
+    text-shadow: none !important;
+    background-color: #852B99 !important;
+    color: #fff !important;
+    font-size: 120%;
+}
+
+.close {
+    color: #fff !important;
+    opacity: 0.6 !important;
+    text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000 !important;
+}
+
+.alert-success {
+    background-color: #468847 !important;
+    color: #fff !important;
+}
+
+.alert-error {
+    background-color: #B94A48 !important;
+    color: #fff !important;
+}
+
+.alert-info {
+    background-color: #3A87AD !important;
+    color: #fff !important;
+}
+
+.alert-success h4, .alert-error h4, alert-info h4, .alert h4 {
+    color: #fff !important;
 }
 
 .notifications {
     position: fixed;
     right: 0;
     bottom: 0;
-    margin: 10px 20px 0 20px;
+    margin: 0;
 }
 
 /* Notification Element */
@@ -265,4 +299,10 @@ div.config-info.hero-unit {
     font-weight: normal !important;
     font-size: inherit !important;
     line-height: normal !important;
+}
+
+* {
+    -webkit-border-radius: 0 !important;
+    -moz-border-radius: 0 !important;
+    border-radius: 0 !important;
 }

@@ -213,7 +213,11 @@ class PHPDS_pdo extends PHPDS_dependant implements PHPDS_dbInterface
      */
     public function queryBuild($sql, $array, $params = null, $join = 'AND', $where = 'WHERE')
     {
-        $array = array_filter($array, 'strlen');
+        $array_ = array();
+        foreach ($array as $column) {
+            $array_[] = " $column = :$column ";
+        }
+        $array = array_filter($array_, 'strlen');
         $join  = join(" $join ", $array);
         $sql .= ($join) ? PHP_EOL . " $where " . PHP_EOL . $join : PHP_EOL;
 

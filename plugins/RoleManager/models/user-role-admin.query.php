@@ -3,12 +3,9 @@
 class PHPDS_readRoleUserQuery extends PHPDS_query
 {
     protected $sql = "
-		SELECT
-			user_role_id, user_role_name, user_role_note
-		FROM
-			_db_core_user_roles
-		WHERE
-			user_role_id = %u
+		SELECT user_role_id, user_role_name, user_role_note
+		FROM   _db_core_user_roles
+		WHERE  user_role_id = :user_role_id
 		";
     protected $singleRow = true;
 }
@@ -16,14 +13,10 @@ class PHPDS_readRoleUserQuery extends PHPDS_query
 class PHPDS_readRoleNameQuery extends PHPDS_query
 {
     protected $sql = "
-		SELECT
-			user_role_id
-		FROM
-			_db_core_user_roles
-		WHERE
-			user_role_name = '%s'
-		AND
-			user_role_id != %u
+		SELECT  user_role_id
+		FROM    _db_core_user_roles
+		WHERE   user_role_name = :user_role_name
+		AND     user_role_id != :user_role_id
 		";
     protected $singleRow = true;
 }
@@ -31,12 +24,9 @@ class PHPDS_readRoleNameQuery extends PHPDS_query
 class PHPDS_readRoleNodeQuery extends PHPDS_query
 {
     protected $sql = "
-		SELECT
-			node_id
-		FROM
-			_db_core_user_role_permissions
-		WHERE
-			user_role_id = '%u'
+		SELECT  node_id
+		FROM    _db_core_user_role_permissions
+		WHERE   user_role_id = :user_role_id
 		";
 
     public function invoke($parameters = null)
@@ -57,10 +47,9 @@ class PHPDS_readRoleNodeQuery extends PHPDS_query
 class PHPDS_writeRoleQuery extends PHPDS_query
 {
     protected $sql = "
-		REPLACE INTO
-			_db_core_user_roles (user_role_id, user_role_name, user_role_note)
-		VALUES
-			('%u', '%s', '%s')
+		REPLACE INTO _db_core_user_roles
+		            (user_role_id, user_role_name, user_role_note)
+		VALUES      (:user_role_id, :user_role_name, :user_role_note)
 		";
     protected $returnId = true;
 }
@@ -68,10 +57,8 @@ class PHPDS_writeRoleQuery extends PHPDS_query
 class PHPDS_deletePermissionsQuery extends PHPDS_query
 {
     protected $sql = "
-		DELETE FROM
-			_db_core_user_role_permissions
-		WHERE
-			user_role_id = '%u'
+		DELETE FROM _db_core_user_role_permissions
+		WHERE       user_role_id = :user_role_id
 		";
     protected $returnId = true;
 }
@@ -79,10 +66,9 @@ class PHPDS_deletePermissionsQuery extends PHPDS_query
 class PHPDS_writePermissionsQuery extends PHPDS_query
 {
     protected $sql = "
-		REPLACE INTO
-			_db_core_user_role_permissions (user_role_id, node_id)
-		VALUES
-			%s
+		REPLACE INTO _db_core_user_role_permissions
+		            (user_role_id, node_id)
+		VALUES      (:user_role_id, :node_id)
 		";
 
     public function invoke($parameters = null)
@@ -112,17 +98,12 @@ class PHPDS_writePermissionsQuery extends PHPDS_query
 class PHPDS_readNodesQuery extends PHPDS_query
 {
     protected $sql = "
-		SELECT
-			t1.node_id, t1.node_name, t1.parent_node_id, t1.node_link, t1.node_type,
-			t2.is_parent
-		FROM
-			_db_core_node_items AS t1
-		LEFT JOIN
-			_db_core_node_structure AS t2
-		ON
-			t1.node_id = t2.node_id
-		ORDER BY
-			t2.id
+		SELECT    t1.node_id, t1.node_name, t1.parent_node_id, t1.node_link, t1.node_type,
+			      t2.is_parent
+		FROM      _db_core_node_items AS t1
+		LEFT JOIN _db_core_node_structure AS t2
+		ON        t1.node_id = t2.node_id
+		ORDER BY  t2.id
 		ASC
 	";
 

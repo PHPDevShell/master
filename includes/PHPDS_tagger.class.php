@@ -56,9 +56,9 @@ class PHPDS_tagger extends PHPDS_dependant
             FROM    _db_core_tags
         ";
 
-        $build[] = ($object != null) ? 'tag_object = :tag_object' : null;
-        $build[] = ($name   != null) ? 'tag_name   = :tag_name'   : null;
-        $build[] = ($target != null) ? 'tag_target = :tag_target' : null;
+        $build[] = ($object != null) ? 'tag_object' : null;
+        $build[] = ($name   != null) ? 'tag_name'   : null;
+        $build[] = ($target != null) ? 'tag_target' : null;
 
         $sql = $this->db->queryBuild($sql, $build);
         return $this->db->querySingle($sql,
@@ -81,9 +81,9 @@ class PHPDS_tagger extends PHPDS_dependant
             FROM    _db_core_tags
         ";
 
-        $build[] = ($object != null) ? 'tag_object = :tag_object' : null;
-        $build[] = ($name != null)   ? 'tag_name   = :tag_name'   : null;
-        $build[] = ($target != null) ? 'tag_target = :tag_target' : null;
+        $build[] = ($object != null) ? 'tag_object' : null;
+        $build[] = ($name != null)   ? 'tag_name'   : null;
+        $build[] = ($target != null) ? 'tag_target' : null;
 
         $sql = $this->db->queryBuild($sql, $build);
         return $this->db->queryFAR($sql,

@@ -3,10 +3,8 @@
 class PHPDS_readRoleQuery extends PHPDS_query
 {
 	protected $sql = "
-		SELECT
-			user_role_id, user_role_name, user_role_note
-		FROM
-			_db_core_user_roles
+		SELECT  user_role_id, user_role_name, user_role_note
+		FROM    _db_core_user_roles
     ";
 
 	public function invoke($parameters = null)
