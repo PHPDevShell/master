@@ -15,8 +15,6 @@ class ReadMe extends PHPDS_controller
     {
         $this->template->heading(__('Starting with PHPDevShell'));
 
-        $this->model->test();
-
         // Testing Notification Boxes.
         $warning = $this->template->warning('This is a sample warning message, this can be written in log.', 'return', 'nolog');
         $note    = $this->template->note('This is a sample notice message... ', 'return');

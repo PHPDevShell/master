@@ -381,12 +381,26 @@ class pluginFactory extends PHPDS_dependant
     protected function writeNode($node_array)
     {
         $sql = "
-          REPLACE INTO  _db_core_node_items
+          INSERT INTO  _db_core_node_items
                         (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window,
                         rank, hide, theme_id, alias, layout, params)
-          VALUES
-                        (:node_id, :parent_node_id, :node_name, :node_link, :plugin, :node_type, :extend, :new_window,
+          VALUES        (:node_id, :parent_node_id, :node_name, :node_link, :plugin, :node_type, :extend, :new_window,
                         :rank, :hide, :theme_id, :alias, :layout, :params)
+          ON DUPLICATE KEY UPDATE node_id        = :node_id,
+                                  parent_node_id = :parent_node_id,
+                                  node_name      = :node_name,
+                                  node_link      = :node_link,
+                                  plugin         = :plugin,
+                                  node_type      = :node_type,
+                                  extend         = :extend,
+                                  new_window     = :new_window,
+                                  rank           = :rank,
+                                  hide           = :hide,
+                                  theme_id       = :theme_id,
+                                  alias          = :alias,
+                                  layout         = :layout,
+                                  params         = :params
+
         ";
 
         return $this->db->queryAffects($sql, $node_array);
@@ -402,8 +416,9 @@ class pluginFactory extends PHPDS_dependant
     protected function updateRolePersmissions($user_role_id, $node_id)
     {
         $sql = "
-          REPLACE INTO  _db_core_user_role_permissions (user_role_id, node_id)
-		  VALUES        (:user_role_id, :node_id)
+          INSERT INTO             _db_core_user_role_permissions (user_role_id, node_id)
+		  VALUES                  (:user_role_id, :node_id)
+		  ON DUPLICATE KEY UPDATE user_role_id = :user_role_id, node_id = :node_id
         ";
 
         return $this->db->queryAffects($sql, array('user_role_id' => $user_role_id, 'node_id' => $node_id));
@@ -437,8 +452,9 @@ class pluginFactory extends PHPDS_dependant
     protected function createTheme($theme_id, $theme_folder)
     {
         $sql = "
-          REPLACE INTO  _db_core_themes (theme_id, theme_folder)
-		  VALUES        (:theme_id, :theme_folder)
+          INSERT INTO             _db_core_themes (theme_id, theme_folder)
+		  VALUES                  (:theme_id, :theme_folder)
+		  ON DUPLICATE KEY UPDATE theme_id = :theme_id, theme_folder = :theme_folder
         ";
 
         return $this->db->queryAffects($sql, array('theme_id' => $theme_id, 'theme_folder' => $theme_folder));
@@ -622,8 +638,14 @@ class pluginFactory extends PHPDS_dependant
         $db  = $this->db;
 
         $sql = "
-          REPLACE INTO  _db_core_plugin_classes (class_id, class_name, alias, plugin_folder, enable, rank)
+          INSERT INTO  _db_core_plugin_classes (class_id, class_name, alias, plugin_folder, enable, rank)
           VALUES       (:class_id, :class_name, :alias, :plugin_folder, :enable, :rank)
+          ON DUPLICATE KEY UPDATE class_id      = :class_id,
+                                  class_name    = :class_name,
+                                  alias         = :alias,
+                                  plugin_folder = :plugin_folder,
+                                  enable        = :enable,
+                                  rank          = :rank
         ";
 
         // Assign settings q to install.

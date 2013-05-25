@@ -211,8 +211,9 @@ class PHPDS_config extends PHPDS_dependant
     public function writeSettings($write_settings, $custom_prefix = '', $notes = array())
     {
         $sql = "
-                REPLACE INTO _db_core_settings (setting_id, setting_value, note)
+                INSERT INTO _db_core_settings (setting_id, setting_value, note)
                 VALUES  (:setting_id, :setting_value, :note)
+                ON DUPLICATE KEY UPDATE setting_id = :setting_id, setting_value = :setting_value, note = :note
         ";
 
         if ($custom_prefix == '*') {

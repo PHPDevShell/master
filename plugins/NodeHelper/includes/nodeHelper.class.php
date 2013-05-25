@@ -227,13 +227,27 @@ class nodeHelper extends PHPDS_dependant
         $new_window = false, $rank = 0, $hide = false, $theme_id = null, $alias = null, $layout = null, $params = null)
     {
         $sql = "
-          REPLACE INTO  _db_core_node_items (
+          INSERT INTO  _db_core_node_items (
             node_id, parent_node_id, node_name, node_link, plugin, node_type,
             extend, new_window, rank, hide, theme_id, alias, layout, params
           ) VALUES (
             :node_id, :parent_node_id, :node_name, :node_link, :plugin, :node_type,
             :extend, :new_window, :rank, :hide, :theme_id, :alias, :layout, :params
-          )
+          ) ON DUPLICATE KEY UPDATE node_id        = :node_id,
+                                    parent_node_id = :parent_node_id,
+                                    node_name      = :node_name,
+                                    node_link      = :node_link,
+                                    plugin         = :plugin,
+                                    node_type      = :node_type,
+                                    extend         = :extend,
+                                    new_window     = :new_window,
+                                    rank           = :rank,
+                                    hide           = :hide,
+                                    theme_id       = :theme_id,
+                                    alias          = :alias,
+                                    layout         = :layout,
+                                    params         = :params
+
         ";
 
         $parameters = array(

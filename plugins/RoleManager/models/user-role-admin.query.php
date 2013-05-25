@@ -47,9 +47,12 @@ class PHPDS_readRoleNodeQuery extends PHPDS_query
 class PHPDS_writeRoleQuery extends PHPDS_query
 {
     protected $sql = "
-		REPLACE INTO _db_core_user_roles
+	    INSERT INTO _db_core_user_roles
 		            (user_role_id, user_role_name, user_role_note)
 		VALUES      (:user_role_id, :user_role_name, :user_role_note)
+		ON DUPLICATE KEY UPDATE user_role_id   = :user_role_id,
+                                user_role_name = :user_role_name,
+                                user_role_note = :user_role_note
 		";
     protected $returnId = true;
 }
@@ -66,9 +69,10 @@ class PHPDS_deletePermissionsQuery extends PHPDS_query
 class PHPDS_writePermissionsQuery extends PHPDS_query
 {
     protected $sql = "
-		REPLACE INTO _db_core_user_role_permissions
+		INSERT INTO _db_core_user_role_permissions
 		            (user_role_id, node_id)
 		VALUES      (:user_role_id, :node_id)
+		ON DUPLICATE KEY UPDATE user_role_id = :user_role_id, node_id = :node_id
 		";
 
     public function invoke($parameters = null)

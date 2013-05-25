@@ -28,11 +28,24 @@ class PHPDS_tagger extends PHPDS_dependant
         }
     }
 
+    /**
+     * Marks a new tag or update existing tag.
+     *
+     * @param string     $object
+     * @param string     $name
+     * @param string|int $target
+     * @param string     $value (optional)
+     * @return int       Query affects
+     */
     public function markTag($object, $name, $target, $value = null)
     {
         $sql = "
-            REPLACE INTO _db_core_tags
-		    SET tag_object = :tag_object, tag_name = :tag_name, tag_target = :tag_target, tag_value = :tag_value
+            INSERT INTO _db_core_tags (tag_object, tag_name, tag_target, tag_value)
+		    VALUES (:tag_object, :tag_name, :tag_target, :tag_value)
+		    ON DUPLICATE KEY UPDATE tag_object = :tag_object,
+		                            tag_name   = :tag_name,
+		                            tag_target = :tag_target,
+		                            tag_value  = :tag_value
         ";
 
         return $this->db->queryAffects($sql,
@@ -209,8 +222,13 @@ class PHPDS_tagger extends PHPDS_dependant
     public function tagMultiple($object, $target, $taggernames, $taggervalues, $taggerids)
     {
         $sql = "
-            REPLACE INTO _db_core_tags ( tag_id,  tag_object,  tag_name,  tag_target,  tag_value)
-		    VALUES                     (:tag_id, :tag_object, :tag_name, :tag_target, :tag_value)
+            INSERT INTO _db_core_tags ( tag_id,  tag_object,  tag_name,  tag_target,  tag_value)
+		    VALUES                    (:tag_id, :tag_object, :tag_name, :tag_target, :tag_value)
+		    ON DUPLICATE KEY UPDATE tag_id     = :tag_id,
+		                            tag_object = :tag_object,
+		                            tag_name   = :tag_name,
+		                            tag_target = :tag_target,
+		                            tag_value  = :tag_value
         ";
         $this->db->prepare($sql);
         if (!empty($taggernames) && is_array($taggernames)) {
