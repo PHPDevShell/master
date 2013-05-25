@@ -4,6 +4,19 @@
  * Class contains methods to calculate the structure and other elements of node items,
  * the methods are dependent of each other.
  *
+ * @property PHPDS_core             $core
+ * @property PHPDS_config           $config
+ * @property PHPDS_cacheInterface   $cache
+ * @property PHPDS_debug            $debug
+ * @property PHPDS_sessionInterface $session
+ * @property PHPDS_navigation       $navigation
+ * @property PHPDS_router           $router
+ * @property PHPDS_dbInterface      $db
+ * @property PHPDS_template         $template
+ * @property PHPDS_tagger           $tagger
+ * @property PHPDS_user             $user
+ * @property PHPDS_notif            $notif
+ * @property PHPDS_auth             $auth
  */
 class nodeHelper extends PHPDS_dependant
 {
@@ -199,21 +212,6 @@ class nodeHelper extends PHPDS_dependant
         if (!empty($condition)) {
             // Delete Node Items.
             $db->query('DELETE FROM _db_core_node_items WHERE node_id' . PHP_EOL . $condition);
-
-            // Delete Node Structure.
-            $db->query('DELETE FROM _db_core_node_structure WHERE node_id' . PHP_EOL . $condition);
-
-            // Continue deleting?
-            if ($delete_critical_only == false) {
-                // Delete Node Permissions.
-                $db->query('DELETE FROM _db_core_user_role_permissions WHERE node_id' . PHP_EOL . $condition);
-
-                // Delete all filters that belongs to this node item.
-                $db->query('DELETE FROM _db_core_filter WHERE node_id' . PHP_EOL . $condition);
-
-                // Delete all cron items connected to this node.
-                $db->query('DELETE FROM _db_core_cron WHERE node_id' . PHP_EOL . $condition);
-            }
             return true;
         }
         return false;
