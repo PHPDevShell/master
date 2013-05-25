@@ -168,6 +168,30 @@ li .login-actions:after {
 
 }
 
+.btn {
+    background-image: none !important;
+}
+
+.btn-primary {
+    background-image: none !important;
+}
+
+.btn-danger {
+    background-image: none !important;
+}
+
+.btn-warning {
+    background-image: none !important;
+}
+
+.btn-info {
+    background-image: none !important;
+}
+
+.btn-inverse {
+    background-image: none !important;
+}
+
 /* Notifications */
 .alert {
     margin: 0 !important;
@@ -186,6 +210,10 @@ li .login-actions:after {
     color: #fff !important;
     opacity: 0.6 !important;
     text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000 !important;
+}
+
+.close:hover {
+    opacity: 0.9 !important;
 }
 
 .alert-success {

@@ -14,121 +14,149 @@ class PHPDS_model extends PHPDS_dependant
      */
     public $extends = false;
 
-    public $fields           = array();
-    public $defaults         = array();
-    public $table_name       = '';
-    public $primary_key      = '';
-
-    const SQL_SELECT         = 'SELECT';
-    const SQL_FROM           = 'FROM';
-    const SQL_UPDATE         = 'UPDATE';
-    const SQL_SET            = 'SET';
-    const SQL_INSERT         = 'INSERT';
-    const SQL_VALUES         = 'VALUES';
-    const SQL_DELETE         = 'DELETE';
+    const SQL_SELECT    = 'SELECT';
+    const SQL_WHERE     = 'WHERE';
+    const SQL_FROM      = 'FROM';
+    const SQL_UPDATE    = 'UPDATE';
+    const SQL_SET       = 'SET';
+    const SQL_INSERT    = 'INSERT INTO';
+    const SQL_DUPLICATE = 'ON DUPLICATE KEY UPDATE';
+    const SQL_VALUES    = 'VALUES';
+    const SQL_DELETE    = 'DELETE FROM';
 
     /**
      * Executes a simple SQL SELECT statement. The SQL statement is build using the provided table name and field names.
-     * The WHERE+AND+OR clause can be build from the params variable.
      *
+     * @param $fields       array Assoc array of column names for which values should be returned.
+     *                      If a single value is given with the key, the value will be returned as a string.
+     *                      First field will be used as the focused field and should contain a value.
      * @param $table_name   string The name of the table against which to run the SELECT query.
-     * @param $fields       array Array of field names and their values that should be used in the SELECT query.
-     * @param $params       array Array of string based field names that should be used in the WHERE clause.
-     *                      The values is pulled from the field values.
-     * @param $join         string The string that will be used to join the array
-     *                      example = :example AND foo = :foo AND bar...
-     * @param $where        string Adds a string WHERE on how the sql should be joined with rest of query.
      *
-     * @return resource|string Can return the statement resource or complete SQL string.
+     * @return array|string Either array of values if so requested or single value.
      */
-    public function select($table_name, $fields, $params = null, $join = 'AND', $where = 'WHERE')
+    public function select($fields, $table_name)
     {
-        $sql = self::SQL_SELECT . PHP_EOL . implode(', ', $fields) . PHP_EOL . self::SQL_FROM . PHP_EOL . $table_name;
-        return $this->db->queryBuild($sql, $fields, $params, $join, $where);
+        $key_field = key($fields);
+        $key       = array_shift($fields);
+        $count     = count($fields);
+
+        $sql = self::SQL_SELECT . PHP_EOL . '%1$s'      . PHP_EOL .
+               self::SQL_FROM   . PHP_EOL . $table_name . PHP_EOL .
+               self::SQL_WHERE  . PHP_EOL . "$key_field = :$key_field";
+
+        if ($count > 1) {
+            array_unshift($fields, $key_field);
+            $sql = sprintf($sql, join(', ', $fields));
+            return $this->db->queryFetchAssocRow($sql, array($key_field => $key));
+        } else {
+            $sql = sprintf($sql, array_shift($fields));
+            return $this->db->querySingle($sql, array($key_field => $key));
+        }
     }
 
     /**
-     * Executes a simple SQL UPDATE statement. The SQL statement is build using the provided table name and field names.
-     * The WHERE clause is build from the params variable.
+     * Executes a simple SQL UPDATE statement.
      *
-     * @param $table_name        string The name of the table against which to run the UPDATE query.
-     * @param $fields            array Associative array of field names and their values that should be used in the UPDATE query.
-     * @param $primary_key       string Name of primary key.
-     * @return bool|int          Affected rows.
+     * @param $fields      array Associative array of field names and their values that should be used in the
+     *                     UPDATE query.
+     * @param $table_name  string The name of the table against which to run the UPDATE query.
+     *
+     * @return int         Affected rows.
      */
-    public function update($table_name, $fields, $primary_key)
+    public function update($fields, $table_name)
     {
-        $sql = self::SQL_UPDATE . PHP_EOL . $table_name . PHP_EOL . self::SQL_SET . PHP_EOL;
-        $update = '';
+        $key_field = key($fields);
+        $pairs     = array();
 
         foreach (array_keys($fields) as $key) {
-            if ($key != $primary_key) {
-                if (empty($update)) {
-                    $update = $key . ' = :' . $key;
-                } else {
-                    $update .= ', ' . $key . ' = :' . $key;
-                }
-            }
+            $pairs[] = "$key = :$key";
         }
-        $where = PHP_EOL . $primary_key . ' = :' . $primary_key . PHP_EOL;
-        $sql   = $sql . $where;
+
+        $columns = join(', ', $pairs);
+
+        $sql = self::SQL_UPDATE . PHP_EOL . $table_name  . PHP_EOL .
+               self::SQL_SET    . PHP_EOL . $columns     . PHP_EOL .
+               self::SQL_WHERE  . PHP_EOL . "$key_field = :$key_field";
 
         return $this->db->queryAffects($sql, $fields);
     }
 
     /**
-     * Executes a simple SQL INSERT statement. The SQL statement is build using the provided table name and field names. This
-     * function is usually used internally by the DBModel class itself. You should use the save() function to save new data instead.
+     * Executes a simple SQL INSERT statement.
      *
-     * @param $table_name         string The name of the table against which to run the INSERT query.
-     * @param $fields             array Associative array of field names and their values that should be used in the INSERT query.
-     * @param $primary_key        string The primary key of the table. This is required to filter out the primary key before the INSERT
-     *                            is performed. The function assumes that a unique key will automatically be incremented, hence
-     *                            the reason for not adding it to the INSERT statement.
+     * @param $fields      array Associative array of field names and their values that should be used in the
+     *                     INSERT query.
+     * @param $table_name  string The name of the table against which to run the INSERT query.
+     *
+     * @return int         Last inserted id.
      */
-    public function insert($table_name, $fields, $primary_key)
+    public function insert($fields, $table_name)
     {
-        $names = "";
+        $columns   = array();
+        $values    = array();
+
         foreach (array_keys($fields) as $key) {
-            if ($key != $primary_key) {
-                if (empty($names)) {
-                    $names = $key;
-                } else {
-                    $names .= sprintf(', %1$s', $key);
-                }
-            }
+            $columns[] = $key;
+            $values[]  = ":$key";
         }
 
-        $values = "";
-        foreach (array_keys($fields) as $key) {
-            if ($key != $primary_key) {
-                if (empty($values)) {
-                    $values = sprintf(':%1$s', $key);
-                } else {
-                    $values .= sprintf(', :%1$s', $key);
-                }
-            }
-        }
+        $columns = join(', ', $columns);
+        $values  = join(', ', $values);
 
-        $sql = sprintf(self::SQL_INSERT, $table_name, $names, $values);
-        $this->db->query($sql, $fields);
-        $this->fields[$primary_key] = $this->db->lastId();
+        $sql = self::SQL_INSERT . PHP_EOL . $table_name . PHP_EOL . "($columns)" . PHP_EOL .
+               self::SQL_VALUES . PHP_EOL . "($values)";
+
+        return $this->db->queryReturnId($sql, $fields);
     }
 
+    /**
+     * Executes a simple SQL INSERT query but UPDATES on DUPLICATE statement.
+     *
+     * @param $fields      array Associative array of field names and their values that should be used in the
+     *                     INSERT query.
+     * @param $table_name  string The name of the table against which to run the INSERT query.
+     *
+     * @return int         Last inserted id.
+     */
+    public function upsert($fields, $table_name)
+    {
+        $pairs     = array();
+        $columns   = array();
+        $values    = array();
+
+        foreach (array_keys($fields) as $key) {
+            $pairs[]   = "$key = :$key";
+            $columns[] = $key;
+            $values[]  = ":$key";
+        }
+
+        $pairs   = join(', ', $pairs);
+        $columns = join(', ', $columns);
+        $values  = join(', ', $values);
+
+        $sql = self::SQL_INSERT    . PHP_EOL . $table_name . PHP_EOL . "($columns)" . PHP_EOL .
+               self::SQL_VALUES    . PHP_EOL . "($values)" . PHP_EOL .
+               self::SQL_DUPLICATE . PHP_EOL . $pairs;
+
+        return $this->db->queryReturnId($sql, $fields);
+    }
 
     /**
-     * Executes a simple SQL DELETE statement. The SQL statement is build using the provided table name and field names. This
-     * function is usually used internally by the DBModel class itself. You should use the remove() function to delete a record instead.
+     * Executes a simple SQL DELETE statement.
      *
-     * @param $table_name  string The name of the table against which to run the DELETE query.
-     * @param $primary_key string The primary key field name, used in the WHERE clause.
-     * @param $id          string The primary key value (unique id) of the record you wish to delete.
-     * @return mixed
+     * @param $field       array Associative array of field and its value that should be used in the
+     *                     DELETE query.
+     * @param $table_name  string The name of the table against which to run the INSERT query.
+     *
+     * @return int         Affected rows.
      */
-    public function delete($table_name, $primary_key, $id)
+    public function delete($field, $table_name)
     {
-        $sql = sprintf(self::SQL_DELETE, $table_name, $primary_key);
-        $this->db->query($sql, array($primary_key => $id));
-        return $id;
+        $key_field = key($field);
+
+        $sql = self::SQL_DELETE . PHP_EOL . $table_name . PHP_EOL .
+               self::SQL_WHERE  . PHP_EOL . "$key_field =:$key_field";
+
+        return $this->db->queryAffects($sql, $field);
     }
 }
