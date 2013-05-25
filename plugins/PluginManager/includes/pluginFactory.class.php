@@ -3,6 +3,19 @@
 /**
  * Manages plugin relations write action.
  *
+ * @property PHPDS_core             $core
+ * @property PHPDS_config           $config
+ * @property PHPDS_cacheInterface   $cache
+ * @property PHPDS_debug            $debug
+ * @property PHPDS_sessionInterface $session
+ * @property PHPDS_navigation       $navigation
+ * @property PHPDS_router           $router
+ * @property PHPDS_dbInterface      $db
+ * @property PHPDS_template         $template
+ * @property PHPDS_tagger           $tagger
+ * @property PHPDS_user             $user
+ * @property PHPDS_notif            $notif
+ * @property PHPDS_auth             $auth
  */
 class pluginFactory extends PHPDS_dependant
 {
@@ -51,6 +64,9 @@ class pluginFactory extends PHPDS_dependant
     {
         $this->preConstruct($plugin_folder);
 
+        // Write installed plugin.
+        $this->installVersion($plugin_folder, 'install');
+
         // Install node items to database.
         $this->installNodes($plugin_folder);
         // Install settings.
@@ -61,8 +77,6 @@ class pluginFactory extends PHPDS_dependant
         $this->uninstallQueries($plugin_folder);
         // Install custom database query.
         $this->installQueries($plugin_folder);
-        // Write installed plugin.
-        $this->installVersion($plugin_folder, 'install');
         // Write the node structure.
         $this->nodeHelper->writeNodeStructure();
         // Clear old cache.
@@ -82,6 +96,7 @@ class pluginFactory extends PHPDS_dependant
 
         // Install node items to database.
         $this->installNodes($plugin_folder, true);
+
         // Before we install anything lets first clear old hooks to this plugin.
         // Write the node structure.
         $this->nodeHelper->writeNodeStructure();
@@ -117,10 +132,10 @@ class pluginFactory extends PHPDS_dependant
         $this->uninstallClasses($plugin_folder);
         // Install classes.
         $this->installClasses($plugin_folder);
-        // Write database string.
-        $this->upgradeDatabase($plugin_folder, 'install');
         // Write the node structure.
         $this->nodeHelper->writeNodeStructure();
+        // Write database string.
+        $this->upgradeDatabase($plugin_folder, 'install');
         // Clear old Cache.
         $this->cache->flush();
 
@@ -136,18 +151,18 @@ class pluginFactory extends PHPDS_dependant
     {
         $this->preConstruct($plugin_folder);
 
-        // Remove node items from database.
-        $this->uninstallNodes($plugin_folder);
         // Remove plugin settings if any.
         $this->uninstallSettings($plugin_folder);
         // Remove plugin classes if any.
         $this->uninstallClasses($plugin_folder);
         // Remove database.
         $this->uninstallQueries($plugin_folder);
-        // Remove plugin from registry.
-        $this->uninstallVersion($plugin_folder);
+        // Remove node items from database.
+        $this->uninstallNodes($plugin_folder);
         // Write the node structure.
         $this->nodeHelper->writeNodeStructure();
+        // Remove plugin from registry.
+        $this->uninstallVersion($plugin_folder);
         // Clear old cache.
         $this->cache->flush();
 
@@ -330,18 +345,6 @@ class pluginFactory extends PHPDS_dependant
                     }
 
                     ////////////////////////////////
-                    // Role Permissions.
-                    // Now we need to delete old values, if any, to prevent duplicates.
-                    // Delete Node Permissions.
-                    $this->cleanupRolePermissions($node_id, $configuration['user_role']);
-
-                    // Check if we should add_permission.
-                    if (empty($node['noautopermission'])) {
-                        // INSERT Node Permissions.
-                        $this->updateRolePersmissions($configuration['user_role'], $node_id);
-                    }
-
-                    ////////////////////////////////
                     // Save new item to database.
                     // Although it is not my style doing queries inside a loop,
                     // this situation is very unique and I think the only way getting the parent nodes id.
@@ -361,6 +364,19 @@ class pluginFactory extends PHPDS_dependant
                         'layout'         => $layout,
                         'params'         => $params))
                     ) {
+
+                        ////////////////////////////////
+                        // Role Permissions.
+                        // Now we need to delete old values, if any, to prevent duplicates.
+                        // Delete Node Permissions.
+                        $this->cleanupRolePermissions($node_id, $configuration['user_role']);
+
+                        // Check if we should add_permission.
+                        if (empty($node['noautopermission'])) {
+                            // INSERT Node Permissions.
+                            $this->updateRolePersmissions($configuration['user_role'], $node_id);
+                        }
+
                         // Show execution.
                         $this->log[] = sprintf(__("Installed node for %s with id (%s) and linked to %s",
                             'PluginManager'), $plugin_folder, $node_id, $node_link);

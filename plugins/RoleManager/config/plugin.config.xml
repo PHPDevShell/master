@@ -29,7 +29,7 @@
             <node nodeid="role-admin" name="Role Admin" link="user-role-admin.php" alias="role-admin-list" type="1" hide="1" />
         </nodes>
 		<dependencies>
-            <class name="newplugin" alias="EXAMPLE_newplugin" plugin="NewPlugin" rank="last" />
+            <class class="newplugin" alias="EXAMPLE_newplugin" plugin="NewPlugin" rank="last" />
 		</dependencies>
 		<classes>
 		</classes>

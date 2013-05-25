@@ -1,8 +1,19 @@
 <?php
 /**
  * Manages plugin relations read action.
- * @property PHPDS_template $template
- * @property PHPDS_config   $config
+ * @property PHPDS_core             $core
+ * @property PHPDS_config           $config
+ * @property PHPDS_cacheInterface   $cache
+ * @property PHPDS_debug            $debug
+ * @property PHPDS_sessionInterface $session
+ * @property PHPDS_navigation       $navigation
+ * @property PHPDS_router           $router
+ * @property PHPDS_dbInterface      $db
+ * @property PHPDS_template         $template
+ * @property PHPDS_tagger           $tagger
+ * @property PHPDS_user             $user
+ * @property PHPDS_notif            $notif
+ * @property PHPDS_auth             $auth
  */
 class pluginRepository extends PHPDS_dependant
 {
@@ -232,7 +243,7 @@ class pluginRepository extends PHPDS_dependant
                 if (!$this->isPluginInstalled($dep['plugin']))
                     if (empty($dep['ready'])) $install[] = $dep['plugin'];
             }
-            if (!empty($install)) return json_encode($install);
+            if (!empty($install)) return json_encode(array_reverse($install));
         }
         return json_encode(array($plugin));
     }
