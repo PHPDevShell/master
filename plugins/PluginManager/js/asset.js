@@ -236,12 +236,14 @@ PluginManager.installWithDependency = function (plugin, exclude_self) {
     $.get(PluginManager.url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
         var depends = jQuery.parseJSON(data);
         var count   = Object.keys(depends).length;
+        var i       = 0;
         PluginManager.progressPercentage();
         PluginManager.progress_parts = Math.floor(100 / count) / 2;
 
         $.each(depends, function (key, plugin_) {
-            if (count == 1) {
-                $.get(PluginManager.url, {"action": "final-dep-check", "plugin": plugin},
+            i ++;
+            if (count == 1 || i == count) {
+                $.get(PluginManager.url, {"action": "final-dep-check", "plugin": plugin_},
                     function (data, textStatus, request) {
                     if (data == 'true') {
                         PluginManager.managePlugin(plugin_, 'install');
