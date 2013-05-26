@@ -235,15 +235,26 @@ PluginManager.installWithDependency = function (plugin, exclude_self) {
     exclude_self = typeof exclude_self !== 'undefined' ? exclude_self : false;
     $.get(PluginManager.url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
         var depends = jQuery.parseJSON(data);
-
+        var count   = Object.keys(depends).length;
         PluginManager.progressPercentage();
-        PluginManager.progress_parts = Math.floor(100 / Object.keys(depends).length) / 2;
+        PluginManager.progress_parts = Math.floor(100 / count) / 2;
 
         $.each(depends, function (key, plugin_) {
-            if (exclude_self == true) {
-                if (plugin != plugin_) PluginManager.managePlugin(plugin_, 'install');
+            if (count == 1) {
+                $.get(PluginManager.url, {"action": "final-dep-check", "plugin": plugin},
+                    function (data, textStatus, request) {
+                    if (data == 'true') {
+                        PluginManager.managePlugin(plugin_, 'install');
+                    }
+                });
             } else {
-                PluginManager.managePlugin(plugin_, 'install');
+                if (exclude_self == true) {
+                    if (plugin != plugin_) {
+                       PluginManager.managePlugin(plugin_, 'install');
+                    }
+                } else {
+                    PluginManager.managePlugin(plugin_, 'install');
+                }
             }
         });
     });

@@ -64,6 +64,7 @@ class PluginManager extends PHPDS_controller
                 $this->template->info(__('Repository was up to date.'));
             } else {
                 $this->template->ok(__('New plugins added to repository.'));
+                return $result;
             }
         }
 
@@ -168,6 +169,15 @@ class PluginManager extends PHPDS_controller
                 if ($result == false)
                     $this->template->critical(sprintf(__('Could not download or locate plugin %s'),
                         $this->G('plugin')));
+                break;
+            case 'final-dep-check':
+                $result = $this->repo->finalDependencyCheck($this->G('plugin'));
+                if ($result !== true) {
+                    $this->template->critical(sprintf(
+                        __('Dependency constraint not met, looking for class %s in plugin %s'),
+                        $result['error']['class'], $result['error']['plugin']));
+                    $result = false;
+                }
                 break;
             case 'refresh':
                 return $this->repoRows($this->G('plugin'));

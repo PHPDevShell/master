@@ -1,13 +1,13 @@
 {
     "compatibility-version": 4,
     "plugins": {
-        "FineSamle1": {
+        "FineSample1": {
             "desc": "Just a repo test plugin",
-            "repo": "https://github.com/TitanKing/FineSamle1"
+            "repo": "https://github.com/TitanKing/FineSample1"
         },
-        "FineSamle2": {
+        "FineSample2": {
             "desc": "Just another repo test plugin",
-            "repo": "https://github.com/PHPDevShell/FineSamle2"
+            "repo": "https://github.com/PHPDevShell/FineSample2"
         },
         "NewPlugin2": {
             "desc": "Another plugin test",

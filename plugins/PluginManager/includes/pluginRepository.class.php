@@ -378,6 +378,31 @@ class pluginRepository extends PHPDS_dependant
         return false;
     }
 
+    /**
+     * Does final check to see if all dependencies are met, this is to prevent a foreign key constraint error.
+     *
+     * @param $plugin
+     * @return bool|array true if success, array with missing dependencies if failure.
+     */
+    public function finalDependencyCheck($plugin)
+    {
+        $cfg   = $this->pluginConfig($plugin);
+        $instc = $this->config->registeredClasses;
+        $instp = $this->config->pluginsInstalled;
+
+        if (!empty($cfg['dependency'])) {
+            foreach ($cfg['dependency'] as $dependency) {
+                $classd  = $dependency['class'];
+                $plugind = $dependency['plugin'];
+                if (empty($instc[$classd]) || empty($instp[$plugind])) {
+                    return $dep_error = array('error' => array('plugin' => $plugind, 'class' => $classd));
+                }
+            }
+        }
+
+        return true;
+    }
+
     /****************************************************
      * Private helper methods continue...
      ****************************************************/
