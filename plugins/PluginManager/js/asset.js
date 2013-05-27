@@ -5,6 +5,21 @@
 PluginManager = {};
 
 /**
+ * Assigns plugins that was dealt with in recent actions of install.
+ *
+ * @type {Array}
+ */
+PluginManager.dealtWith = [];
+
+/**
+ * Special deferred protector to create ajax stepped sequence for plugin installer.
+ *
+ * @type {Array}
+ */
+PluginManager.deferred = [];
+PluginManager.deferred.count = 1;
+
+/**
  * Do some final janitor tasks.
  */
 PluginManager.janitor = function () {
@@ -29,7 +44,9 @@ PluginManager.janitor = function () {
         PluginManager.progress_bar.css({'width': "100%"});
         PluginManager.progress_parts = 0;
         PluginManager.progress_part  = 0;
-        PluginManager.dealtWith = [];
+        PluginManager.dealtWith      = [];
+        PluginManager.deferred       = [];
+        PluginManager.deferred.count = 1;
     });
     $("#plugin-tools").removeClass("open");
 };
@@ -172,13 +189,6 @@ PluginManager.countRepository = function (id, countto) {
     });
 };
 
-/**
- * Assigns plugins that was dealt with in recent actions of install.
- *
- * @type {Array}
- */
-PluginManager.dealtWith = [];
-
 PluginManager.repoRefresh = function(url) {
     $.get(url, function (data, textStatus, request) {
         if (data != 'false') {
@@ -234,30 +244,33 @@ PluginManager.pluginManagerLog = function (request) {
 PluginManager.installWithDependency = function (plugin, exclude_self) {
     exclude_self = typeof exclude_self !== 'undefined' ? exclude_self : false;
     $.get(PluginManager.url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
-        var depends = jQuery.parseJSON(data);
-        var count   = Object.keys(depends).length;
-        var i       = 0;
+        var depends = jQuery.parseJSON(data), count   = Object.keys(depends).length;
+        var i = 0;
         PluginManager.progressPercentage();
         PluginManager.progress_parts = Math.floor(100 / count) / 2;
 
         $.each(depends, function (key, plugin_) {
             i ++;
-            if (count == 1 || i == count) {
-                $.get(PluginManager.url, {"action": "final-dep-check", "plugin": plugin_},
-                    function (data, textStatus, request) {
-                    if (data == 'true') {
+            PluginManager.deferred[i] = $.Deferred();
+            if (i === 1) PluginManager.deferred[1].resolve();
+            PluginManager.deferred[i].done(function () {
+                if (count == 1 || count == i) {
+                    $.get(PluginManager.url, {"action": "final-dep-check", "plugin": plugin_},
+                        function (data, textStatus, request) {
+                        if (data == 'true') {
+                            PluginManager.managePlugin(plugin_, 'install');
+                        }
+                    });
+                } else {
+                    if (exclude_self == true) {
+                        if (plugin != plugin_) {
+                           PluginManager.managePlugin(plugin_, 'install');
+                        }
+                    } else {
                         PluginManager.managePlugin(plugin_, 'install');
                     }
-                });
-            } else {
-                if (exclude_self == true) {
-                    if (plugin != plugin_) {
-                       PluginManager.managePlugin(plugin_, 'install');
-                    }
-                } else {
-                    PluginManager.managePlugin(plugin_, 'install');
                 }
-            }
+            });
         });
     });
 };
@@ -300,10 +313,17 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                                                     $.when($.post(PluginManager.url,
                                                             {"action": phase3.status, "plugin": plugin})
                                                     ).then(function (data, textStatus, request) {
+                                                            PluginManager.deferred.count ++;
                                                             PluginManager.pluginManagerLog(request);
                                                             PluginManager.refreshPluginStatus(plugin);
                                                             PluginManager.progressPercentage();
                                                             PluginManager.installWithDependency(plugin, true);
+                                                            if (typeof
+                                                                PluginManager.deferred
+                                                                    [PluginManager.deferred.count] != 'undefined') {
+                                                                PluginManager.deferred
+                                                                    [PluginManager.deferred.count].resolve();
+                                                            }
                                                         });
                                                 }
                                             } else {
@@ -318,6 +338,7 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                 } else if (phase1.status == 'install' || phase1.status == 'reinstall' || phase1.status == 'upgrade') {
                     $.post(PluginManager.url, {"action": phase1.status, "plugin": plugin},
                         function (data, textStatus, request) {
+                        PluginManager.deferred.count ++;
                         PluginManager.pluginManagerLog(request);
                         PluginManager.refreshPluginStatus(plugin);
                         PluginManager.progressPercentage();
