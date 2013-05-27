@@ -239,10 +239,8 @@ PluginManager.pluginManagerLog = function (request) {
  * Installs a specific plugin while including all dependencies.
  *
  * @param plugin
- * @param exclude_self
  */
-PluginManager.installWithDependency = function (plugin, exclude_self) {
-    exclude_self = typeof exclude_self !== 'undefined' ? exclude_self : false;
+PluginManager.installWithDependency = function (plugin) {
     $.get(PluginManager.url, {"action": "dependencies", "plugin": plugin}, function (data, textStatus, request) {
         var depends = jQuery.parseJSON(data), count   = Object.keys(depends).length;
         var i = 0;
@@ -262,13 +260,7 @@ PluginManager.installWithDependency = function (plugin, exclude_self) {
                         }
                     });
                 } else {
-                    if (exclude_self == true) {
-                        if (plugin != plugin_) {
-                           PluginManager.managePlugin(plugin_, 'install');
-                        }
-                    } else {
-                        PluginManager.managePlugin(plugin_, 'install');
-                    }
+                  PluginManager.managePlugin(plugin_, 'install');
                 }
             });
         });
@@ -317,7 +309,6 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                                                             PluginManager.pluginManagerLog(request);
                                                             PluginManager.refreshPluginStatus(plugin);
                                                             PluginManager.progressPercentage();
-                                                            PluginManager.installWithDependency(plugin, true);
                                                             if (typeof
                                                                 PluginManager.deferred
                                                                     [PluginManager.deferred.count] != 'undefined') {
@@ -342,7 +333,6 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                         PluginManager.pluginManagerLog(request);
                         PluginManager.refreshPluginStatus(plugin);
                         PluginManager.progressPercentage();
-                        PluginManager.installWithDependency(plugin, true);
                     });
                 }
             }

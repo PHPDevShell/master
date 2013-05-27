@@ -154,9 +154,8 @@ class PluginManager extends PHPDS_controller
     {
         $result = false;
         switch ($this->G('action')) {
-            // Will download and move to plugin folder if required.
             case 'dependencies':
-                return $this->repo->pluginDependsCollector($this->G('plugin'));
+                return $this->repo->pluginCollector($this->G('plugin'));
                 break;
             case 'prepare':
                 $result = $this->repo->pluginPrepare($this->G('plugin'), $this->G('actiontype'));

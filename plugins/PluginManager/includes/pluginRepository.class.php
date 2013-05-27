@@ -51,7 +51,9 @@ class pluginRepository extends PHPDS_dependant
      * Timeout before accepting it as an timeout error.
      * @var int
      */
-    protected $timeout = 30;
+    protected $timeout = 45;
+
+    protected $collector = array();
 
     /****************************************************
      * Public helper methods continue...
@@ -220,14 +222,52 @@ class pluginRepository extends PHPDS_dependant
         }
     }
 
+    /**
+     * Call dependencies for plugin with dependence dependency.
+     *
+     * @param $plugin
+     * @return array
+     */
+    public function pluginCollector($plugin)
+    {
+        $collect = $this->pluginDependencyHelper($plugin);
+        foreach ($collect as $plugin_) {
+            if (in_array($plugin_, $this->collector)) continue;
+            if ($plugin_ != $plugin) {
+                $this->childDependencies($plugin_);
+                $this->collector[] = $plugin_;
+            }
+        }
+        array_push($this->collector, $plugin);
+        return json_encode($this->collector);
+    }
+
+    /**
+     * Child factory for recalling children dependencies.
+     *
+     * @param $plugin
+     */
+    protected function childDependencies($plugin)
+    {
+        if (!in_array($plugin, $this->collector)) {
+            $collect = $this->pluginDependencyHelper($plugin);
+            foreach ($collect as $plugin_) {
+                if (in_array($plugin_, $this->collector)) continue;
+                if ($plugin_ != $plugin) {
+                    $this->childDependencies($plugin_);
+                    $this->collector[] = $plugin_;
+                }
+            }
+        }
+    }
 
     /**
      * Collects dependencies for a specific requested plugin.
      *
      * @param string $plugin
-     * @return bool|string
+     * @return bool|array
      */
-    public function pluginDependsCollector($plugin)
+    protected function pluginDependencyHelper($plugin)
     {
         $cfg = $this->pluginConfig($plugin);
         if (empty($cfg)) {
@@ -243,9 +283,9 @@ class pluginRepository extends PHPDS_dependant
                 if (!$this->isPluginInstalled($dep['plugin']))
                     if (empty($dep['ready'])) $install[] = $dep['plugin'];
             }
-            if (!empty($install)) return json_encode(array_reverse($install));
+            if (!empty($install)) return array_reverse($install);
         }
-        return json_encode(array($plugin));
+        return array($plugin);
     }
 
     /**
