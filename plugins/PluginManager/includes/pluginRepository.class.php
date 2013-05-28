@@ -52,7 +52,10 @@ class pluginRepository extends PHPDS_dependant
      * @var int
      */
     protected $timeout = 45;
-
+    /**
+     * Collects plugin dependency array due for action.
+     * @var array
+     */
     protected $collector = array();
 
     /****************************************************
@@ -231,11 +234,13 @@ class pluginRepository extends PHPDS_dependant
     public function pluginCollector($plugin)
     {
         $collect = $this->pluginDependencyHelper($plugin);
-        foreach ($collect as $plugin_) {
-            if (in_array($plugin_, $this->collector)) continue;
-            if ($plugin_ != $plugin) {
-                $this->childDependencies($plugin_);
-                $this->collector[] = $plugin_;
+        if (!empty($collect)) {
+            foreach ($collect as $plugin_) {
+                if (in_array($plugin_, $this->collector)) continue;
+                if ($plugin_ != $plugin) {
+                    $this->childDependencies($plugin_);
+                    $this->collector[] = $plugin_;
+                }
             }
         }
         array_push($this->collector, $plugin);
@@ -251,11 +256,13 @@ class pluginRepository extends PHPDS_dependant
     {
         if (!in_array($plugin, $this->collector)) {
             $collect = $this->pluginDependencyHelper($plugin);
-            foreach ($collect as $plugin_) {
-                if (in_array($plugin_, $this->collector)) continue;
-                if ($plugin_ != $plugin) {
-                    $this->childDependencies($plugin_);
-                    $this->collector[] = $plugin_;
+            if (!empty($collect)) {
+                foreach ($collect as $plugin_) {
+                    if (in_array($plugin_, $this->collector)) continue;
+                    if ($plugin_ != $plugin) {
+                        $this->childDependencies($plugin_);
+                        $this->collector[] = $plugin_;
+                    }
                 }
             }
         }
