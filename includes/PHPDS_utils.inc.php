@@ -27,6 +27,35 @@ function PU_nameToId($convert_to_id)
 }
 
 /**
+ * Search for array values inside array and returns key.
+ *
+ * @param array $needle
+ * @param array $haystack
+ * @return mixed
+ */
+function PU_arraySearch($needle, $haystack)
+{
+    if (empty($needle) || empty($haystack)) {
+        return false;
+    }
+
+    foreach ($haystack as $key => $value) {
+        $exists = 0;
+        foreach ($needle as $nkey => $nvalue) {
+            if (!empty($value[$nkey]) && $value[$nkey] == $nvalue) {
+                $exists = 1;
+            } else {
+                $exists = 0;
+            }
+        }
+        if ($exists)
+            return $key;
+    }
+
+    return false;
+}
+
+/**
  * Copy an array to another and defaults to false if the value isn't set
  *
  * @param array  $source    the array to extract values from

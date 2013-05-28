@@ -12,16 +12,6 @@ PluginManager = {};
 PluginManager.dealtWith = [];
 
 /**
- * Special deferred protector to create ajax stepped sequence for plugin installer.
- *
- * @type {Array}
- */
-PluginManager.deferred = [];
-PluginManager.deferred.count = 1;
-PluginManager.deferredRoot = [];
-PluginManager.deferredRoot.count = 1;
-
-/**
  * Do some final janitor tasks.
  */
 PluginManager.janitor = function () {
@@ -247,30 +237,25 @@ PluginManager.pluginManagerLog = function (request) {
  * Installs a specific plugin while including all dependencies.
  *
  * @param plugin
- * @param actionType
+ * @param exclude_self
  */
-PluginManager.actionWithDependency = function (plugin, actionType) {
+PluginManager.actionWithDependency = function (plugin, exclude_self) {
+    exclude_self = typeof exclude_self !== 'undefined' ? exclude_self : false;
     $.get(PluginManager.url, {"action": "dependencies", "plugin": plugin}, function(data, textStatus, request) {
         var depends = jQuery.parseJSON(data), count   = Object.keys(depends).length;
-        var i = 0;
+
         PluginManager.progressPercentage();
         PluginManager.progress_parts = Math.floor(100 / count) / 4;
         $.each(depends, function (key, plugin_) {
-            i ++;
-            PluginManager.deferred[i] = $.Deferred();
-            if (i === 1) PluginManager.deferred[1].resolve();
-            PluginManager.deferred[i].done(function () {
-                if (count == 1 || count == i) {
-                    $.get(PluginManager.url, {"action": "final-dep-check", "plugin": plugin_},
-                        function (data, textStatus, request) {
-                            if (data == 'true') {
-                                PluginManager.managePlugin(plugin_, actionType);
-                            }
-                        });
+            if (exclude_self == true) {
+                if (plugin != plugin_) {
+                    PluginManager.managePlugin(plugin_, 'install');
                 } else {
-                    PluginManager.managePlugin(plugin_, actionType);
+                    PluginManager.refreshPluginStatus(plugin_);
                 }
-            });
+            } else {
+                PluginManager.managePlugin(plugin_, 'install');
+            }
         });
     });
 };
@@ -309,7 +294,7 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                                                     // Phase 3 : Installing.
                                                     var phase3 = $.parseJSON(data);
                                                     $("#progress-bar-message").text(phase3.message);
-                                                    if (phase3.status == 'install' ||
+                                                    if (phase3.status == 'install'   ||
                                                         phase3.status == 'reinstall' ||
                                                         phase3.status == 'upgrade') {
                                                         $.when($.post(PluginManager.url,
@@ -319,12 +304,7 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                                                                 PluginManager.pluginManagerLog(request);
                                                                 PluginManager.refreshPluginStatus(plugin);
                                                                 PluginManager.progressPercentage();
-                                                                if (typeof
-                                                                    PluginManager.deferred
-                                                                        [PluginManager.deferred.count] != 'undefined') {
-                                                                    PluginManager.deferred
-                                                                        [PluginManager.deferred.count].resolve();
-                                                                }
+                                                                PluginManager.actionWithDependency(plugin, true);
                                                             });
                                                     }
                                                 } else {
@@ -336,19 +316,16 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                                 }
                             });
                         // Phase 3 : Installing.
-                    } else if (phase1.status == 'install' || phase1.status == 'reinstall' || phase1.status == 'upgrade') {
-                        $.post(PluginManager.url, {"action": phase1.status, "plugin": plugin},
+                    } else if (phase1.status == 'install'   ||
+                               phase1.status == 'reinstall' ||
+                               phase1.status == 'upgrade') {
+                        $.when($.post(PluginManager.url, {"action": phase1.status, "plugin": plugin})).then(
                             function (data, textStatus, request) {
                                 PluginManager.deferred.count ++;
                                 PluginManager.pluginManagerLog(request);
                                 PluginManager.refreshPluginStatus(plugin);
                                 PluginManager.progressPercentage();
-                                if (typeof
-                                    PluginManager.deferred
-                                        [PluginManager.deferred.count] != 'undefined') {
-                                    PluginManager.deferred
-                                        [PluginManager.deferred.count].resolve();
-                                }
+                                PluginManager.actionWithDependency(plugin, true);
                             });
                     }
                 }
@@ -541,6 +518,8 @@ $(document).ready(function () {
         PHPDS.requestPage();
         $("#progress-bar-message").text(i18n_busy_text);
         var plugin = $(this).data("plugin-upgrade-available");
+        PluginManager.progressPercentage();
+        PluginManager.progress_parts = 25;
         PluginManager.managePlugin(plugin, 'upgrade');
         PluginManager.janitor();
         return false;
@@ -555,7 +534,7 @@ $(document).ready(function () {
         $("#progress-bar-message").text(i18n_busy_text);
         var upgrades = $(".plugin-get-upgrade", $root);
         PluginManager.progressPercentage();
-        PluginManager.progress_parts = Math.floor(100 / upgrades.length) / 2;
+        PluginManager.progress_parts = Math.floor(100 / upgrades.length) / 4;
         $.each(upgrades, function (i, data) {
             var plugin = $(data).data("plugin-upgrade-available");
             PluginManager.managePlugin(plugin, 'upgrade');
@@ -573,7 +552,7 @@ $(document).ready(function () {
         $("#progress-bar-message").text(i18n_busy_text);
         var plugin = $(this).data("plugin-fix-available");
         // Get dependencies
-        PluginManager.actionWithDependency(plugin, 'reinstall');
+        PluginManager.actionWithDependency(plugin, true);
         PluginManager.janitor();
         return false;
     });
@@ -584,13 +563,10 @@ $(document).ready(function () {
     $root.on('click', "#fix-all-plugins", function () {
         if (PHPDS.ajaxRequestBusy) return false;
         PHPDS.requestPage();
-        var fix = $(".plugin-get-fix", $root), i = 0;
+        var fix = $(".plugin-get-fix", $root);
         $.each(fix, function (key, data) {
-            $.when.apply($, PluginManager.deferred).done(function () {
-                var plugin = $(data).data("plugin-fix-available");
-                console.log('Processing...' + plugin);
-                PluginManager.actionWithDependency(plugin, 'reinstall');
-            });
+            var plugin = $(data).data("plugin-fix-available");
+            PluginManager.actionWithDependency(plugin, true);
         });
         PluginManager.janitor();
         return false;
@@ -605,7 +581,10 @@ $(document).ready(function () {
         $("#progress-bar-message").text(i18n_building_text);
         var plugin = $(this).data("plugin");
         // Get dependencies
-        PluginManager.actionWithDependency(plugin, 'install');
+        PluginManager.actionWithDependency(plugin);
+        PHPDS.root.one('ajaxStop', function () {
+            $.get(PluginManager.url, {"action": "final-dep-check", "plugin": plugin});
+        });
         PluginManager.janitor();
         return false;
     });

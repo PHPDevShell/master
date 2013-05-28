@@ -409,7 +409,7 @@ class PHPDS_navigation extends PHPDS_dependant
         if (empty($plugin_name))
             $plugin_name = $this->core->activePlugin();
         $lookup  = array('plugin' => $plugin_name, 'node_link' => $item_path);
-        $node_id = PU_ArraySearch($lookup, $this->navigation);
+        $node_id = PU_arraySearch($lookup, $this->navigation);
         if (!empty($node_id)) {
             return $this->buildURL($node_id, $extend_url);
         } else {
@@ -548,7 +548,8 @@ class PHPDS_navigation extends PHPDS_dependant
             return false;
         } else {
             if ($this->user->isLoggedIn()) {
-                $this->core->haltController = array('type' => '403', 'message' => ___('Page found, but you don\'t have the required permission to access this page.'));
+                $this->core->haltController = array('type' => '403', 'message' =>
+                ___('Page found, but you don\'t have the required permission to access this page.'));
                 return false;
             } else {
                 $this->core->haltController = array('type' => 'auth', 'message' => ___('Authentication Required'));
@@ -579,7 +580,8 @@ class PHPDS_navigation extends PHPDS_dependant
     }
 
     /**
-     * This function support output_script by looking deeper into node structure to find last linked node item that is not linked to another.
+     * This function support output_script by looking deeper into node structure to find last linked node item that
+     * is not linked to another.
      *
      * @param string $extended_node_id
      * @return string
@@ -607,6 +609,8 @@ class PHPDS_navigation extends PHPDS_dependant
                 return $extended_node_id;
             }
         }
+
+        return '0';
     }
 
     /**

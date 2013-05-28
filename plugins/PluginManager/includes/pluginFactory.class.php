@@ -664,6 +664,8 @@ class pluginFactory extends PHPDS_dependant
                                   rank          = :rank
         ";
 
+        $db->query("SET foreign_key_checks = 0");
+
         // Assign settings q to install.
         $classes_array = $this->plugin->install->classes->class;
 
@@ -699,6 +701,8 @@ class pluginFactory extends PHPDS_dependant
                 'rank'          => $rank
             ));
         }
+
+        $db->query("SET foreign_key_checks = 1");
 
         if ($classes_array) {
             // Show execution.

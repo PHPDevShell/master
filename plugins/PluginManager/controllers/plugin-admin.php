@@ -176,6 +176,8 @@ class PluginManager extends PHPDS_controller
                         __('Dependency constraint not met, looking for class %s in plugin %s'),
                         $result['error']['class'], $result['error']['plugin']));
                     $result = false;
+                } else {
+                    $this->template->ok(sprintf(__('Dependencies met for %s'), $this->G('plugin')));
                 }
                 break;
             case 'refresh':

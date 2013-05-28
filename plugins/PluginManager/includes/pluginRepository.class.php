@@ -226,55 +226,12 @@ class pluginRepository extends PHPDS_dependant
     }
 
     /**
-     * Call dependencies for plugin with dependence dependency.
-     *
-     * @param $plugin
-     * @return array
-     */
-    public function pluginCollector($plugin)
-    {
-        $collect = $this->pluginDependencyHelper($plugin);
-        if (!empty($collect)) {
-            foreach ($collect as $plugin_) {
-                if (in_array($plugin_, $this->collector)) continue;
-                if ($plugin_ != $plugin) {
-                    $this->childDependencies($plugin_);
-                    $this->collector[] = $plugin_;
-                }
-            }
-        }
-        array_push($this->collector, $plugin);
-        return json_encode($this->collector);
-    }
-
-    /**
-     * Child factory for recalling children dependencies.
-     *
-     * @param $plugin
-     */
-    protected function childDependencies($plugin)
-    {
-        if (!in_array($plugin, $this->collector)) {
-            $collect = $this->pluginDependencyHelper($plugin);
-            if (!empty($collect)) {
-                foreach ($collect as $plugin_) {
-                    if (in_array($plugin_, $this->collector)) continue;
-                    if ($plugin_ != $plugin) {
-                        $this->childDependencies($plugin_);
-                        $this->collector[] = $plugin_;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Collects dependencies for a specific requested plugin.
      *
      * @param string $plugin
      * @return bool|array
      */
-    protected function pluginDependencyHelper($plugin)
+    public function pluginCollector($plugin)
     {
         $cfg = $this->pluginConfig($plugin);
         if (empty($cfg)) {
@@ -290,9 +247,9 @@ class pluginRepository extends PHPDS_dependant
                 if (!$this->isPluginInstalled($dep['plugin']))
                     if (empty($dep['ready'])) $install[] = $dep['plugin'];
             }
-            if (!empty($install)) return array_reverse($install);
+            if (!empty($install)) return json_encode(array_reverse($install));
         }
-        return array($plugin);
+        return json_encode(array($plugin));
     }
 
     /**
@@ -908,6 +865,14 @@ class pluginRepository extends PHPDS_dependant
 
         if (!empty($xml->install->dependencies[0])) {
             $p['dependency'] = $this->pluginDependencies($xml->install->dependencies[0]);
+        } else {
+            $p['dependency'] = array();
+        }
+
+        if (!empty($xml->install->classes[0])) {
+            $p['classes'] = $this->pluginClasses($xml->install->classes[0]);
+        } else {
+            $p['classes'] = array();
         }
 
         if ($xml && $p['name'] && $p['version']) {
@@ -915,6 +880,34 @@ class pluginRepository extends PHPDS_dependant
         } else {
             return false;
         }
+    }
+
+    /**
+     * Reads classes available for developer usage.
+     *
+     * @param array $classes
+     * @return array|null
+     */
+    protected function pluginClasses($classes)
+    {
+        $class_available = null;
+        if (!empty($classes)) {
+            foreach ($classes as $class) {
+                // Assign plugin name.
+                $pl = (string)$class['plugin'];
+                $cl = (string)$class['name'];
+                $al = (string)$class['alias'];
+                // Create unique items only.
+                if (empty($unique_class[$cl])) {
+                    $class_available[] = array(
+                        'class'  => $cl,
+                        'alias'  => $al,
+                        'plugin' => $pl);
+                    $unique_class[$cl] = true;
+                }
+            }
+        }
+        return $class_available;
     }
 
     /**

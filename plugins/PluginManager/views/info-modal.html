@@ -79,6 +79,44 @@
             </table>
         </div>
         <hr>
+        <h5 class="muted">{{#i}}Public Classes{{/i}}</h5>
+        <div>
+            <table class="table table-condensed table-bordered">
+                <thead>
+                <tr>
+                    <th>
+                        {{#i}}Call As{{/i}}
+                    </th>
+                    <th>
+                        {{#i}}Class Name{{/i}}
+                    </th>
+                    <th>
+                        {{#i}}Alias{{/i}}
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#p.classes}}
+                <tr>
+                    <td>
+                        <code>$this->factory('{{class}}')</code>
+                    </td>
+                    <td>
+                        <em>{{class}}</em>
+                    </td>
+                    <td>
+                        <span class="text-info"><small>{{alias}}</small></span>
+                    </td>
+                </tr>
+                {{/p.classes}}
+                {{^p.classes}}
+                <tr>
+                    <td colspan="3">{{#i}}Plugin shares no classes{{/i}}</td>
+                </tr>
+                {{/p.classes}}
+                </tbody>
+            </table>
+        </div>
     </div>
     <div class="modal-footer">
         {{#p.repository}}
