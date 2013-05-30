@@ -302,6 +302,7 @@ $configuration['repository']['plugins'] = array(
  */
 $configuration['event'] = array(
     'auth'         => 'PHPDS_auth',
+    'api'          => 'PHPDS_api',
     'config'       => 'PHPDS_config',
     'core'         => 'PHPDS_core',
     'debug'        => 'PHPDS_debug',

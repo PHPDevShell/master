@@ -19,6 +19,12 @@ class PHPDS
      */
     protected $auth;
     /**
+     * API object.
+     *
+     * @var object
+     */
+    protected $api;
+    /**
      * The textual path of PHPDS directory on disk (not the URL).
      *
      * @var string
@@ -445,6 +451,19 @@ class PHPDS
     }
 
     /**
+     * API class for internal and external RESTful.
+     *
+     * @return PHPDS_api
+     */
+    public function PHPDS_api()
+    {
+        if (empty($this->api)) {
+            $this->api = $this->_factory($this->configuration['event']['api']);
+        }
+        return $this->api;
+    }
+
+    /**
      * Allow access to the global cache subsystem
      * One is created if necessary.
      *
@@ -814,6 +833,7 @@ class PHPDS
  * @property PHPDS_user             $user
  * @property PHPDS_notif            $notif
  * @property PHPDS_auth             $auth
+ * @property PHPDS_api              $api
  *
  */
 class PHPDS_dependant
