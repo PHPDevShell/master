@@ -225,7 +225,7 @@ class PluginManager extends PHPDS_controller
                 break;
         }
         if (!empty($this->factory->log)) {
-            PU_silentHeader("ajaxPluginManagerLog: " . json_encode($this->factory->log));
+            PU_silentHeader("PHPDS-ajaxPluginManagerLog: " . json_encode($this->factory->log));
         }
         return $result;
     }

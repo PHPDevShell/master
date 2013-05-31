@@ -215,7 +215,7 @@ PluginManager.repoRefresh = function(url) {
  */
 PluginManager.pluginManagerLog = function (request) {
     if (typeof request == 'undefined') return false;
-    var json = request.getResponseHeader('ajaxPluginManagerLog');
+    var json = request.getResponseHeader('PHPDS-ajaxPluginManagerLog');
     if (json) {
         var logs = jQuery.parseJSON(json);
         var logs_extracted = [];
