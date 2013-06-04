@@ -91,7 +91,8 @@ class PHPDS_controller extends PHPDS_dependant
      * Return a value from the _POST meta array
      *
      * @param string|null $key     the name of the post variable to fetch; if null, the entire array is returned
-     * @param mixed|array $default a default value to return when the post variable is not set; when returning the entire array, an array can be given here with default values
+     * @param mixed|array $default a default value to return when the post variable is not set; when returning the
+     *        entire array, an array can be given here with default values
      * @param integer     $options
      *
      * @return mixed the content of the post variable or the whole array, possibly with default value(s)
@@ -110,7 +111,8 @@ class PHPDS_controller extends PHPDS_dependant
      * Return a secured (preventing sql injection) value from the security->post meta array
      *
      * @param string|null $key     the name of the post variable to fetch; if null, the entire array is returned
-     * @param mixed|array $default a default value to return when the post variable is not set; when returning the entire array, an array can be given here with default values
+     * @param mixed|array $default a default value to return when the post variable is not set; when returning the
+     *        entire array, an array can be given here with default values
      * @param integer     $options
      *
      * @return mixed the content of the post variable or the whole array, possibly with default value(s)
@@ -124,7 +126,8 @@ class PHPDS_controller extends PHPDS_dependant
      * Return a value from the _GET meta array
      *
      * @param string|null $key     the name of the get variable to fetch; if null, the entire array is returned
-     * @param mixed|array $default a default value to return when the get variable is not set; when returning the entire array, an array can be given here with default values
+     * @param mixed|array $default a default value to return when the get variable is not set; when returning the
+     *        entire array, an array can be given here with default values
      * @param integer     $options
      *
      * @return mixed the content of the get variable or the whole array, possibly with default value(s)
@@ -143,7 +146,8 @@ class PHPDS_controller extends PHPDS_dependant
      * Return a secured (preventing sql injection) value from the security->get meta array
      *
      * @param string|null $key     the name of the get variable to fetch; if null, the entire array is returned
-     * @param mixed|array $default a default value to return when the get variable is not set; when returning the entire array, an array can be given here with default values
+     * @param mixed|array $default a default value to return when the get variable is not set; when returning the
+     *        entire array, an array can be given here with default values
      * @param integer     $options
      *
      * @return mixed the content of the get variable or the whole array, possibly with default value(s)
@@ -163,6 +167,7 @@ class PHPDS_controller extends PHPDS_dependant
         $this->model();
         $this->view();
         $this->onLoad();
+        $this->routerAPI();
         $result = null;
         if ($this->core->ajaxType) {
             /**
@@ -189,7 +194,7 @@ class PHPDS_controller extends PHPDS_dependant
     {
         $json_notifs = $this->notif->fetchAsJson();
         if (!empty($json_notifs)) {
-            PU_silentHeader("ajaxResponseMessage: " . $json_notifs);
+            PU_silentHeader("PHPDS-ajaxResponseMessage: " . $json_notifs);
         }
     }
 
@@ -206,7 +211,7 @@ class PHPDS_controller extends PHPDS_dependant
 
         $json = json_encode(array('title' => $node_name, 'node_id' => $node_id));
 
-        PU_silentHeader("ajaxAboutNode: " . $json);
+        PU_silentHeader("PHPDS-ajaxAboutNode: " . $json);
     }
 
     /**
@@ -289,37 +294,49 @@ class PHPDS_controller extends PHPDS_dependant
                     $core->data = $raw_data;
                     return true;
                 } else {
-                    throw new PHPDS_exception(sprintf('The return value of controller %d is invalid.', $this->configuration['m']));
+                    throw new PHPDS_exception(sprintf('The return value of controller %d is invalid.',
+                        $this->configuration['m']));
                 }
             }
         }
     }
 
     /**
-     * This method is meant to be the entry point of your class. Most checks and cleanup should have been done by the time it's executed
+     * This method is meant to be the entry point of your class. Most checks and cleanup should have been done by
+     * the time it's executed
      *
      * @return mixed if you return "false" output will be truncated
      */
     public function execute()
     {
-        // Your code here
+        // Override
     }
 
     /**
      * This method is run if your controller is called in an ajax context
      *
-     * @return mixed, there are 3 cases: "true" (or nothing)  the output will be handled by the template the usual way, "false" it's an error, otherwise the result data will be displayed in an empty template
+     * @return mixed, there are 3 cases: "true" (or nothing)  the output will be handled by the template the usual way,
+     * "false" it's an error, otherwise the result data will be displayed in an empty template
      */
     public function viaAJAX()
     {
-        // Your code here
+        // Override
     }
 
     /**
-     * This method will always load, its almost like the construct method but loads at a later stage so that post and other data can be read.
+     * This method will always load, its almost like the construct method but loads at a later stage so that
+     * post and other data can be read.
      */
     public function onLoad()
     {
-        // Your code here
+        // Override
+    }
+
+    /**
+     * Pre-loads any router and api configuration the developer may want to apply.
+     */
+    public function routerAPI()
+    {
+        // Override
     }
 }

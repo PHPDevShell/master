@@ -108,7 +108,7 @@ class crud extends PHPDS_dependant
             if (PU_isAJAX()) {
                 $json_notifs = json_encode($this->errorExist);
                 if (!empty($json_notifs)) {
-                    PU_silentHeader("ajaxInputErrorMessage: " . $json_notifs);
+                    PU_silentHeader("PHPDS-ajaxInputErrorMessage: " . $json_notifs);
                 }
             } else {
                 $t->addJsToHead($t->mod->errorField($this->errorExist));

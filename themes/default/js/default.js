@@ -270,7 +270,7 @@ PHPDS.ajaxErrorHandler = function () {
  * @returns {boolean}
  */
 PHPDS.ajaxInputError = function (request) {
-    var json = request.getResponseHeader('ajaxInputErrorMessage');
+    var json = request.getResponseHeader('PHPDS-ajaxInputErrorMessage');
     if (json) {
         var mobj = jQuery.parseJSON(json);
         jQuery.each(mobj, function () {
@@ -308,7 +308,7 @@ PHPDS.ajaxInputError = function (request) {
 PHPDS.ajaxMessage = function (request, delaytime, fadeout) {
     delaytime = typeof delaytime !== 'undefined' ? delaytime : 2000;
     fadeout = typeof fadeout !== 'undefined' ? fadeout : 1000;
-    var json = request.getResponseHeader('ajaxResponseMessage');
+    var json = request.getResponseHeader('PHPDS-ajaxResponseMessage');
     if (json) {
         var mobj = jQuery.parseJSON(json);
         var notifyjq = jQuery('#notify');
@@ -852,7 +852,7 @@ PHPDS.spinner = function (size, color) {
                 window.location.href = url;
             },
             complete: function (jqXHR) {
-                var response_ = jqXHR.getResponseHeader("ajaxAboutNode");
+                var response_ = jqXHR.getResponseHeader("PHPDS-ajaxAboutNode");
                 if (response_) {
                     var repj = jQuery.parseJSON(response_);
                     document.title = repj.title;
