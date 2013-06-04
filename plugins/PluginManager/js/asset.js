@@ -37,8 +37,6 @@ PluginManager.janitor = function () {
         PluginManager.progress_parts = 0;
         PluginManager.progress_part  = 0;
         PluginManager.dealtWith      = [];
-        PluginManager.deferred       = [];
-        PluginManager.deferred.count = 1;
     });
     $("#plugin-tools").removeClass("open");
 };
@@ -300,7 +298,6 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                                                         $.when($.post(PluginManager.url,
                                                                 {"action": phase3.status, "plugin": plugin})
                                                             ).then(function (data, textStatus, request) {
-                                                                PluginManager.deferred.count ++;
                                                                 PluginManager.pluginManagerLog(request);
                                                                 PluginManager.refreshPluginStatus(plugin);
                                                                 PluginManager.progressPercentage();
@@ -321,7 +318,6 @@ PluginManager.managePlugin = function (plugin, actiontype) {
                                phase1.status == 'upgrade') {
                         $.when($.post(PluginManager.url, {"action": phase1.status, "plugin": plugin})).then(
                             function (data, textStatus, request) {
-                                PluginManager.deferred.count ++;
                                 PluginManager.pluginManagerLog(request);
                                 PluginManager.refreshPluginStatus(plugin);
                                 PluginManager.progressPercentage();
