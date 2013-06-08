@@ -75,65 +75,6 @@ PHPDS.url.encodeParams = function (params, url) {
     return el.href;
 };
 
-
-/**
- * Call a PHP function
- *
- * The function must be handled by the current controller (method name is "ajax" + functionName)
- *
- * Parameters are preferably passed through POST for two reasons:
- * - GET data maybe polluted for other reasons (sessions handling, ...) where POST are always under control
- * - GET data appear in URL therefore are limited in size and charset
- * @see http://www.cs.tut.fi/~jkorpela/forms/methods.html
- *
- * Note: only application parameters are sent through GET/POST, handling data such as function name sent though headers
- *
- * From version 2.0 (PHPDevShell 3.5), the failure callback of the deferred is passed a PHPDS.RemoteCallException object ;
- *      it can set this object's field to "true" to prevent the top-level exception handler to kick in
- *
- * The resolve callback of the deferred is passed:
- *      - the result *data* returned by the ajax call
- *      - the textual state
- *      - the ajax object
- *
- * Caution: prior to PHP 5 the parameters fed to the PHP function are given IN ORDER, NOT BY NAME
- *
- * @param functionName string, the name of the function to call (ie. method "ajax"+functionName of the controller)
- * @param params array, data to be serialized and sent via POST
- * @param extParams array (optional), data to be serialized and sent via GET
- *
- * @return deferred
- *
- * TODO: possibility of calling a method from another controller
- *
- */
-PHPDS.remoteCall = function (functionName, params, extParams) {
-    var url = PHPDS.remoteCallURL;
-    if (extParams) {
-        url = PHPDS.url.encodeParams(extParams, url);
-    }
-    return jQuery.Deferred(function () {
-        var self_deferred = this;
-        $.when(
-            $.ajax({
-                url: url,
-                dataType: 'json',
-                data: params,
-                type: 'POST',
-                headers: {'X-Requested-Type': 'json', 'X-Remote-Call': functionName},
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-Requested-Type', 'json');
-                    xhr.setRequestHeader('X-Remote-Call', functionName);
-                }
-            }).done(function (result, state, self_ajax) {
-                    self_deferred.resolve(result, state, self_ajax);
-                }).fail(function (self_ajax) {
-                    PHPDS.errorHandler(new PHPDS.RemoteCallException(self_deferred, self_ajax));
-                })
-        );
-    });
-};
-
 /**
  * This is the top-level exception handler, it can be called in several ways
  *

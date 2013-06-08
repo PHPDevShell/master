@@ -12,12 +12,22 @@ $db_version  = 4000;
 $db_versions = array(4000);
 $time        = time();
 
-$version = '4.0.0-Beta-1';
-$product = 'PHPDevShell';
+include '../service/project/default.config.php';
+$product = $config['name'];
+$version = $config['version'];
+$slogan  = $config['slogan'];
 
 $lightbox = false;
 $package  = 'V-' . $version;
-$doit     = true; // RUN REAL QUERIES?
+
+if (file_exists('../service/project/project.config.php')) {
+    include '../service/project/project.config.php';
+    if (!empty($config['name']))    $product = $config['name'];
+    if (!empty($config['version'])) $package = $config['version'];
+    if (!empty($config['slogan']))  $slogan  = $config['slogan'];
+}
+
+$doit = true; // RUN REAL QUERIES?
 // Include modules.
 include '../includes/PHPDS_utils.inc.php';
 include '../includes/db/PHPDS_dbInterface.class.php';
@@ -83,7 +93,7 @@ function displayDBfilling()
 
 function headHTML()
 {
-    global $TITLE, $aurl, $package;
+    global $TITLE, $aurl, $package, $product, $slogan;
     ?>
     <!DOCTYPE HTML>
     <html lang="en">
@@ -105,10 +115,10 @@ function headHTML()
     <header id="overview" class="jumbotron subhead">
         <div class="container">
             <div>
-                <h1>PHPDevShell</h1>
+                <h1><?php echo $product; ?></h1>
 
                 <p class="lead">
-                    <?php echo $package ?> installation and upgrade service.
+                    <?php echo $package ?> <?php echo $slogan; ?>
                 </p>
             </div>
         </div>
@@ -434,7 +444,7 @@ function checkConfigFiles()
  */
 function stuffMYSQL()
 {
-    global $pdo, $doit, $type, $db_version, $version, $configuration;
+    global $pdo, $doit, $type, $db_version, $version, $configuration, $product;
 
     // Now we can try to connect.
     try {
@@ -452,12 +462,12 @@ function stuffMYSQL()
     $tables = $pdo->queryFetchRows('SHOW TABLES');
     if ($type == 'install') {
         if (!empty($tables)) {
-            addError(kMYSQLnotempty, _('There are tables in this database already, perhaps a previous PHPDevShell installation?. This Installation script can not be used over an existing PHPDevShell installation.'));
+            addError(kMYSQLnotempty, sprintf(_('There are tables in this database already, perhaps a previous %s installation?. This Installation script can not be used over an existing %s installation.'), $product, $product));
             return false;
         }
     } else if ($type == 'upgrade') {
         if (empty($tables)) {
-            addError(kMYSQLempty, _('There are no existing tables in this database, are you sure PHPDevShell is installed and can be upgraded?'));
+            addError(kMYSQLempty, sprintf(_('There are no existing tables in this database, are you sure %s is installed and can be upgraded?'), $product));
             return false;
         }
         $phpds_db_ver = get_db_version();
@@ -579,12 +589,14 @@ function doInstall()
 
 function doSystemChecks()
 {
+    global $product;
+
     // Do system checking.
     if (version_compare(phpversion(), "5.2.1", "<")) {
-        addError(kPHPVersion, sprintf(_('This version of PHPDevShell only supports PHP version %s and later. You are currently running version %s.'), '5.2.1', phpversion()));
+        addError(kPHPVersion, sprintf(_('This version of %s only supports PHP version %s and later. You are currently running version %s.'), $product, '5.2.1', phpversion()));
     }
     if (check_apache() == false) {
-        addWarning(kApache, _('You are not running Apache as your web server. This version of PHPDevShell does not officially support non-Apache driven webservers.'));
+        addWarning(kApache, sprintf(_('You are not running Apache as your web server. This version of %s does not officially support non-Apache driven webservers.'), $product));
     }
     if (check_mysql() == false) {
         addError(kMYSQL, _('The MySQL extension for PHP is missing. The installation script will be unable to continue'));
@@ -687,5 +699,11 @@ function noticePrint($text)
 
 HTML;
     print $HTML;
+}
+
+function escape($param)
+{
+    return strtr($param, array("\x00" => '\x00', "\n" => '\n', "\r" => '\r',
+                               '\\'   => '\\\\', "'" => "\'", '"' => '\"', "\x1a" => '\x1a'));
 }
 

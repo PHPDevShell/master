@@ -110,7 +110,7 @@ class nodeHelper extends PHPDS_dependant
         } // Sub Child -> stop.
         else {
             $this->databaseInsert[] =
-                array('id' => null, 'node_id' => $node_id, 'is_parent' => 1, 'type' => 4);
+                array('id' => null, 'node_id' => $node_id, 'is_parent' => 0, 'type' => 4);
         }
     }
 
@@ -222,15 +222,16 @@ class nodeHelper extends PHPDS_dependant
      */
     public function insertNode(
         $node_id = null, $parent_node_id, $node_name, $node_link, $plugin, $node_type, $extend = false,
-        $new_window = false, $rank = 0, $hide = false, $theme_id = null, $alias = null, $layout = null, $params = null)
+        $new_window = false, $rank = 0, $hide = false, $theme_id = null, $alias = null, $layout = null,
+        $params = null, $route = null)
     {
         $sql = "
           INSERT INTO  _db_core_node_items (
             node_id, parent_node_id, node_name, node_link, plugin, node_type,
-            extend, new_window, rank, hide, theme_id, alias, layout, params
+            extend, new_window, rank, hide, theme_id, alias, layout, params, route
           ) VALUES (
             :node_id, :parent_node_id, :node_name, :node_link, :plugin, :node_type,
-            :extend, :new_window, :rank, :hide, :theme_id, :alias, :layout, :params
+            :extend, :new_window, :rank, :hide, :theme_id, :alias, :layout, :params, :route
           ) ON DUPLICATE KEY UPDATE node_id        = :node_id,
                                     parent_node_id = :parent_node_id,
                                     node_name      = :node_name,
@@ -244,7 +245,8 @@ class nodeHelper extends PHPDS_dependant
                                     theme_id       = :theme_id,
                                     alias          = :alias,
                                     layout         = :layout,
-                                    params         = :params
+                                    params         = :params,
+                                    route          = :route
 
         ";
 
@@ -262,7 +264,8 @@ class nodeHelper extends PHPDS_dependant
             'theme_id'       => $theme_id,
             'alias'          => $alias,
             'layout'         => $layout,
-            'params'         => $params
+            'params'         => $params,
+            'route'          => $route
         );
 
         $db = $this->db;

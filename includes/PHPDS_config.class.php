@@ -49,6 +49,7 @@ class PHPDS_config extends PHPDS_dependant
         $cache = $this->cache;
 
         $registeredClasses = $cache->get('registeredClasses');
+
         if (empty($registeredClasses)) {
             $pluginR = $this->readClassRegistry();
             if (!empty($pluginR)) {

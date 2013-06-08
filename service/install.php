@@ -147,16 +147,16 @@ function get_queries()
     $crypt_key      = create_random_string(30);
 
     // Other queries.
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_crypt_key', '" . $crypt_key . "', '');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_crypt_key', '" . escape($crypt_key) . "', '');";
 
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_from_email', '" . $data['admin_email'] . "', '');";
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_scripts_name_version', '" . $data['application_name'] . "', '');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_from_email', '" . escape($data['admin_email']) . "', '');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_scripts_name_version', '" . escape($data['application_name']) . "', '');";
 
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_setting_admin_email', '" . $data['admin_email'] . "', '');";
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_users` VALUES ('1', 'Root User', '" . $data['admin_username'] . "', '" . $admin_password . "', '" . $data['admin_email'] . "', '1', '" . $time . "', 'en', 'UTC', 'US');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_setting_admin_email', '" . escape($data['admin_email']) . "', '');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_users` VALUES ('1', 'Root User', '" . escape($data['admin_username']) . "', '" . escape($admin_password) . "', '" . escape($data['admin_email']) . "', '1', '" . escape($time) . "', 'en', 'UTC', 'US');";
 
     // Update version.
-    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_db_version', '" . $db_version . "', 'PHPDevShell Database Version');";
+    $query[] = 'REPLACE INTO `' . $data['db_prefix'] . "core_settings` VALUES ('PHPDS_db_version', '" . escape($db_version) . "', 'PHPDevShell Database Version');";
 
     return $query;
 }

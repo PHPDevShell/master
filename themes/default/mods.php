@@ -288,6 +288,7 @@ HTML;
 
     public function notice($text)
     {
+        if (!is_string($text)) return false;
         $HTML = <<<HTML
 
 			<div class="alert fade in">
@@ -555,7 +556,9 @@ HTML;
         }
         $target = ($mr['new_window'] == 1) ? 'target="_blank"' : '';
         $extra  = ($class == 'nav-grand' || $class == 'nav-parent') ? 'data-toggle="dropdown" class="dropdown-toggle"' : '';
-        $via    = ($class == 'first-child' || $class == 'child') ? 'data-via-ajax="page"' : '';
+        $via = '';
+        // Uncomment for ajax loaded pages.
+        // $via    = ($class == 'first-child' || $class == 'child') ? 'data-via-ajax="page"' : '';
         return <<<HTML
 				<a tabindex="-1" href="{$url}" class="{$class}" {$target} {$extra} {$noclick} {$via}>{$mr['node_name']}</a>
 HTML;

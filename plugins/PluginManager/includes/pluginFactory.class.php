@@ -344,6 +344,13 @@ class pluginFactory extends PHPDS_dependant
                         $params = null;
                     }
 
+                    // Route
+                    if (!empty($node['route'])) {
+                        $route = (string)$node['route'];
+                    } else {
+                        $route = null;
+                    }
+
                     ////////////////////////////////
                     // Save new item to database.
                     // Although it is not my style doing queries inside a loop,
@@ -362,7 +369,8 @@ class pluginFactory extends PHPDS_dependant
                         'theme_id'       => $node_theme_insert,
                         'alias'          => $alias,
                         'layout'         => $layout,
-                        'params'         => $params))
+                        'params'         => $params,
+                        'route'          => $route))
                     ) {
 
                         ////////////////////////////////
@@ -399,9 +407,9 @@ class pluginFactory extends PHPDS_dependant
         $sql = "
           INSERT INTO  _db_core_node_items
                         (node_id, parent_node_id, node_name, node_link, plugin, node_type, extend, new_window,
-                        rank, hide, theme_id, alias, layout, params)
+                        rank, hide, theme_id, alias, layout, params, route)
           VALUES        (:node_id, :parent_node_id, :node_name, :node_link, :plugin, :node_type, :extend, :new_window,
-                        :rank, :hide, :theme_id, :alias, :layout, :params)
+                        :rank, :hide, :theme_id, :alias, :layout, :params, :route)
           ON DUPLICATE KEY UPDATE node_id        = :node_id,
                                   parent_node_id = :parent_node_id,
                                   node_name      = :node_name,
@@ -415,8 +423,8 @@ class pluginFactory extends PHPDS_dependant
                                   theme_id       = :theme_id,
                                   alias          = :alias,
                                   layout         = :layout,
-                                  params         = :params
-
+                                  params         = :params,
+                                  route          = :route
         ";
 
         return $this->db->queryAffects($sql, $node_array);
@@ -576,6 +584,7 @@ class pluginFactory extends PHPDS_dependant
             $m['height']           = (string)$children['height'];
             $m['rank']             = (string)$children['rank'];
             $m['params']           = (string)$children['params'];
+            $m['route']            = (string)$children['route'];
             $m['type']             = (int)$children['type'];
             $m['newwindow']        = (int)$children['newwindow'];
             $m['hide']             = (int)$children['hide'];
@@ -600,7 +609,8 @@ class pluginFactory extends PHPDS_dependant
                 'rank'             => $m['rank'],
                 'hide'             => $m['hide'],
                 'noautopermission' => $m['noautopermission'],
-                'params'           => $m['params']);
+                'params'           => $m['params'],
+                'route'            => $m['route']);
             // Recall for children node items.
             $this->nodesDigger($children);
         }
@@ -1061,7 +1071,7 @@ class pluginFactory extends PHPDS_dependant
                 $content = file_get_contents($path);
                 $queries_array = explode("-- SQL;", $content);
                 if (!empty($queries_array) && is_array($queries_array)) {
-                    return $queries_array;
+                    return array_map('trim', $queries_array);
                 } else {
                     return false;
                 }

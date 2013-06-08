@@ -161,7 +161,9 @@ class PHPDS_core extends PHPDS_dependant
                 $result = $this->loadFile('themes/default/' . $this->themeFile, false, true, true, true);
             }
             if (false === $result) {
-                throw new PHPDS_exception('Unable to find the custom template "' . $this->themeFile . '" in directory "' . $template_dir . '"');
+                throw new PHPDS_exception(
+                    'Unable to find the custom template "' . $this->themeFile . '" in directory "' . $template_dir . '"'
+                );
             }
             ob_end_flush();
         } catch (Exception $e) {
@@ -442,7 +444,8 @@ class PHPDS_core extends PHPDS_dependant
                     if (empty($node_id)) {
                         // Lets take user to the front page as last option.
                         // Get correct frontpage id.
-                        ($this->user->isLoggedIn()) ? $node_id = $configuration['front_page_id_in'] : $node_id = $configuration['front_page_id'];
+                        ($this->user->isLoggedIn()) ?
+                            $node_id = $configuration['front_page_id_in'] : $node_id = $configuration['front_page_id'];
                     }
                     $result = $this->mvcNodeStructure($node_id);
                     break;
@@ -451,7 +454,9 @@ class PHPDS_core extends PHPDS_dependant
                     // Require external file.
                     $result = $this->loadFile($navigation[$node_id]['node_link']);
                     if (false == $result) {
-                        throw new PHPDS_exception(sprintf(___('File could not be found after trying to execute filename : %s'), $navigation[$node_id]['node_link']));
+                        throw new
+                        PHPDS_exception(sprintf(___('File could not be found after trying to execute filename : %s'),
+                            $navigation[$node_id]['node_link']));
                     }
                     break;
                 // HTTP URL.
@@ -511,23 +516,28 @@ class PHPDS_core extends PHPDS_dependant
         if (isset($this->haltController)) {
             switch ($this->haltController['type']) {
                 case 'auth':
-                    throw new PHPDS_securityException($this->haltController['message']);
+                    throw new PHPDS_securityException(
+                        $this->haltController['message']);
                     break;
 
                 case '404':
-                    throw new PHPDS_pageException404($this->haltController['message'], $this->haltController['type']);
+                    throw new PHPDS_pageException404(
+                        $this->haltController['message'], $this->haltController['type']);
                     break;
 
                 case '403':
-                    throw new PHPDS_securityException403($this->haltController['message'], $this->haltController['type']);
+                    throw new PHPDS_securityException403(
+                        $this->haltController['message'], $this->haltController['type']);
                     break;
 
                 case '418':
-                    throw new PHPDS_pageException418($this->haltController['message'], $this->haltController['type']);
+                    throw new PHPDS_pageException418(
+                        $this->haltController['message'], $this->haltController['type']);
                     break;
 
                 default:
-                    throw new PHPDS_securityException($this->haltController['message'], $this->haltController['type']);
+                    throw new PHPDS_securityException(
+                        $this->haltController['message'], $this->haltController['type']);
                     break;
             }
         }
@@ -538,9 +548,12 @@ class PHPDS_core extends PHPDS_dependant
      * Will attempt to load controller file from specific node locations and create its MVC structure.
      *
      * @param int    $node_id
-     * @param string $include_query  if set, load the query file before the controller is run (either a prefix or true for default "query" prefix) - default is not to
-     * @param string $include_view   if set, run the view file after the controller is run (a prefix) ; default is the "view" prefix)
-     * @param string $include_model  |boolean $include_view if set, run the view file after the controller is run (a prefix) ; default is the "view" prefix)
+     * @param string $include_query  if set, load the query file before the controller is run (either a prefix or true
+     *                               for default "query" prefix) - default is not to
+     * @param string $include_view   if set, run the view file after the controller is run (a prefix) ;
+     *                               default is the "view" prefix)
+     * @param string $include_model  |boolean $include_view if set, run the view file after the controller is run
+     *                               (a prefix) ; default is the "view" prefix)
      *
      * @throws PHPDS_exception
      * @return string
@@ -556,15 +569,6 @@ class PHPDS_core extends PHPDS_dependant
             $plugin_folder    = $navigation[$node_id]['plugin_folder'];
             $old_include_path = PU_addIncludePath($plugin_folder . '/includes/');
             $node_link        = $navigation[$node_id]['node_link'];
-
-            // Query
-            if ($include_query) {
-                $this->loadFile($plugin_folder . 'models/' . preg_replace(
-                        "/.php/",
-                        '.' . $include_query . '.php',
-                        $node_link)
-                );
-            }
 
             // Model
             if ($include_model) {
@@ -677,13 +681,15 @@ class PHPDS_core extends PHPDS_dependant
         if (empty($configuration['user_language'])) $configuration['user_language'] = $configuration['language'];
         if (empty($configuration['user_region'])) $configuration['user_region'] = $configuration['region'];
         if ($charset && !empty($configuration['charset_format'])) {
-            $locale_format = preg_replace('/\{charset\}/', $configuration['charset_format'], $configuration['locale_format']);
+            $locale_format =
+                preg_replace('/\{charset\}/', $configuration['charset_format'], $configuration['locale_format']);
             $locale_format = preg_replace('/\{lang\}/', $configuration['user_language'], $locale_format);
             $locale_format = preg_replace('/\{region\}/', $configuration['user_region'], $locale_format);
             $locale_format = preg_replace('/\{charset\}/', $configuration['charset'], $locale_format);
             return $locale_format;
         } else {
-            $locale_format = preg_replace('/\{lang\}/', $configuration['user_language'], $configuration['locale_format']);
+            $locale_format =
+                preg_replace('/\{lang\}/', $configuration['user_language'], $configuration['locale_format']);
             $locale_format = preg_replace('/\{region\}/', $configuration['user_region'], $locale_format);
             $locale_format = preg_replace('/\{charset\}/', '', $locale_format);
             return $locale_format;

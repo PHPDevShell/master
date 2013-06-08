@@ -440,11 +440,14 @@ class PHPDS_errorHandler extends PHPDS_dependant
         }
     }
 
-    public function message($message, $trace = '')
+    public function message($messages, $trace = '')
     {
         // Simple styled message.
         if (!empty($trace)) $trace = "=>[$trace]";
-        return $this->textualize($message) . "$trace";
+        if (is_string($messages)) {
+          return $this->textualize($messages) . "$trace";
+        }
+        return null;
     }
 
 

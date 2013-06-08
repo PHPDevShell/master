@@ -6,7 +6,7 @@
  * The purpose of this class is to find what previously registered "catcher" should be
  * selected when a given URL is requested.
  *
- * Note it doesn't do anything with said catcher, just return it for the caller to do
+ * Note it does'nt do anything with said catcher, just return it for the caller to do
  * whatever is necessary.
  *
  * Note: to comply with usual terminology, we use "module" here in the meaning of what we
@@ -27,6 +27,11 @@ class PHPDS_router extends PHPDS_dependant
      * @var array
      */
     public $modules = array();
+    /**
+     * Collects active catcher or alias node as per route config.
+     * @var string
+     */
+    public $alias = null;
     /**
      * A simple associative array with the parameters (ie URL variables) found in the URL.
      * @var array
@@ -56,7 +61,7 @@ class PHPDS_router extends PHPDS_dependant
             return false;
         }
 
-        $route          = array(
+        $route         = array(
             'catcher'  => $catcher,
             'pattern'  => trim($pattern, '/'),
             'module'   => $module,
@@ -82,13 +87,21 @@ class PHPDS_router extends PHPDS_dependant
      */
     public function matchRoute($path)
     {
-        $parts  = $this->splitURL($path);
-        $module = !empty($this->modules[$parts[0]]) ? array_shift($parts) : $this->defaults['module'];
-        $result = false;
-        $routes = $module ? $this->modules[$module] : $this->routes;
+        if (!empty($this->configuration['routes'])) {
+            foreach ($this->configuration['routes'] as $route_) {
+                $this->addRoute($route_['catcher'], $route_['pattern'], $route_['module'], $route_['defaults']);
+            }
+        }
+
+        $parts    = $this->splitURL($path);
+        $module   = !empty($this->modules[$parts[0]]) ? array_shift($parts) : $this->defaults['module'];
+        $result   = false;
+        $routes   = $module ? $this->modules[$module] : $this->routes;
+
         if (is_array($parts)) {
+            if (!empty($parts[0])) $this->alias = $parts[0];
             foreach ($routes as $route) {
-                if ($this->match1Route($route['pattern'], $parts)) {
+                if ($this->match1Route($route, $parts)) {
                     $result = $route;
                     break;
                 }
@@ -100,26 +113,29 @@ class PHPDS_router extends PHPDS_dependant
     /**
      * Try to match a given route pattern to the url path.
      *
-     * @param string $route         the route pattern.
+     * @param string $route_        the route pattern.
      * @param array  $parts         the pieces of the url path (split on slash).
-     * @param string $match_pattern the regular expression for matching defined routes
      *
      * @return bool, true if they match
      */
-    public function match1Route($route, array $parts, $match_pattern = '/\<:(?<varname>[[:alnum:]]+)\>/')
+    public function match1Route($route_, array $parts)
     {
+        $defaults = explode("/", $route_['defaults']);
+        $route    = $route_['pattern'];
         if (($route == $parts[0]) || ($route == '/' . $parts[0])) {
             return true;
         }
         $mismatch = false;
         $pieces   = $this->splitURL($route);
-        foreach ($pieces as $piece) {
-            $matches = array();
-            if (preg_match($match_pattern, $piece, $matches)) {
-                $this->parameters[$matches['varname']] = array_shift($parts);
+        foreach ($pieces as $key => $piece) {
+            if (strpos($route, $piece)) {
+                $part = array_shift($parts);
+                if (empty($part) && !empty($defaults[$key]))
+                    $part = $defaults[$key];
+
+                $this->parameters[trim($piece, ':')] = $part;
             } else {
                 $part = array_shift($parts);
-
                 if ($part != $piece) {
                     $mismatch = true;
                     break;

@@ -164,10 +164,13 @@ class PHPDS_controller extends PHPDS_dependant
      */
     public function run()
     {
-        $this->model();
-        $this->view();
-        $this->onLoad();
-        $this->routerAPI();
+        // Build the foundation ///////  i
+        $this->onLoad();            ////  n
+        $this->routerAPI();         /////  Him
+        $this->model();             //////  i
+        $this->view();              ///////  m
+        ////////////////////////////////////  we trust
+
         $result = null;
         if ($this->core->ajaxType) {
             /**
@@ -233,24 +236,16 @@ class PHPDS_controller extends PHPDS_dependant
      */
     public function runAJAX()
     {
-        if (isset($_SERVER["HTTP_X_REMOTE_CALL"])) {
-            $f = 'ajax' . $_SERVER["HTTP_X_REMOTE_CALL"];
-            if (method_exists($this, $f)) {
-                if (class_exists('ReflectionMethod')) {
-                    $classname       = get_class($this);
-                    $method          = new ReflectionMethod($classname, $f);
-                    $parameter_list  = $method->getParameters();
-                    $parameter_array = array();
-                    foreach ($parameter_list as $parameter) {
-                        $key               = $parameter->getName();
-                        $parameter_array[] = isset($this->_POST[$key]) ? $this->_POST[$key] : null;
-                    }
-                    $raw_data = $method->invokeArgs($this, $parameter_array);
+        if (!empty($this->api->routeMethod)) {
+            $method = key($this->api->routeMethod);
+            if (method_exists($this, $method)) {
+                if (!empty($this->api->routeMethod[$method])) {
+                    $raw_data = call_user_func_array(array($this, $method), $this->api->routeMethod[$method]);
                 } else {
-                    $raw_data = call_user_func_array(array($this, $f), $this->POST());
+                    $raw_data = call_user_func(array($this, $method));
                 }
             } else {
-                throw new PHPDS_exception('Ajax call for an unknown method "' . $f . '"');
+                throw new PHPDS_exception('Ajax call for an unknown method "' . $method . '"');
             }
         } else {
             $raw_data = $this->viaAJAX();

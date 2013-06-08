@@ -150,10 +150,8 @@ class PHPDS_navigation extends PHPDS_dependant
 
             $navigation->navigation[$nid] = $new_node;
 
-            if (!empty($mr['alias'])) {
-                $route = (empty($mr['route'])) ? '' : '/' . $mr['route'];
-                $this->router->addRoute($nid, $mr['alias'] . $route, $mr['plugin']);
-            }
+            if (!empty($mr['alias'])) $this->router->addRoute($nid, $mr['alias'], $mr['plugin']);
+            if (!empty($mr['route'])) $this->router->addRoute($nid, $mr['route'], $mr['plugin']);
         }
     }
 
