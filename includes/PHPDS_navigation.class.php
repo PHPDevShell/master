@@ -502,8 +502,7 @@ class PHPDS_navigation extends PHPDS_dependant
 
         if (empty($path)) {
             // no path given, fall back to the what default page has been configured
-            //$route = $this->user->isLoggedIn() ? $configuration['front_page_id_in'] : $configuration['front_page_id'];
-            $route = 0; // default will be picked up later
+            $route = $this->user->isLoggedIn() ? $configuration['front_page_id_in'] : $configuration['front_page_id'];
         } else {
             // first case, old-style "index.php?m=nodeid"
             if ('index.php' == $path) {

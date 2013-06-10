@@ -133,7 +133,8 @@ class PHPDS_router extends PHPDS_dependant
                 if (empty($part) && !empty($defaults[$key]))
                     $part = $defaults[$key];
 
-                $this->parameters[trim($piece, ':')] = $part;
+                if (strpos($piece, ':') !== false)
+                    $this->parameters[trim($piece, ':')] = $part;
             } else {
                 $part = array_shift($parts);
                 if ($part != $piece) {
