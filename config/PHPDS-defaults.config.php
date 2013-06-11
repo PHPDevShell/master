@@ -270,7 +270,6 @@ $configuration['locale_format'] = '{lang}_{region}{charset}';
  * @global string
  */
 $configuration['repository']['url'][] = 'https://raw.github.com/PHPDevShell/repository/master/repository.json';
-$configuration['repository']['url'][] = 'https://raw.github.com/TitanKing/repository/master/repository.json';
 
 /**
  * Allows you to update and install plugins from a private repository. As an example;
@@ -278,8 +277,8 @@ $configuration['repository']['url'][] = 'https://raw.github.com/TitanKing/reposi
  * you read only access. Use your default github username and password and you will be able to update/install normal.
  * @global string
  */
-$configuration['repository']['username'] = 'TitanKing';
-$configuration['repository']['password'] = 'lister789';
+$configuration['repository']['username'] = '';
+$configuration['repository']['password'] = '';
 
 /**
  * Allows you to add additional repository plugins into the online repository queue. As an example;
@@ -456,3 +455,10 @@ $configuration['error']['noticesAreFatal'] = false;
  * @global string
  */
 $configuration['error']['mask'] = E_ALL | E_STRICT; //  you should change to  E_ALL | E_STRICT to be clean
+
+/**
+ * Initiate the routes array so it can be added to easily.
+ *
+ * @global array
+ */
+$configuration['routes'] = array();

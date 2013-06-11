@@ -52,6 +52,19 @@ class PHPDS_api extends PHPDS_dependant
     }
 
     /**
+     * Structures method routing for get purposes.
+     *
+     * @param $alias string The alias of the route that needs to be watched.
+     * @param $method string The method that should be called if the string alias is matched.
+     *
+     * @return bool
+     */
+    public function get($alias, $method)
+    {
+        return $this->action($alias, $method);
+    }
+
+    /**
      * Performs assignment and route to a specific method.
      *
      * @param $alias string The alias of the route that needs to be watched.

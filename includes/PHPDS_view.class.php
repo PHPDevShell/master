@@ -61,10 +61,14 @@ class PHPDS_view extends PHPDS_dependant
      */
     public function show($load_view = '')
     {
+        $this->main();
+
         if (isset($this->instance) && is_object($this->instance))
             echo $this->instance->show($load_view);
         else
             echo $this->execute();
+
+        $this->after();
     }
 
     /**
@@ -76,10 +80,16 @@ class PHPDS_view extends PHPDS_dependant
      */
     public function getView($load_view = '')
     {
+        $this->main();
+
         if (isset($this->instance) && is_object($this->instance))
-            return $this->instance->getView($load_view);
+            $data = $this->instance->getView($load_view);
         else
-            return $this->execute();
+            $data = $this->execute();
+
+        $this->after();
+
+        return $data;
     }
 
     /**
@@ -124,5 +134,21 @@ class PHPDS_view extends PHPDS_dependant
     public function execute()
     {
         // Your code here
+    }
+
+    /**
+     * Executes as soon as show is called.
+     */
+    public function main()
+    {
+
+    }
+
+    /**
+     * Executes as soon as show is called.
+     */
+    public function after()
+    {
+
     }
 }

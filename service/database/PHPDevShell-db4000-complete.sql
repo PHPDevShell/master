@@ -250,7 +250,7 @@ INSERT INTO `_db_core_settings` VALUES
 INSERT INTO `_db_core_settings` VALUES
 ('PHPDS_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
 INSERT INTO `_db_core_settings` VALUES
-('PHPDS_front_page_id', 'readme', 'The page to show when site is access.');
+('PHPDS_front_page_id', 'readme', 'The page to show when site is accessed.');
 INSERT INTO `_db_core_settings` VALUES
 ('PHPDS_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
 INSERT INTO `_db_core_settings` VALUES

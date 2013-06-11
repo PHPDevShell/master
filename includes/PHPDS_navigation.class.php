@@ -135,7 +135,7 @@ class PHPDS_navigation extends PHPDS_dependant
             $new_node['plugin_folder'] = 'plugins/' . $mr['plugin'] . '/';
             if ($sef && ! empty($mr['alias'])) {
                 $navigation->navAlias[$mr['alias']]
-                    = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
+                                  = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
                 $new_node['href'] = $aburl . '/' . $mr['alias'].$append;
             } else {
                 $new_node['href']
@@ -471,9 +471,9 @@ class PHPDS_navigation extends PHPDS_dependant
         if (empty($this->navigation[$nodeID])) {
             if ($use_default) {
                 if ($this->user->isLoggedIn()) {
-                   return $this->configuration['front_page_id_in'];
+                    return $this->configuration['front_page_id_in'];
                 } else {
-                   return $this->configuration['front_page_id'];
+                    return $this->configuration['front_page_id'];
                 }
             } else {
                 return false;

@@ -138,7 +138,7 @@ class PHPDS
         ob_start();
         $this->embedded    = $embedded;
         $this->objectCache = new PHPDS_array;
-        $this->basepath    = realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..') . DIRECTORY_SEPARATOR;
+        $this->basepath    = BASEPATH;
         try {
             $this->factorConfig();
         } catch (Exception $e) {

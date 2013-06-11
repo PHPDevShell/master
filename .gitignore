@@ -25,14 +25,9 @@ config/*
 !config/single-site.config.php.RENAME
 
 plugins/*
-!plugins/About/
-!plugins/LightModels/
 !plugins/Mustache/
 !plugins/NodeHelper/
 !plugins/PluginManager/
-!plugins/CRUD/
-!plugins/Pagination/
-!plugins/RoleManager/
 !plugins/repository.json
 
 write/cache/*
