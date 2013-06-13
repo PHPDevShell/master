@@ -28,7 +28,7 @@ class PHPDS_navigation extends PHPDS_dependant
      *
      * @var array
      */
-    public $navigation;
+    public $navigation = array();
     /**
      * Holds all node item information.
      *
@@ -65,7 +65,6 @@ class PHPDS_navigation extends PHPDS_dependant
             $this->nodes['child_navigation'] = $this->child;
             $this->nodes['nav_alias']        = $this->navAlias;
             $this->nodes['router_routes']    = $this->router->routes;
-            $this->nodes['router_modules']   = $this->router->modules;
             $this->nodes['navigation']       = $this->navigation;
 
             $cache->set('PHPDS_nodes', $this->nodes);
@@ -73,7 +72,6 @@ class PHPDS_navigation extends PHPDS_dependant
             $this->child           = $this->nodes['child_navigation'];
             $this->navAlias        = $this->nodes['nav_alias'];
             $this->router->routes  = $this->nodes['router_routes'];
-            $this->router->modules = $this->nodes['router_modules'];
             $this->navigation      = $this->nodes['navigation'];
         }
 
@@ -110,12 +108,10 @@ class PHPDS_navigation extends PHPDS_dependant
         if (empty($user_role)) throw new PHPDS_exception('Cannot extract nodes when no roles are given.');
 
         $select_nodes = $this->db->queryFAR($sql, array('roles' => $user_role));
-
         $config     = $this->configuration;
         $navigation = $this;
         $aburl      = $config['absolute_url'];
         $sef        = !empty($config['sef_url']);
-        $append     = $config['url_append'];
         $charset    = $config['charset'];
 
         foreach ($select_nodes as $mr) {
@@ -135,12 +131,18 @@ class PHPDS_navigation extends PHPDS_dependant
             $new_node['plugin_folder'] = 'plugins/' . $mr['plugin'] . '/';
             if ($sef && ! empty($mr['alias'])) {
                 $navigation->navAlias[$mr['alias']]
-                                  = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
-                $new_node['href'] = $aburl . '/' . $mr['alias'].$append;
+                    = $mr['node_type'] != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend'];
+                if ($mr['route']) {
+                   $route = rtrim(strstr($mr['route'], ':', true), '/');
+                   if (empty($route)) $route = $mr['route'];
+                } else {
+                   $route = $mr['alias'];
+                }
+                $new_node['href'] = $aburl . '/' . $route;
             } else {
                 $new_node['href']
                     = $aburl.'/index.php?m='.($mr['node_type']
-                    != PHPDS_navigation::node_jumpto_link ? $mr['node_id'] : $mr['extend']);
+                    != PHPDS_navigation::node_jumpto_link ? $nid : $mr['extend']);
             }
 
             // Writing children for single level dropdown.
@@ -150,8 +152,8 @@ class PHPDS_navigation extends PHPDS_dependant
 
             $navigation->navigation[$nid] = $new_node;
 
-            if (!empty($mr['alias'])) $this->router->addRoute($nid, $mr['alias'], $mr['plugin']);
-            if (!empty($mr['route'])) $this->router->addRoute($nid, $mr['route'], $mr['plugin']);
+            if (!empty($mr['alias'])) $this->router->addRoute($nid, $mr['alias']);
+            if (!empty($mr['route'])) $this->router->addRoute($nid, $mr['route']);
         }
     }
 
@@ -422,37 +424,37 @@ class PHPDS_navigation extends PHPDS_dependant
      *
      * @param mixed   $node_id The node id or node file location to create a url from.
      * @param string  $extend_url
-     * @param boolean $strip_trail Will strip unwanted empty operators at the end.
      * @return string
      */
-    public function buildURL($node_id = null, $extend_url = '', $strip_trail = true)
+    public function buildURL($node_id = null, $extend_url = '')
     {
         if (empty($node_id)) $node_id = $this->configuration['m'];
+
         if (!empty($this->configuration['sef_url'])) {
-            if (empty($this->navigation["$node_id"]['alias'])) {
-                $alias = $node_id;
+            if (!empty($this->navigation[$node_id]['route'])) {
+                $alias = rtrim(strstr($this->navigation[$node_id]['route'], ':', true), '/');
+                if (empty($alias)) $alias = $this->navigation[$node_id]['route'];
+            } else if (!empty($this->navigation[$node_id]['alias'])) {
+                $alias = $this->navigation[$node_id]['alias'];
             } else {
-                $alias = $this->navigation["$node_id"]['alias'];
+                $alias = $node_id;
             }
             if (!empty($extend_url)) {
-                $extend_url = "?$extend_url";
-            } else if ($strip_trail) {
-                $extend_url = '';
+                $extend_url = '/' . $extend_url;
             } else {
-                $extend_url = '?';
+                $extend_url = '';
             }
-            $url_append = empty($this->configuration['url_append']) ? '' : $this->configuration['url_append'];
-            $url        = $alias . $url_append . "$extend_url";
+            $url = $alias . $extend_url;
         } else {
             if (!empty($extend_url)) {
-                $extend_url = "&$extend_url";
+                $extend_url = '&' . $extend_url;
             } else {
                 $extend_url = '';
             }
-            $url = 'index.php?m=' . "$node_id" . "$extend_url";
+            $url = 'index.php?m=' . $node_id . $extend_url;
         }
         if (!empty($url)) {
-            return $this->configuration['absolute_url'] . "/$url";
+            return $this->configuration['absolute_url'] . '/' . $url;
         } else {
             return null;
         }
@@ -486,25 +488,29 @@ class PHPDS_navigation extends PHPDS_dependant
 
     /**
      * Parses the REQUEST_URI to get the page id
+     *
+     * @param string $uri
+     * @return string
      */
     public function parseRequestString($uri = '')
     {
-        if (empty($uri) && !empty($_SERVER['REQUEST_URI'])) {
-            $uri = $_SERVER['REQUEST_URI'];
-        }
+        if (empty($uri) && !empty($_SERVER['REQUEST_URI'])) $uri = $_SERVER['REQUEST_URI'];
 
         $configuration = $this->configuration;
-        $route = null;
-        $m = 0;
+        $m             = 0;
+
         $basepath = parse_url($configuration['absolute_url'], PHP_URL_PATH);
         $absolute_path = parse_url($uri, PHP_URL_PATH);
         $path = trim(str_replace($basepath, '', $absolute_path), '/');
 
         if (empty($path)) {
-            // no path given, fall back to the what default page has been configured
-            $route = $this->user->isLoggedIn() ? $configuration['front_page_id_in'] : $configuration['front_page_id'];
+            $default = $this->user->isLoggedIn() ? $configuration['front_page_id_in'] : $configuration['front_page_id'];
+            if (!empty($this->navigation[$default])) {
+                $route = $default;
+            } else {
+                $route = false;
+            }
         } else {
-            // first case, old-style "index.php?m=nodeid"
             if ('index.php' == $path) {
                 $m = $_GET['m'];
                 if (!empty($this->navigation[$m])) {
@@ -512,19 +518,12 @@ class PHPDS_navigation extends PHPDS_dependant
                 } else {
                     $route = false;
                 }
-            } else { // second case, use the router
+            } else {
                 $route = $this->router->matchRoute($path);
-                if (empty($route)) { // strip off the extension if necessary
-                    $path = str_replace($configuration['url_append'], '', $path);
-                    $route = $this->router->matchRoute($path);
-                }
             }
         }
 
-        if ($route === false) {
-            return $this->urlAccessError($path, $m);
-        }
-
+        if ($route === false) return $this->urlAccessError($path, $m);
         $configuration['m'] = $route;
 
         return $route;
@@ -540,6 +539,12 @@ class PHPDS_navigation extends PHPDS_dependant
     public function urlAccessError($alias = null, $get_node_id = null)
     {
         $required_node_id = $this->confirmNodeExist($alias, $get_node_id);
+        // Whooh baby! Where we at, just make sure maybe we are logging out.
+        if (strpos($alias, 'logout=1') !== false) {
+            $this->auth->logOut();
+            $this->core->haltController = array('type' => 'auth', 'message' => ___('Authentication Required'));
+            return false;
+        }
         if (empty($required_node_id)) {
             $this->core->haltController = array('type' => '404', 'message' => ___('Page not found'));
             return false;
@@ -620,20 +625,6 @@ class PHPDS_navigation extends PHPDS_dependant
     public function selfUrl($extra_get_variables = '')
     {
         return $this->buildURL(false, $extra_get_variables, true);
-    }
-
-    /**
-     * Will convert any given plugin script location to its correct url.
-     *
-     * @param string $file_path   The full file path, "DummyPlugin/sample/sample1.php"
-     * @param string $extend_url  Should the url be extended with $_GET vars, 'e=12'
-     * @param bool $strip_trail Will strip unwanted empty operators at the end.
-     * @return string
-     */
-    public function purl($file_path, $extend_url = '', $strip_trail = true)
-    {
-        $node_id = $this->createNodeId($file_path);
-        return $this->buildURL($node_id, $extend_url, $strip_trail);
     }
 
     /**

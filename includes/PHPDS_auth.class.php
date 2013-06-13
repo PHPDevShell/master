@@ -39,8 +39,7 @@ class PHPDS_auth extends PHPDS_dependant
                 $this->lookupCookie($_COOKIE['PHPDS_auth']);
             } else {
                 if (!empty($_REQUEST['logout']) && $this->isUserSession()) {
-                    $this->clearSession(true);
-                    $this->createGuestSession();
+                    $this->clearSession();
                 } else {
                     if (!empty($_POST['PHPDS_login'])) {
                         $user_name     = empty($_POST['user_name']) ? '' : $_POST['user_name'];
@@ -300,6 +299,17 @@ class PHPDS_auth extends PHPDS_dependant
     }
 
     /**
+     * Log-out and destroy login session data.
+     *
+     * @param bool $set_guest
+     * @return void
+     */
+    public function logOut($set_guest = true)
+    {
+        $this->clearSession($set_guest);
+    }
+
+    /**
      * Destroys login session data.
      *
      * @param bool $set_guest
@@ -351,7 +361,7 @@ class PHPDS_auth extends PHPDS_dependant
         if ($configuration['m'] == $this->loginPageId) {
             $post_login_url = $navigation->buildURL($configuration['redirect_login']);
         } else {
-            $post_login_url = $_SERVER['REQUEST_URI'];
+            $post_login_url = str_replace('/logout=1', '', $_SERVER['REQUEST_URI']);
         }
 
         $user_name = (empty($_POST['user_name'])) ? '' : $_POST['user_name'];

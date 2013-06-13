@@ -1,8 +1,7 @@
--- ****************************************************************************************
+-- ******************************************************************************************
 -- FOR AUTOMATED ONE CLICK INSTALLATION SQL FOR SERVICES e.g CPanel Please see End of File;
 -- THIS SQL FILE CAN BE EXECUTED/IMPORTED DIRECTLY INTO MYSQL DATABASE
--- ****************************************************************************************
-
+-- ******************************************************************************************
 
 -- Create plugins table.;
 CREATE TABLE `_db_core_plugin_activation` (
@@ -19,7 +18,6 @@ CREATE TABLE `_db_core_plugin_activation` (
 INSERT INTO `_db_core_plugin_activation` VALUES ('Mustache', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('PluginManager', 'install', '1000', '0');
 INSERT INTO `_db_core_plugin_activation` VALUES ('NodeHelper', 'install', '1000', '0');
-INSERT INTO `_db_core_plugin_activation` VALUES ('About', 'install', '1000', '0');
 
 -- Create themes table to store installed themes.;
 CREATE TABLE `_db_core_themes` (
@@ -63,8 +61,6 @@ CREATE TABLE `_db_core_node_items` (
   DEFAULT CHARSET = utf8;
 
 -- Insert default node items.;
-INSERT INTO `_db_core_node_items` VALUES
-('readme', '0', 'Readme', 'readme.php', 'About', '1', null, '0', '1', '0', 'default', 'readme', null, null, null);
 INSERT INTO `_db_core_node_items` VALUES
 ('plugin-admin', '0', 'Plugins', 'plugin-admin.php', 'PluginManager', '1', null, '0', '15', '0', 'default',
  'plugins-admin', null, null, null);
@@ -180,7 +176,6 @@ CREATE TABLE `_db_core_node_structure` (
   DEFAULT CHARSET = utf8;
 
 -- Insert node tree structure.;
-INSERT INTO `_db_core_node_structure` (node_id, is_parent, type) VALUES ('readme', '0', '2');
 INSERT INTO `_db_core_node_structure` (node_id, is_parent, type) VALUES ('plugin-admin', '0', '2');
 
 -- Create classes available from default plugins.;
@@ -248,11 +243,11 @@ INSERT INTO `_db_core_settings` VALUES
 INSERT INTO `_db_core_settings` VALUES
 ('PHPDS_default_theme_id', 'default', 'Default theme id.');
 INSERT INTO `_db_core_settings` VALUES
-('PHPDS_footer_notes', 'PHPDevShell.org (c) 2013 GNU/GPL License.', '');
+('PHPDS_footer_notes', '', '');
 INSERT INTO `_db_core_settings` VALUES
-('PHPDS_front_page_id', 'readme', 'The page to show when site is accessed.');
+('PHPDS_front_page_id', 'plugin-admin', 'The page to show when site is accessed.');
 INSERT INTO `_db_core_settings` VALUES
-('PHPDS_front_page_id_in', 'readme', 'The page to show when logged in and home or page is accessed.');
+('PHPDS_front_page_id_in', 'plugin-admin', 'The page to show when logged in and home or page is accessed.');
 INSERT INTO `_db_core_settings` VALUES
 ('PHPDS_guest_role', '3', 'The systems guest role.');
 INSERT INTO `_db_core_settings` VALUES
@@ -264,7 +259,7 @@ INSERT INTO `_db_core_settings` VALUES
 INSERT INTO `_db_core_settings` VALUES
 ('PHPDS_meta_keywords', 'administrative, administrator, PHPDS, interface, ui, user', '');
 INSERT INTO `_db_core_settings` VALUES
-('PHPDS_redirect_login', 'readme', 'When a user logs in, where should he be redirected to?');
+('PHPDS_redirect_login', 'plugin-admin', 'When a user logs in, where should he be redirected to?');
 INSERT INTO `_db_core_settings` VALUES
 ('PHPDS_regions_available', 'US', '');
 INSERT INTO `_db_core_settings` VALUES
@@ -276,8 +271,7 @@ INSERT INTO `_db_core_settings` VALUES
 INSERT INTO `_db_core_settings` VALUES
 ('PHPDS_system_down', '0', 'Is system currently down for development.');
 INSERT INTO `_db_core_settings` VALUES
-('PHPDS_system_down_message', '%s is currently down for maintenance. Some important features are being updated.
-  Please return soon.', '');
+('PHPDS_system_down_message', '%s is currently down for maintenance. Some important features are being updated.', '');
 INSERT INTO `_db_core_settings` VALUES
 ('PHPDS_system_logging', '1', 'Should logs be written to database.');
 INSERT INTO `_db_core_settings` VALUES
@@ -312,10 +306,6 @@ CREATE TABLE `_db_core_user_role_permissions` (
   DEFAULT CHARSET = utf8;
 
 -- Insert default user permissions.;
-INSERT INTO _db_core_user_role_permissions VALUES ('1', 'readme');
-INSERT INTO _db_core_user_role_permissions VALUES ('2', 'readme');
-INSERT INTO _db_core_user_role_permissions VALUES ('3', 'readme');
-
 INSERT INTO _db_core_user_role_permissions VALUES ('1', 'plugin-admin');
 
 -- IF DEFAULT INSTALLATION PHPDS SERVICE WILL NOT BE USED AND REPLACED WITH e.g CPanel ALSO RUN QUERIES:

@@ -180,7 +180,8 @@ class PHPDS_core extends PHPDS_dependant
     public function startController()
     {
         $configuration = $this->configuration;
-        $node          = $configuration['m'];
+        if (empty($configuration['m'])) $configuration['m'] = 0;
+        $node = $configuration['m'];
 
         // support for deferred, that is code running before and after a controller
         $deferred = null;
@@ -510,7 +511,7 @@ class PHPDS_core extends PHPDS_dependant
                     throw new PHPDS_exception('Broken controller node');
             }
         } else {
-            throw new PHPDS_exception('Controller node not found');
+            $this->core->haltController = array('type' => 'auth', 'message' => ___('Authentication Required'));
         }
 
         if (isset($this->haltController)) {
@@ -773,6 +774,7 @@ class PHPDS_core extends PHPDS_dependant
     {
         $settings   = $this->configuration;
         $navigation = $this->navigation;
+        if (empty($this->configuration['m'])) return $settings['default_theme_id'];
         if (!empty($navigation->navigation[$this->configuration['m']]['theme_folder'])) {
             return $navigation->navigation[$this->configuration['m']]['theme_folder'];
         } else {

@@ -21,13 +21,6 @@ class PHPDS_router extends PHPDS_dependant
      */
     public $routes = array();
     /**
-     * List of route descriptors, gathered by modules.
-     * This is an associative array
-     * The routes with no modules are not here.
-     * @var array
-     */
-    public $modules = array();
-    /**
      * Collects active catcher or alias node as per route config.
      * @var string
      */
@@ -37,45 +30,32 @@ class PHPDS_router extends PHPDS_dependant
      * @var array
      */
     protected $parameters = array();
-    /**
-     * Defaults values
-     * @var array
-     */
-    protected $defaults = array(
-        'module' => ''
-    );
 
     /**
      * Add a route to the list.
      *
      * @param mixed       $catcher  whatever should be run when the route is matched (usually the ID of the node).
      * @param string      $pattern  the pattern which, if matched, will trigger the node.
-     * @param null|string $module   an optional module (i.e. plugin).
      * @param null|array  $defaults default parameters for this route (default values for the variables).
      *
      * @return bool, true if the route has been added.
      */
-    public function addRoute($catcher, $pattern, $module = null, $defaults = null)
+    public function addRoute($catcher, $pattern, $defaults = null)
     {
         if (empty($catcher) || empty($pattern)) {
             return false;
         }
+        $pattern   = trim($pattern, '/');
+        $c_pattern = rtrim(strstr($pattern, ':', true), '/');
+        $c_pattern = ($c_pattern) ? $c_pattern : $pattern;
 
-        $route         = array(
+        $this->routes[$c_pattern] = array(
             'catcher'  => $catcher,
-            'pattern'  => trim($pattern, '/'),
-            'module'   => $module,
+            'pattern'  => $pattern,
             'defaults' => $defaults
         );
-        $this->routes[] = $route;
 
-        if (!empty($module)) {
-            if (empty($this->modules[$module])) {
-                $this->modules[$module] = array();
-            }
-            $this->modules[$module][] = $route;
-        }
-        return true;
+        return $catcher;
     }
 
     /**
@@ -89,21 +69,38 @@ class PHPDS_router extends PHPDS_dependant
     {
         if (!empty($this->configuration['routes'])) {
             foreach ($this->configuration['routes'] as $route_) {
-                $this->addRoute($route_['catcher'], $route_['pattern'], $route_['module'], $route_['defaults']);
+                $this->addRoute($route_['catcher'], $route_['pattern'], $route_['defaults']);
             }
         }
 
         $parts    = $this->splitURL($path);
-        $module   = !empty($this->modules[$parts[0]]) ? array_shift($parts) : $this->defaults['module'];
         $result   = false;
-        $routes   = $module ? $this->modules[$module] : $this->routes;
+        $routes   = $this->routes;
 
         if (is_array($parts)) {
             if (!empty($parts[0])) $this->alias = $parts[0];
-            foreach ($routes as $route) {
-                if ($this->match1Route($route, $parts)) {
-                    $result = $route;
-                    break;
+            if (!empty($routes[$path])) {
+                // Ah that was easy.
+                $result = $routes[$path];
+            } else {
+                // We need to look a little deeper.
+                $parts_reverse = array_reverse($parts);
+                // If this is 1, the node is most certainly not available, bring on 404.
+                if (count($parts_reverse) == 1) return false;
+                array_unshift($parts_reverse, '/');
+                foreach ($parts_reverse as $part) {
+                    $match_path = str_replace("/$part", '', $path);
+                    foreach ($routes as $pattern) {
+                        if (strpos($pattern['pattern'], $match_path) !== false) {
+                            $c_pattern = rtrim(strstr($pattern['pattern'], ':', true), '/');
+                            if ($c_pattern === $match_path) {
+                                // Now we found a really good match, lets do .
+                                $this->match1Route($pattern, $parts);
+                                $result = $pattern;
+                                break 2;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -115,35 +112,25 @@ class PHPDS_router extends PHPDS_dependant
      *
      * @param string $route_        the route pattern.
      * @param array  $parts         the pieces of the url path (split on slash).
-     *
-     * @return bool, true if they match
      */
     public function match1Route($route_, array $parts)
     {
         $defaults = explode("/", $route_['defaults']);
         $route    = $route_['pattern'];
-        if (($route == $parts[0]) || ($route == '/' . $parts[0])) {
-            return true;
-        }
-        $mismatch = false;
+
         $pieces   = $this->splitURL($route);
+
         foreach ($pieces as $key => $piece) {
-            if (strpos($route, $piece)) {
+            if (strpos($route, $piece) !== false) {
                 $part = array_shift($parts);
                 if (empty($part) && !empty($defaults[$key]))
                     $part = $defaults[$key];
 
-                if (strpos($piece, ':') !== false)
+                if (strpos($piece, ':') !== false) {
                     $this->parameters[trim($piece, ':')] = $part;
-            } else {
-                $part = array_shift($parts);
-                if ($part != $piece) {
-                    $mismatch = true;
-                    break;
                 }
             }
         }
-        return !$mismatch;
     }
 
     /**

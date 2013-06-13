@@ -30,6 +30,9 @@ plugins/*
 !plugins/PluginManager/
 !plugins/repository.json
 
+themes/*
+!themes/default/
+
 write/cache/*
 !write/cache/index.php
 

@@ -1,5 +1,5 @@
 <?php
-define('phpdevshell_version', 'PHPDevShell V-4.0.0-Beta-1-DB-4000');
+define('phpdevshell_version', 'PHPDevShell V-4.0.0-Beta-2-DB-4000');
 define('phpdevshell_db_version', '4000');
 
 require_once 'PHPDS_utils.inc.php';

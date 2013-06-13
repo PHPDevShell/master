@@ -195,13 +195,6 @@ $configuration['session_path'] = 'write/session/';
 $configuration['sef_url'] = false;
 
 /**
- * What suffix should be added to the end of a node name, e.g .html, .php, .asp etc. whatever you like.
- * Leave this blank to have a no suffix like e.g example.com/somenode
- * @global string
- */
-$configuration['url_append'] = '';
-
-/**
  * Views compile path.
  * (Needs to be writable)
  * @global string $configuration['compile_path']

@@ -1286,7 +1286,11 @@ class PHPDS_template extends PHPDS_dependant
     public function outputAltHome($return = false)
     {
         $home = $this->configuration[$this->user->isLoggedIn() ? 'front_page_id_in' : 'front_page_id'];
-        $nav  = $this->navigation->navigation[$home];
+        if (! empty($this->navigation->navigation[$home])) {
+            $nav = $this->navigation->navigation[$home];
+        } else {
+            $nav = '';
+        }
 
         if ($return == false) {
             print $this->mod->altHome($nav);
